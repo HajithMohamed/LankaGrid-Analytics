@@ -1,0 +1,24 @@
+{
+  "version": "1.0",
+  "project": "National Electricity Grid Analytics Data Warehouse — Sri Lanka",
+  "generated_at": "2026-10-29T10:00:00+05:30",
+  "primary_year": 2024,
+  "sources": [
+    {
+      "source_id": "TEST-FIXTURE-001",
+      "provider": "PUCSL",
+      "title": "Synthetic Daily Generation Sample",
+      "source_url": "https://www.pucsl.gov.lk/test-fixture.pdf",
+      "original_filename": "sample_daily_gen.pdf",
+      "local_path": "tests/fixtures/sample_daily_gen.pdf",
+      "reporting_period": "2024-01-15",
+      "file_format": "PDF",
+      "file_size_bytes": 1024,
+      "sha256_checksum": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "time_zone": "Asia/Colombo",
+      "data_granularity": "Daily Plant Total",
+      "units": ["MW", "MWh"],
+      "status": "fixture"
+    }
+  ]
+}

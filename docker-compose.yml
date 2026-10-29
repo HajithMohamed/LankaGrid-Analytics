@@ -1,0 +1,51 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: sl_grid_warehouse_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-sl_grid_warehouse}
+      POSTGRES_USER: ${POSTGRES_USER:-grid_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-grid_dev_password_change_me}
+      POSTGRES_TEST_DB: ${POSTGRES_TEST_DB:-sl_grid_warehouse_test}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-grid_admin} -d ${POSTGRES_DB:-sl_grid_warehouse}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - grid_network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: sl_grid_warehouse_pgadmin
+    profiles: ["tools"]
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@gridwarehouse.lk}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin_dev_password}
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - grid_network
+
+networks:
+  grid_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local

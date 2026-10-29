@@ -1,0 +1,56 @@
+{
+  "version": "1.0",
+  "project": "National Electricity Grid Analytics Data Warehouse — Sri Lanka",
+  "generated_at": "2026-10-29T10:00:00+05:30",
+  "primary_year": 2024,
+  "sources": [
+    {
+      "source_id": "PUCSL-GEN-2024-01-15",
+      "provider": "PUCSL",
+      "title": "Daily Generation and Dispatch Report - 15 January 2024",
+      "source_url": "https://www.pucsl.gov.lk/wp-content/uploads/2024/01/Daily-Generation-Report-15-01-2024.pdf",
+      "original_filename": "Daily-Generation-Report-15-01-2024.pdf",
+      "local_path": "data/raw/pucsl/2024/Daily-Generation-Report-15-01-2024.pdf",
+      "reporting_period": "2024-01-15",
+      "file_format": "PDF",
+      "file_size_bytes": 284192,
+      "sha256_checksum": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "time_zone": "Asia/Colombo",
+      "data_granularity": "Daily Station Total & 15-Minute Dispatch",
+      "units": ["MW", "MWh", "GWh"],
+      "status": "verified_sample"
+    },
+    {
+      "source_id": "CEB-STAT-DIGEST-2023-2024",
+      "provider": "CEB",
+      "title": "CEB Statistical Digest Monthly & Annual Operational Summary",
+      "source_url": "https://ceb.lk/publication-types/statistical-digest/en",
+      "original_filename": "CEB_Statistical_Digest_2023_2024.pdf",
+      "local_path": "data/raw/ceb/2024/CEB_Statistical_Digest_2023_2024.pdf",
+      "reporting_period": "2023-2024",
+      "file_format": "PDF",
+      "file_size_bytes": 1048576,
+      "sha256_checksum": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce",
+      "time_zone": "Asia/Colombo",
+      "data_granularity": "Monthly Provincial & Tariff Summary",
+      "units": ["GWh", "MW", "LKR/kWh", "%"],
+      "status": "verified_sample"
+    },
+    {
+      "source_id": "NASA-POWER-DAILY-2024",
+      "provider": "NASA POWER",
+      "title": "NASA POWER Meteorological and Solar Radiation Sri Lanka Grid Nodes 2024",
+      "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
+      "original_filename": "nasa_power_sl_nodes_2024.json",
+      "local_path": "data/raw/nasa/2024/nasa_power_sl_nodes_2024.json",
+      "reporting_period": "2024-01-01 to 2024-12-31",
+      "file_format": "JSON",
+      "file_size_bytes": 524288,
+      "sha256_checksum": "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a",
+      "time_zone": "UTC+05:30",
+      "data_granularity": "Daily Point Observations",
+      "units": ["kW/m2", "MJ/m2/day", "C", "%", "m/s", "mm/day"],
+      "status": "verified_sample"
+    }
+  ]
+}
