@@ -2,10 +2,14 @@
 Unit tests for CEB Statistical Digest 2024 PDF parser.
 Follows TDD Red -> Green protocol.
 """
+
 from pathlib import Path
+
 import pytest
 
-from src.ingestion.ceb_digest_parser import CebDigestParser, ProvincialSalesRecord, TariffSalesRecord
+from src.ingestion.ceb_digest_parser import (
+    CebDigestParser,
+)
 
 
 @pytest.fixture
@@ -21,7 +25,7 @@ def test_ceb_digest_extracts_provincial_sales(sample_ceb_pdf_path: Path):
 
     parser = CebDigestParser()
     prov_records = parser.extract_provincial_sales(sample_ceb_pdf_path)
-    
+
     assert len(prov_records) >= 10
     total_rec = next((r for r in prov_records if r.region_raw == "TOTAL"), None)
     assert total_rec is not None
@@ -38,10 +42,10 @@ def test_ceb_digest_extracts_tariff_sales(sample_ceb_pdf_path: Path):
 
     parser = CebDigestParser()
     tariff_records = parser.extract_tariff_sales(sample_ceb_pdf_path)
-    
+
     assert len(tariff_records) >= 7
     tariff_dict = {r.tariff_group: r.sales_gwh for r in tariff_records}
-    
+
     # Page 5 CEB 2024 Sales by Tariff:
     # Domestic: 4,701 GWh
     # Religious: 75 GWh

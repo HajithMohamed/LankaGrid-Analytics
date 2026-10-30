@@ -1,6 +1,7 @@
 """
 Tabular CSV and JSON dispatch interval parsers for raw/fixture ingestion.
 """
+
 from __future__ import annotations
 
 import json
@@ -24,4 +25,3 @@ def load_dispatch_15min_json(json_path: Path) -> dict[str, Any]:
     with json_path.open("r", encoding="utf-8") as handle:
         payload: dict[str, Any] = json.load(handle)
     return payload
-

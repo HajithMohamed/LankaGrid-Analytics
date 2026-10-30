@@ -7,6 +7,7 @@ Follows .agents/skills/real-data-acquisition/SKILL.md:
 - Calculates SHA-256 cryptographic hashes
 - Generates or updates data/raw/manifest.json
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -14,7 +15,7 @@ import json
 import ssl
 import sys
 import urllib.request
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -37,7 +38,9 @@ def compute_sha256(filepath: Path) -> str:
     return hasher.hexdigest()
 
 
-def download_file(url: str, dest_path: Path, expected_magic: bytes | None = None) -> tuple[int, str]:
+def download_file(
+    url: str, dest_path: Path, expected_magic: bytes | None = None
+) -> tuple[int, str]:
     dest_path.parent.mkdir(parents=True, exist_ok=True)
     req = urllib.request.Request(url, headers=HEADERS)
     print(f"Downloading {url} -> {dest_path}...")
@@ -45,7 +48,9 @@ def download_file(url: str, dest_path: Path, expected_magic: bytes | None = None
         content = resp.read()
 
     if expected_magic and not content.startswith(expected_magic):
-        raise ValueError(f"File from {url} does not start with expected magic bytes {expected_magic}: got {content[:20]!r}")
+        raise ValueError(
+            f"File from {url} does not start with expected magic bytes {expected_magic!r}: got {content[:20]!r}"
+        )
 
     dest_path.write_bytes(content)
     size_bytes = len(content)
@@ -61,10 +66,10 @@ def fetch_nasa_power_data(dest_path: Path) -> tuple[int, str]:
         "victoria_hydro": {"name": "Victoria Hydro Reservoir", "lat": 7.24, "lon": 80.785},
         "mannar_wind": {"name": "Mannar Wind Farm", "lat": 9.03, "lon": 79.88},
     }
-    
+
     combined_payload: dict[str, Any] = {
         "title": "NASA POWER Meteorological and Solar Radiation Sri Lanka Grid Nodes 2024",
-        "retrieved_at": datetime.now(timezone.utc).isoformat(),
+        "retrieved_at": datetime.now(UTC).isoformat(),
         "temporal_resolution": "daily",
         "community": "RE",
         "parameters": ["ALLSKY_SFC_SW_DWN", "T2M", "RH2M", "WS10M", "WS50M", "PRECTOTCORR"],
@@ -74,9 +79,9 @@ def fetch_nasa_power_data(dest_path: Path) -> tuple[int, str]:
             "RH2M": "Relative Humidity at 2 Meters (%)",
             "WS10M": "Wind Speed at 10 Meters (m/s)",
             "WS50M": "Wind Speed at 50 Meters (m/s)",
-            "PRECTOTCORR": "Precipitation Corrected (mm/day)"
+            "PRECTOTCORR": "Precipitation Corrected (mm/day)",
         },
-        "nodes": {}
+        "nodes": {},
     }
 
     for node_id, node_info in nodes.items():
@@ -107,7 +112,7 @@ def main() -> int:
     base_dir = Path(__file__).resolve().parent.parent
     raw_dir = base_dir / "data" / "raw"
 
-    sources_to_download = [
+    sources_to_download: list[dict[str, Any]] = [
         {
             "source_id": "CEB-STAT-DIGEST-2024",
             "provider": "CEB",
@@ -158,22 +163,24 @@ def main() -> int:
         dest = base_dir / src["local_path"]
         try:
             size, sha256 = download_file(src["source_url"], dest, src.get("magic"))
-            manifest_entries.append({
-                "source_id": src["source_id"],
-                "provider": src["provider"],
-                "title": src["title"],
-                "source_url": src["source_url"],
-                "original_filename": src["original_filename"],
-                "local_path": src["local_path"],
-                "reporting_period": src["reporting_period"],
-                "file_format": src["file_format"],
-                "file_size_bytes": size,
-                "sha256_checksum": sha256,
-                "time_zone": src["time_zone"],
-                "data_granularity": src["data_granularity"],
-                "units": src["units"],
-                "status": "DOWNLOADED_VERIFIED",
-            })
+            manifest_entries.append(
+                {
+                    "source_id": src["source_id"],
+                    "provider": src["provider"],
+                    "title": src["title"],
+                    "source_url": src["source_url"],
+                    "original_filename": src["original_filename"],
+                    "local_path": src["local_path"],
+                    "reporting_period": src["reporting_period"],
+                    "file_format": src["file_format"],
+                    "file_size_bytes": size,
+                    "sha256_checksum": sha256,
+                    "time_zone": src["time_zone"],
+                    "data_granularity": src["data_granularity"],
+                    "units": src["units"],
+                    "status": "DOWNLOADED_VERIFIED",
+                }
+            )
         except Exception as e:
             print(f"ERROR downloading {src['source_id']}: {e}", file=sys.stderr)
             return 1
@@ -182,22 +189,24 @@ def main() -> int:
     nasa_dest = base_dir / "data/raw/nasa/2024/nasa_power_sl_nodes_2024.json"
     try:
         nasa_size, nasa_sha256 = fetch_nasa_power_data(nasa_dest)
-        manifest_entries.append({
-            "source_id": "NASA-POWER-DAILY-2024",
-            "provider": "NASA POWER",
-            "title": "NASA POWER Meteorological and Solar Radiation Sri Lanka Grid Nodes 2024",
-            "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
-            "original_filename": "nasa_power_sl_nodes_2024.json",
-            "local_path": "data/raw/nasa/2024/nasa_power_sl_nodes_2024.json",
-            "reporting_period": "2024-01-01 to 2024-01-31",
-            "file_format": "JSON",
-            "file_size_bytes": nasa_size,
-            "sha256_checksum": nasa_sha256,
-            "time_zone": "UTC+05:30",
-            "data_granularity": "Daily Point Observations",
-            "units": ["kW-hr/m^2/day", "C", "%", "m/s", "mm/day"],
-            "status": "DOWNLOADED_VERIFIED",
-        })
+        manifest_entries.append(
+            {
+                "source_id": "NASA-POWER-DAILY-2024",
+                "provider": "NASA POWER",
+                "title": "NASA POWER Meteorological and Solar Radiation Sri Lanka Grid Nodes 2024",
+                "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
+                "original_filename": "nasa_power_sl_nodes_2024.json",
+                "local_path": "data/raw/nasa/2024/nasa_power_sl_nodes_2024.json",
+                "reporting_period": "2024-01-01 to 2024-01-31",
+                "file_format": "JSON",
+                "file_size_bytes": nasa_size,
+                "sha256_checksum": nasa_sha256,
+                "time_zone": "UTC+05:30",
+                "data_granularity": "Daily Point Observations",
+                "units": ["kW-hr/m^2/day", "C", "%", "m/s", "mm/day"],
+                "status": "DOWNLOADED_VERIFIED",
+            }
+        )
     except Exception as e:
         print(f"ERROR fetching NASA data: {e}", file=sys.stderr)
         return 1
@@ -207,12 +216,14 @@ def main() -> int:
     manifest_doc = {
         "version": "1.0",
         "project": "National Electricity Grid Analytics Data Warehouse — Sri Lanka",
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "primary_year": 2024,
         "sources": manifest_entries,
     }
     manifest_path.write_text(json.dumps(manifest_doc, indent=2), encoding="utf-8")
-    print(f"Manifest written successfully to {manifest_path} with {len(manifest_entries)} verified entries.")
+    print(
+        f"Manifest written successfully to {manifest_path} with {len(manifest_entries)} verified entries."
+    )
     return 0
 
 

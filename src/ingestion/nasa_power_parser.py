@@ -3,6 +3,7 @@ Source-specific extractor for NASA POWER daily meteorological JSON datasets.
 Parses multi-parameter daily observations for Sri Lanka energy node coordinates,
 faithfully preserving the -999.0 fill-value sentinel as NULL (never coerced to 0).
 """
+
 from __future__ import annotations
 
 import json

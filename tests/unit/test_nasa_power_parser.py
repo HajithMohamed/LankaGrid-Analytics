@@ -2,11 +2,13 @@
 Unit tests for NASA POWER JSON parser.
 Follows TDD Red -> Green protocol.
 """
+
 import json
 from pathlib import Path
+
 import pytest
 
-from src.ingestion.nasa_power_parser import NasaPowerParser, DailyWeatherRecord
+from src.ingestion.nasa_power_parser import NasaPowerParser
 
 
 @pytest.fixture
@@ -30,7 +32,14 @@ def test_nasa_power_parser_extracts_observations(sample_nasa_json_path: Path):
     # Check a specific record
     rec_0 = records[0]
     assert rec_0.location_code in ("LOC_VICTORIA_CATCHMENT", "LOC_MANNAR_WIND")
-    assert rec_0.source_variable_name in ("ALLSKY_SFC_SW_DWN", "T2M", "RH2M", "WS10M", "WS50M", "PRECTOTCORR")
+    assert rec_0.source_variable_name in (
+        "ALLSKY_SFC_SW_DWN",
+        "T2M",
+        "RH2M",
+        "WS10M",
+        "WS50M",
+        "PRECTOTCORR",
+    )
     assert rec_0.time_standard == "LST / UTC+05:30"
     assert rec_0.reported_unit_code != ""
 
@@ -45,9 +54,9 @@ def test_nasa_power_parser_preserves_fill_value_sentinel(tmp_path: Path):
                 "properties": {
                     "parameter": {
                         "ALLSKY_SFC_SW_DWN": {"20240101": -999.0, "20240102": 4.5},
-                        "T2M": {"20240101": 22.5, "20240102": -999.0}
+                        "T2M": {"20240101": 22.5, "20240102": -999.0},
                     }
-                }
+                },
             }
         }
     }
@@ -58,11 +67,21 @@ def test_nasa_power_parser_preserves_fill_value_sentinel(tmp_path: Path):
     records = parser.parse_file(synth_file)
 
     assert len(records) == 4
-    missing_irradiance = next(r for r in records if r.observation_date.strftime("%Y%m%d") == "20240101" and r.source_variable_name == "ALLSKY_SFC_SW_DWN")
+    missing_irradiance = next(
+        r
+        for r in records
+        if r.observation_date.strftime("%Y%m%d") == "20240101"
+        and r.source_variable_name == "ALLSKY_SFC_SW_DWN"
+    )
     assert missing_irradiance.parsed_value is None
     assert missing_irradiance.is_missing is True
     assert missing_irradiance.missing_value_code == "NASA_FILL_VALUE_-999"
 
-    valid_irradiance = next(r for r in records if r.observation_date.strftime("%Y%m%d") == "20240102" and r.source_variable_name == "ALLSKY_SFC_SW_DWN")
+    valid_irradiance = next(
+        r
+        for r in records
+        if r.observation_date.strftime("%Y%m%d") == "20240102"
+        and r.source_variable_name == "ALLSKY_SFC_SW_DWN"
+    )
     assert valid_irradiance.parsed_value == 4.5
     assert valid_irradiance.is_missing is False

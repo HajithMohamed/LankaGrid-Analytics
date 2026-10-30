@@ -6,10 +6,10 @@ Unit tests for data preprocessing cleaning rules applied to real electricity dat
 - Composite key duplicate detection
 Follows TDD Red -> Green protocol.
 """
-from datetime import date
+
 import pytest
 
-from src.preprocessing.dispatch_cleaner import DispatchCleaner, PreprocessingValidationResult
+from src.preprocessing.dispatch_cleaner import DispatchCleaner
 from src.preprocessing.weather_cleaner import WeatherCleaner
 
 
@@ -19,9 +19,7 @@ def test_dispatch_cleaner_detects_capacity_exceedance():
     cleaner = DispatchCleaner()
     # Canyon rated capacity is 60 MW; 65 MW is an outlier (65 > 60 * 1.05 = 63 MW)
     is_valid, flags = cleaner.validate_power_reading(
-        station_name="Canyon",
-        power_mw=65.0,
-        rated_capacity_mw=60.0
+        station_name="Canyon", power_mw=65.0, rated_capacity_mw=60.0
     )
     assert not is_valid
     assert "CAPACITY_EXCEEDED" in flags
@@ -32,9 +30,7 @@ def test_dispatch_cleaner_detects_negative_power():
     """Verify that negative power output is rejected as physical impossibility."""
     cleaner = DispatchCleaner()
     is_valid, flags = cleaner.validate_power_reading(
-        station_name="Victoria",
-        power_mw=-5.0,
-        rated_capacity_mw=210.0
+        station_name="Victoria", power_mw=-5.0, rated_capacity_mw=210.0
     )
     assert not is_valid
     assert "NEGATIVE_POWER" in flags
@@ -54,7 +50,7 @@ def test_dispatch_cleaner_iqr_outlier_detection():
 def test_weather_cleaner_validates_physical_ranges():
     """Verify humidity [0..100], temp [-20..60], and non-negative irradiance/wind/rain."""
     cleaner = WeatherCleaner()
-    
+
     # Valid observation
     res = cleaner.validate_observation("RH2M", 85.5)
     assert res.is_valid

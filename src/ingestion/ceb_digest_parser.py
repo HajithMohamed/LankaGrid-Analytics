@@ -3,9 +3,9 @@ Source-specific extractor for Ceylon Electricity Board (CEB) Statistical Digest 
 Extracts billed electricity sales by distribution division/province and by consumer tariff class,
 converting GWh to canonical warehouse MWh (1 GWh = 1,000 MWh).
 """
+
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any

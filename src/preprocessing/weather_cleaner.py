@@ -7,9 +7,9 @@ Preprocessing and domain physical validation for NASA POWER meteorological obser
 - Precipitation >= 0 mm/day
 - Null / fill value sentinel preservation
 """
+
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from src.preprocessing.dispatch_cleaner import PreprocessingValidationResult
 
 

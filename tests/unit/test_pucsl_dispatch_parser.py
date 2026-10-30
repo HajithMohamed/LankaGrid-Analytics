@@ -2,10 +2,12 @@
 Unit tests for PUCSL 15-minute dispatch XLSX parser.
 Follows TDD Red -> Green protocol.
 """
+
 from pathlib import Path
+
 import pytest
 
-from src.ingestion.pucsl_dispatch_parser import PucslDispatchParser, DispatchIntervalRecord
+from src.ingestion.pucsl_dispatch_parser import PucslDispatchParser
 
 
 @pytest.fixture
@@ -33,7 +35,7 @@ def test_dispatch_parser_extracts_single_day(sample_xlsx_path: Path):
 
     parser = PucslDispatchParser()
     records = parser.parse_sheet(sample_xlsx_path, "01.03")
-    
+
     assert len(records) > 0
     # There are ~40 stations with 96 intervals = ~3,800 records
     assert len(records) >= 3000
@@ -41,7 +43,7 @@ def test_dispatch_parser_extracts_single_day(sample_xlsx_path: Path):
     # Inspect a known station (e.g. Canyon)
     canyon_records = [r for r in records if r.raw_entity_name == "Canyon"]
     assert len(canyon_records) == 96
-    
+
     first_slot = canyon_records[0]
     assert first_slot.interval_slot_number == 1
     assert first_slot.power_mw == 11.0
@@ -58,10 +60,10 @@ def test_dispatch_parser_preserves_zero_distinct_from_missing(sample_xlsx_path: 
 
     parser = PucslDispatchParser()
     records = parser.parse_sheet(sample_xlsx_path, "01.03")
-    
+
     # Canyon early slots have 11 MW, Victoria early slots have 0 MW
     vict_records = [r for r in records if r.raw_entity_name == "Vict"]
     assert len(vict_records) == 96
-    slot2 = vict_records[1] # 0:30
+    slot2 = vict_records[1]  # 0:30
     assert slot2.power_mw == 0.0
     assert not slot2.is_missing

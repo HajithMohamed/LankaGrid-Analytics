@@ -2,10 +2,12 @@
 Unit tests for PUCSL Daily Generation Report PDF parser.
 Follows TDD Red -> Green protocol.
 """
+
 from pathlib import Path
+
 import pytest
 
-from src.ingestion.pucsl_pdf_parser import PucslPdfParser, PlantGenerationRecord, DailyMixRecord
+from src.ingestion.pucsl_pdf_parser import PucslPdfParser
 
 
 @pytest.fixture
@@ -21,10 +23,10 @@ def test_pucsl_pdf_extracts_generation_mix(sample_pdf_path: Path):
 
     parser = PucslPdfParser()
     mix_records = parser.extract_daily_generation_mix(sample_pdf_path)
-    
+
     assert len(mix_records) >= 8
     mix_dict = {r.category_name: r.generation_mwh for r in mix_records}
-    
+
     # Authoritative numbers from Table 01 on Page 2:
     # CEB Hydro: 14,679 MWh
     # CEB Coal: 12,436 MWh
@@ -42,10 +44,10 @@ def test_pucsl_pdf_extracts_plant_table(sample_pdf_path: Path):
 
     parser = PucslPdfParser()
     plant_records = parser.extract_plant_dispatch_table(sample_pdf_path)
-    
+
     assert len(plant_records) >= 15
     plant_dict = {r.plant_name: r for r in plant_records}
-    
+
     # Check known stations from page 4:
     # Wimalasurendra: dispatch 311 MWh, max cap 50 MW
     # Canyon: dispatch 228 MWh, max cap 60 MW
@@ -68,7 +70,7 @@ def test_pucsl_pdf_extracts_peak_demand(sample_pdf_path: Path):
 
     parser = PucslPdfParser()
     peaks = parser.extract_peak_demands(sample_pdf_path)
-    
+
     # Night peak: 2,278 MW, Day peak: 1,742 MW
     assert peaks["night_peak_mw"] == 2278.0
     assert peaks["day_peak_max_mw"] == 1742.0

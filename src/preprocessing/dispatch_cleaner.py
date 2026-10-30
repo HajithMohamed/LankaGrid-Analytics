@@ -5,10 +5,11 @@ Preprocessing and data-quality cleaning rules for 15-minute dispatch observation
 - Missing interval detection (expected 96 intervals per 24 hours)
 - Canonical station name standardization via ref.plant_alias
 """
+
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Sequence
 
 
 @dataclass(frozen=True)
@@ -72,10 +73,8 @@ class DispatchCleaner:
         return [x for x in series if x < lower_bound or x > upper_bound]
 
     @staticmethod
-    def detect_missing_intervals(
-        recorded_slots: set[int], expected_total: int = 96
-    ) -> list[int]:
+    def detect_missing_intervals(recorded_slots: set[int], expected_total: int = 96) -> list[int]:
         """Detect missing 15-minute interval slot numbers in a 24-hour cycle (1..96)."""
         expected_set = set(range(1, expected_total + 1))
         missing = expected_set - recorded_slots
-        return sorted(list(missing))
+        return sorted(missing)

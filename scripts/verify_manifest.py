@@ -3,6 +3,7 @@ Verification script for data/raw/manifest.json.
 Asserts that every downloaded source file exists on disk, matches its reported
 SHA-256 cryptographic checksum, and conforms to ManifestValidator schema.
 """
+
 from __future__ import annotations
 
 import sys
@@ -49,10 +50,14 @@ def main() -> int:
             print(f"    Actual:   {actual_sha256}")
             failures += 1
         elif source.file_size_bytes is not None and actual_size != source.file_size_bytes:
-            print(f"  [SIZE MISMATCH] {source.source_id}: Size mismatch (expected {source.file_size_bytes}, got {actual_size})")
+            print(
+                f"  [SIZE MISMATCH] {source.source_id}: Size mismatch (expected {source.file_size_bytes}, got {actual_size})"
+            )
             failures += 1
         else:
-            print(f"  [OK] {source.source_id}: Verified SHA-256 ({actual_sha256[:12]}...) ({actual_size} bytes)")
+            print(
+                f"  [OK] {source.source_id}: Verified SHA-256 ({actual_sha256[:12]}...) ({actual_size} bytes)"
+            )
 
     if failures > 0:
         print(f"\nVerification FAILED with {failures} error(s).", file=sys.stderr)

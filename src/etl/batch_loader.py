@@ -12,6 +12,7 @@ Transaction Architecture:
 3. Audit Finalization (Boundary C, autocommit transaction):
    Records 'SUCCEEDED' or 'ROLLED_BACK' with exact error diagnostics on audit.etl_run.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -84,7 +85,9 @@ class TransactionalGenerationBatchLoader:
                     )
                     sys_row = cur.fetchone()
                     if sys_row is None:
-                        raise RuntimeError("PUCSL missing in raw.source_system; run ReferenceSeeder first.")
+                        raise RuntimeError(
+                            "PUCSL missing in raw.source_system; run ReferenceSeeder first."
+                        )
                     source_system_id = int(sys_row[0])
 
                     cur.execute(
@@ -165,7 +168,9 @@ class TransactionalGenerationBatchLoader:
                             assert rec_row is not None
                             raw_rec_id = int(rec_row[0])
 
-                            initial_status = "valid" if bypass_prevalidation_for_tx_test else "pending"
+                            initial_status = (
+                                "valid" if bypass_prevalidation_for_tx_test else "pending"
+                            )
                             cur.execute(
                                 """
                                 INSERT INTO staging.stg_generation_report (
@@ -268,12 +273,34 @@ class TransactionalGenerationBatchLoader:
                     doc_ids = [int(r[0]) for r in cur.fetchall()]
                     if not doc_ids:
                         return
-                    cur.execute("DELETE FROM audit.record_lineage WHERE source_document_id = ANY(%s);", (doc_ids,))
-                    cur.execute("DELETE FROM audit.data_quality_issue WHERE source_document_id = ANY(%s);", (doc_ids,))
-                    cur.execute("DELETE FROM dw.fact_generation_period WHERE source_document_id = ANY(%s);", (doc_ids,))
-                    cur.execute("DELETE FROM staging.stg_generation_report WHERE source_document_id = ANY(%s);", (doc_ids,))
-                    cur.execute("DELETE FROM audit.etl_run WHERE source_document_id = ANY(%s);", (doc_ids,))
-                    cur.execute("DELETE FROM raw.extracted_record WHERE source_document_id = ANY(%s);", (doc_ids,))
-                    cur.execute("DELETE FROM raw.ingestion_batch WHERE source_document_id = ANY(%s);", (doc_ids,))
-                    cur.execute("DELETE FROM raw.source_document WHERE source_document_id = ANY(%s);", (doc_ids,))
-
+                    cur.execute(
+                        "DELETE FROM audit.record_lineage WHERE source_document_id = ANY(%s);",
+                        (doc_ids,),
+                    )
+                    cur.execute(
+                        "DELETE FROM audit.data_quality_issue WHERE source_document_id = ANY(%s);",
+                        (doc_ids,),
+                    )
+                    cur.execute(
+                        "DELETE FROM dw.fact_generation_period WHERE source_document_id = ANY(%s);",
+                        (doc_ids,),
+                    )
+                    cur.execute(
+                        "DELETE FROM staging.stg_generation_report WHERE source_document_id = ANY(%s);",
+                        (doc_ids,),
+                    )
+                    cur.execute(
+                        "DELETE FROM audit.etl_run WHERE source_document_id = ANY(%s);", (doc_ids,)
+                    )
+                    cur.execute(
+                        "DELETE FROM raw.extracted_record WHERE source_document_id = ANY(%s);",
+                        (doc_ids,),
+                    )
+                    cur.execute(
+                        "DELETE FROM raw.ingestion_batch WHERE source_document_id = ANY(%s);",
+                        (doc_ids,),
+                    )
+                    cur.execute(
+                        "DELETE FROM raw.source_document WHERE source_document_id = ANY(%s);",
+                        (doc_ids,),
+                    )

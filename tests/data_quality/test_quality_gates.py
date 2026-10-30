@@ -1,6 +1,7 @@
 """
 Data quality assertions and quarantine testing.
 """
+
 from pathlib import Path
 
 # pyrefly: ignore[missing-source-for-stubs]

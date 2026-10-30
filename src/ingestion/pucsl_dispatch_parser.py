@@ -3,11 +3,12 @@ Source-specific extractor for PUCSL 15-minute generation dispatch XLSX workbooks
 Extracts 96 sub-daily discrete intervals per station per day, preserving sheet references,
 cell coordinates, and distinguishing plant shutdown (0.0 MW) from unrecorded missing intervals (None).
 """
+
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from datetime import date, datetime, time, timedelta, timezone
+from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -59,7 +60,9 @@ class PucslDispatchParser:
             month = int(m.group(2))
             return date(2024, month, day)
 
-        raise ValueError(f"Cannot resolve calendar date from sheet '{sheet_name}' and row0: {row0_val}")
+        raise ValueError(
+            f"Cannot resolve calendar date from sheet '{sheet_name}' and row0: {row0_val}"
+        )
 
     def parse_sheet(self, file_path: Path, sheet_name: str) -> list[DispatchIntervalRecord]:
         """Parse all 96 interval slots for all stations on the specified daily sheet."""
@@ -87,7 +90,7 @@ class PucslDispatchParser:
             sheet_date = self._parse_sheet_date(sheet_name, row0[8] if len(row0) > 8 else None)
 
             # Row 1: Time labels (e.g. Time, 0:15, 0:30, ..., 24:00)
-            time_row = all_rows[1]
+            all_rows[1]
             time_slots: list[tuple[int, time]] = []
             for col_idx in range(1, 97):
                 total_min = col_idx * 15
@@ -126,12 +129,18 @@ class PucslDispatchParser:
                     if slot_num == 96:
                         # 24:00 corresponds to next day 00:00:00 SLST
                         next_day = sheet_date + timedelta(days=1)
-                        ts = datetime(next_day.year, next_day.month, next_day.day, 0, 0, 0, tzinfo=COLOMBO_TZ)
+                        ts = datetime(
+                            next_day.year, next_day.month, next_day.day, 0, 0, 0, tzinfo=COLOMBO_TZ
+                        )
                     else:
                         ts = datetime(
-                            sheet_date.year, sheet_date.month, sheet_date.day,
-                            slot_time.hour, slot_time.minute, 0,
-                            tzinfo=COLOMBO_TZ
+                            sheet_date.year,
+                            sheet_date.month,
+                            sheet_date.day,
+                            slot_time.hour,
+                            slot_time.minute,
+                            0,
+                            tzinfo=COLOMBO_TZ,
                         )
 
                     records.append(
@@ -153,7 +162,9 @@ class PucslDispatchParser:
         finally:
             wb.close()
 
-    def parse_all_sheets(self, file_path: Path, max_sheets: int | None = None) -> list[DispatchIntervalRecord]:
+    def parse_all_sheets(
+        self, file_path: Path, max_sheets: int | None = None
+    ) -> list[DispatchIntervalRecord]:
         """Parse all daily sheets in the workbook (optionally limited to max_sheets)."""
         sheet_names = self.get_sheet_names(file_path)
         if max_sheets:

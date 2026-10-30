@@ -10,6 +10,7 @@ Executes:
 6. Representative EXPLAIN (ANALYZE, BUFFERS) plans inside a rolled-back synthetic
    benchmark transaction on sl_grid_warehouse_test (leaving 0 synthetic rows persisted)
 """
+
 from __future__ import annotations
 
 import json
@@ -31,7 +32,9 @@ def run_verification() -> dict[str, Any]:
     seeder = ReferenceSeeder()
 
     # Step 1: Clean reset of primary database & apply all 17 migrations from empty state
-    rollback_sql = Path("database/migrations/rollbacks/rollback_all_phase1.sql").read_text(encoding="utf-8")
+    rollback_sql = Path("database/migrations/rollbacks/rollback_all_phase1.sql").read_text(
+        encoding="utf-8"
+    )
     with get_connection(primary_cfg, autocommit=True) as conn:
         with conn.cursor() as cur:
             cur.execute("SHOW server_version;")
@@ -57,7 +60,9 @@ def run_verification() -> dict[str, Any]:
                 raise RuntimeError(f"Seed idempotency mismatch: {counts_pass_1} vs {counts_pass_2}")
 
             # Step 3: Execute SQL catalog assertion suite
-            assertions_sql = Path("database/tests/phase1_sql_assertions.sql").read_text(encoding="utf-8")
+            assertions_sql = Path("database/tests/phase1_sql_assertions.sql").read_text(
+                encoding="utf-8"
+            )
             # pyrefly: ignore[no-matching-overload]
             cur.execute(assertions_sql)
 
@@ -206,7 +211,9 @@ def _capture_explain_analyze_plans(test_cfg: DatabaseConfig) -> dict[str, list[s
     with get_connection(test_cfg, autocommit=False) as conn:
         try:
             with conn.cursor() as cur:
-                cur.execute("SELECT source_system_id FROM raw.source_system WHERE source_code = 'PUCSL';")
+                cur.execute(
+                    "SELECT source_system_id FROM raw.source_system WHERE source_code = 'PUCSL';"
+                )
                 sys_id = int(cur.fetchone()[0])  # type: ignore[index]
                 cur.execute(
                     """
@@ -309,4 +316,3 @@ if __name__ == "__main__":
     summary = run_verification()
     print(json.dumps(summary, indent=2))
     sys.exit(0)
-

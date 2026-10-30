@@ -5,6 +5,7 @@ Extracts:
 2. Plant-by-plant dispatch and capacity parameters from Table 2
 3. System day/night peak demands (MW)
 """
+
 from __future__ import annotations
 
 import re
@@ -119,7 +120,9 @@ class PucslPdfParser:
                         in_daily = False
                         break
                     if in_daily:
-                        m = re.match(r"^([A-Za-z0-9\s\(\)\+\-\*]+?)\s+([\d,]+(?:\.\d+)?)$", line.strip())
+                        m = re.match(
+                            r"^([A-Za-z0-9\s\(\)\+\-\*]+?)\s+([\d,]+(?:\.\d+)?)$", line.strip()
+                        )
                         if m:
                             cat = m.group(1).strip()
                             val = self._clean_numeric(m.group(2))

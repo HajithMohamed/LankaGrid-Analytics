@@ -1,6 +1,7 @@
 """
 PostgreSQL 18 connection management using psycopg v3.
 """
+
 from __future__ import annotations
 
 from collections.abc import Iterator
