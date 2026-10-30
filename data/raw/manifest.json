@@ -1,38 +1,67 @@
 {
   "version": "1.0",
-  "project": "National Electricity Grid Analytics Data Warehouse — Sri Lanka",
-  "generated_at": "2026-10-29T10:00:00+05:30",
+  "project": "National Electricity Grid Analytics Data Warehouse \u2014 Sri Lanka",
+  "generated_at": "2026-10-30T11:51:41.726320+00:00",
   "primary_year": 2024,
   "sources": [
     {
-      "source_id": "PUCSL-GEN-2024-01-15",
-      "provider": "PUCSL",
-      "title": "Daily Generation and Dispatch Report - 15 January 2024",
-      "source_url": "https://www.pucsl.gov.lk/wp-content/uploads/2024/01/Daily-Generation-Report-15-01-2024.pdf",
-      "original_filename": "Daily-Generation-Report-15-01-2024.pdf",
-      "local_path": "data/raw/pucsl/2024/Daily-Generation-Report-15-01-2024.pdf",
-      "reporting_period": "2024-01-15",
-      "file_format": "PDF",
-      "sha256_checksum": "PENDING_ACQUISITION",
-      "time_zone": "Asia/Colombo",
-      "data_granularity": "Daily Station Total & 15-Minute Dispatch",
-      "units": ["MW", "MWh", "GWh"],
-      "status": "catalogued_pending_download"
-    },
-    {
-      "source_id": "CEB-STAT-DIGEST-2023-2024",
+      "source_id": "CEB-STAT-DIGEST-2024",
       "provider": "CEB",
-      "title": "CEB Statistical Digest Monthly & Annual Operational Summary",
-      "source_url": "https://ceb.lk/publication-types/statistical-digest/en",
-      "original_filename": "CEB_Statistical_Digest_2023_2024.pdf",
-      "local_path": "data/raw/ceb/2024/CEB_Statistical_Digest_2023_2024.pdf",
-      "reporting_period": "2023-2024",
+      "title": "CEB Statistical Digest 2024 Operational and Commercial Summary",
+      "source_url": "https://ceb.lk/front_img/img_reports/1751344341Statistical_Digest_2024.pdf",
+      "original_filename": "Statistical_Digest_2024.pdf",
+      "local_path": "data/raw/ceb/2024/Statistical_Digest_2024.pdf",
+      "reporting_period": "2024-01-01 to 2024-12-31",
       "file_format": "PDF",
-      "sha256_checksum": "PENDING_ACQUISITION",
+      "file_size_bytes": 675770,
+      "sha256_checksum": "b0af3107c2eb4847e1b67cc7487e960f8c05e5d4501d0138b4c516e479d6905b",
       "time_zone": "Asia/Colombo",
       "data_granularity": "Monthly Provincial & Tariff Summary",
-      "units": ["GWh", "MW", "LKR/kWh", "%"],
-      "status": "catalogued_pending_download"
+      "units": [
+        "GWh",
+        "MW",
+        "LKR/kWh",
+        "%"
+      ],
+      "status": "DOWNLOADED_VERIFIED"
+    },
+    {
+      "source_id": "PUCSL-DISPATCH-15MIN-2024-03",
+      "provider": "PUCSL",
+      "title": "PUCSL Daily 15-Minute Generation Dispatch Curves - March 2024",
+      "source_url": "https://www.pucsl.gov.lk/wp-content/uploads/2024/04/15-Minutes-Report-31-Mar2024.xlsx",
+      "original_filename": "15-Minutes-Report-31-Mar2024.xlsx",
+      "local_path": "data/raw/pucsl/2024/15-Minutes-Report-31-Mar2024.xlsx",
+      "reporting_period": "2024-03-01 to 2024-03-31",
+      "file_format": "XLSX",
+      "file_size_bytes": 917216,
+      "sha256_checksum": "d40c7d9b11293e2c42c45227c4d121854e90781c3586bf204780d73fb282573b",
+      "time_zone": "Asia/Colombo",
+      "data_granularity": "15-Minute Interval Station Dispatch",
+      "units": [
+        "MW"
+      ],
+      "status": "DOWNLOADED_VERIFIED"
+    },
+    {
+      "source_id": "PUCSL-GEN-DAILY-2024-12-29",
+      "provider": "PUCSL",
+      "title": "PUCSL Daily Generation and Dispatch Report - 29 December 2024",
+      "source_url": "https://www.pucsl.gov.lk/wp-content/uploads/2024/12/Generation-Report-29th-Dec.pdf",
+      "original_filename": "Generation-Report-29th-Dec.pdf",
+      "local_path": "data/raw/pucsl/2024/Generation-Report-29th-Dec-2024.pdf",
+      "reporting_period": "2024-12-29",
+      "file_format": "PDF",
+      "file_size_bytes": 808269,
+      "sha256_checksum": "bb10974c344b80f8795c4150153a6f2a823702cd81fade3d72899886a237ee3e",
+      "time_zone": "Asia/Colombo",
+      "data_granularity": "Daily Station Total & Operating Regime",
+      "units": [
+        "MW",
+        "MWh",
+        "GWh"
+      ],
+      "status": "DOWNLOADED_VERIFIED"
     },
     {
       "source_id": "NASA-POWER-DAILY-2024",
@@ -41,13 +70,20 @@
       "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
       "original_filename": "nasa_power_sl_nodes_2024.json",
       "local_path": "data/raw/nasa/2024/nasa_power_sl_nodes_2024.json",
-      "reporting_period": "2024-01-01 to 2024-12-31",
+      "reporting_period": "2024-01-01 to 2024-01-31",
       "file_format": "JSON",
-      "sha256_checksum": "PENDING_ACQUISITION",
+      "file_size_bytes": 14177,
+      "sha256_checksum": "9574ed078fa4941c0e5cf1ec7a261448c0d7d90b042734a6b153066972d1be8b",
       "time_zone": "UTC+05:30",
       "data_granularity": "Daily Point Observations",
-      "units": ["kW/m2", "MJ/m2/day", "C", "%", "m/s", "mm/day"],
-      "status": "catalogued_pending_download"
+      "units": [
+        "kW-hr/m^2/day",
+        "C",
+        "%",
+        "m/s",
+        "mm/day"
+      ],
+      "status": "DOWNLOADED_VERIFIED"
     }
   ]
 }
