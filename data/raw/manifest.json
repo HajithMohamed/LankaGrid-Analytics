@@ -13,12 +13,11 @@
       "local_path": "data/raw/pucsl/2024/Daily-Generation-Report-15-01-2024.pdf",
       "reporting_period": "2024-01-15",
       "file_format": "PDF",
-      "file_size_bytes": 284192,
-      "sha256_checksum": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sha256_checksum": "PENDING_ACQUISITION",
       "time_zone": "Asia/Colombo",
       "data_granularity": "Daily Station Total & 15-Minute Dispatch",
       "units": ["MW", "MWh", "GWh"],
-      "status": "verified_sample"
+      "status": "catalogued_pending_download"
     },
     {
       "source_id": "CEB-STAT-DIGEST-2023-2024",
@@ -29,12 +28,11 @@
       "local_path": "data/raw/ceb/2024/CEB_Statistical_Digest_2023_2024.pdf",
       "reporting_period": "2023-2024",
       "file_format": "PDF",
-      "file_size_bytes": 1048576,
-      "sha256_checksum": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce",
+      "sha256_checksum": "PENDING_ACQUISITION",
       "time_zone": "Asia/Colombo",
       "data_granularity": "Monthly Provincial & Tariff Summary",
       "units": ["GWh", "MW", "LKR/kWh", "%"],
-      "status": "verified_sample"
+      "status": "catalogued_pending_download"
     },
     {
       "source_id": "NASA-POWER-DAILY-2024",
@@ -45,12 +43,11 @@
       "local_path": "data/raw/nasa/2024/nasa_power_sl_nodes_2024.json",
       "reporting_period": "2024-01-01 to 2024-12-31",
       "file_format": "JSON",
-      "file_size_bytes": 524288,
-      "sha256_checksum": "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a",
+      "sha256_checksum": "PENDING_ACQUISITION",
       "time_zone": "UTC+05:30",
       "data_granularity": "Daily Point Observations",
       "units": ["kW/m2", "MJ/m2/day", "C", "%", "m/s", "mm/day"],
-      "status": "verified_sample"
+      "status": "catalogued_pending_download"
     }
   ]
 }

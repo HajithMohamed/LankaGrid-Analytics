@@ -2,6 +2,7 @@
 Integration tests for PostgreSQL connectivity, failure handling, and connection pool behavior.
 """
 import pytest
+
 from src.common.config import DatabaseConfig
 from src.common.db import get_connection, test_connection
 

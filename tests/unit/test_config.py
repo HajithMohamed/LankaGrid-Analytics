@@ -1,9 +1,9 @@
 """
 Unit tests for application configuration and environment variables.
 """
-import os
 import pytest
-from src.common.config import DatabaseConfig, AppConfig, get_config
+
+from src.common.config import DatabaseConfig, get_config
 
 
 @pytest.mark.unit

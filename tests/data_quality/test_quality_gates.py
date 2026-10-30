@@ -2,9 +2,11 @@
 Data quality assertions and quarantine testing.
 """
 from pathlib import Path
-import pytest
+
 # pyrefly: ignore[missing-source-for-stubs]
 import pandas as pd
+import pytest
+
 from src.validation.quality_gates import evaluate_generation_quality_gate
 
 
