@@ -46,3 +46,4 @@ Implemented in [seed_reference.py](file:///c:/Fullstack%20development%20course/D
 # Re-run to verify strict idempotency (ON CONFLICT DO UPDATE -> zero duplicate rows)
 .\.venv\Scripts\pytest.exe tests/integration/test_phase1_seeding.py
 ```
+

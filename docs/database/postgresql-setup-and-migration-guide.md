@@ -62,3 +62,4 @@ PostgreSQL does **not** use MySQL `CREATE EVENT` syntax. Recurring maintenance j
   docker exec sl_grid_warehouse_db psql -U grid_admin -d sl_grid_warehouse -c "CALL etl.sp_refresh_mart_views(TRUE);"
   ```
 - **Optional `pg_cron` Extension**: Check availability via `SELECT etl.fn_detect_pg_cron_available();`. On custom PostgreSQL images with `shared_preload_libraries = 'pg_cron'`, jobs in `etl.scheduled_job_registry` map directly to `cron.schedule(job_code, cron_schedule, sql_command)`.
+

@@ -112,3 +112,4 @@ def get_config(use_test_db: bool = False) -> AppConfig:
         fixtures_dir=Path(os.getenv("DATA_FIXTURES_DIR", "tests/fixtures")),
         database=DatabaseConfig.from_env(use_test_db=use_test_db),
     )
+

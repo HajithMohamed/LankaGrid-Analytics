@@ -22,3 +22,4 @@ VALUES
     ('QUARTERLY', 'Calendar Quarter', NULL, 90, 92, FALSE, 'Three-month calendar quarter aggregate.'),
     ('ANNUAL', 'Calendar Year', NULL, 365, 366, FALSE, 'Full calendar year (Jan 1 to Dec 31) total or year-end snapshot.')
 ON CONFLICT (period_type_code) DO NOTHING;
+

@@ -94,3 +94,4 @@ The warehouse implements a **centralized analytical data warehouse using a Kimba
 3. **Milestone 3**: Implement SQL migrations `002`–`017` and idempotent reference seed framework (`database/seeds/` & `scripts/seed_reference.py`).
 4. **Milestone 4**: Execute clean PostgreSQL 18 verification, idempotent re-seeding, transactional commit/rollback fixtures, `EXPLAIN (ANALYZE, BUFFERS)` benchmarks, and role privilege checks.
 5. **Milestone 5**: Generate all 17 Phase 1 documentation deliverables (`docs/architecture/`, `docs/database/`, `docs/data_sources/`, `docs/testing/`) and commit cleanly to `feature/phase-1-warehouse-database`.
+

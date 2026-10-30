@@ -129,3 +129,4 @@ def test_transactional_batch_commit_idempotency_and_rollback(
                 assert audit_row[1] is not None
     finally:
         loader.cleanup_synthetic_documents([doc_code_ok, doc_code_fail])
+

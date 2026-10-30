@@ -79,3 +79,4 @@ This document defines the exact end-to-end lineage from official upstream public
 | Upstream Source & Field | Staging Column (`staging.stg_published_statistic`) | Reference Lookup | Warehouse Target (`dw.fact_published_metric`) |
 |---|---|---|---|
 | Headline Digest Summary (e.g., System Loss `%`, Annual Peak `MW`, Total Gross `GWh`) | `metric_code`, `parsed_published_value`, `published_unit_code`, `publication_table_ref` | `dw.dim_metric` + `etl.fn_convert_unit` where applicable | `standardized_value`, `published_value`, `is_standalone_published_aggregate=TRUE` |
+

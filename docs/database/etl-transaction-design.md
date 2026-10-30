@@ -39,3 +39,4 @@ Tested in [test_phase1_etl_transactions.py](file:///c:/Fullstack%20development%2
 2. **Audit Evidence Survival**: Because `Boundary A` and `Boundary C` commit independently on an `autocommit=True` connection outside `Boundary B`, `audit.etl_run` retains `run_status = 'ROLLED_BACK'` and the exact PostgreSQL constraint diagnostic message.
 3. **Strict Re-Execution Idempotency**: Re-running the same valid batch hits `ON CONFLICT ON CONSTRAINT uq_fact_generation_period_grain DO UPDATE`, updating timestamps/run IDs cleanly with zero duplicate fact rows.
 4. **Concurrent MV Refresh Boundary**: `CALL etl.sp_refresh_mart_views(TRUE)` executes on a top-level `autocommit=True` session after `Boundary B` commits, satisfying PostgreSQL's requirement that `REFRESH MATERIALIZED VIEW CONCURRENTLY` run outside explicit multi-statement transaction blocks.
+

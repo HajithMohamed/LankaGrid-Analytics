@@ -163,6 +163,7 @@ class MigrationRunner:
                 start_ns = time.perf_counter_ns()
                 with conn.transaction():
                     with conn.cursor() as cur:
+                        # pyrefly: ignore[no-matching-overload]
                         cur.execute(sql_text)
                         elapsed_ms = int((time.perf_counter_ns() - start_ns) / 1_000_000)
                         cur.execute(

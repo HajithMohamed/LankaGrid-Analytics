@@ -276,3 +276,4 @@ class TransactionalGenerationBatchLoader:
                     cur.execute("DELETE FROM raw.extracted_record WHERE source_document_id = ANY(%s);", (doc_ids,))
                     cur.execute("DELETE FROM raw.ingestion_batch WHERE source_document_id = ANY(%s);", (doc_ids,))
                     cur.execute("DELETE FROM raw.source_document WHERE source_document_id = ANY(%s);", (doc_ids,))
+

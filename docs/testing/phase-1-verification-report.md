@@ -186,3 +186,4 @@ Execution Time: 1.770 ms
 | 12 | No source measurements are fabricated | **MET** | All 6 `dw.fact_*` tables contain **`0` rows** in `sl_grid_warehouse`; `manifest.json` honestly marks files `catalogued_pending_download`. |
 | 13 | All database diagrams and data dictionaries are complete | **MET** | `40` tables / `514` columns documented in [data-dictionary.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/database/data-dictionary.md) + ERDs in [erd-fact-constellation.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/database/erd-fact-constellation.md). |
 | 14 | Real-source loading path is defined and ready for Phase 2 | **MET** | End-to-end `raw` → `staging` → `etl.sp_validate_*` → `etl.sp_load_*` / [batch_loader.py](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/src/etl/batch_loader.py) → `dw` → `mart` path verified. |
+

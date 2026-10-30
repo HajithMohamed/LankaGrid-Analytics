@@ -36,6 +36,7 @@ def run_verification() -> dict[str, Any]:
         with conn.cursor() as cur:
             cur.execute("SHOW server_version;")
             pg_version = str(cur.fetchone()[0])  # type: ignore[index]
+            # pyrefly: ignore[no-matching-overload]
             cur.execute(rollback_sql)
 
     applied_initial = runner.apply_migrations(primary_cfg)
@@ -57,6 +58,7 @@ def run_verification() -> dict[str, Any]:
 
             # Step 3: Execute SQL catalog assertion suite
             assertions_sql = Path("database/tests/phase1_sql_assertions.sql").read_text(encoding="utf-8")
+            # pyrefly: ignore[no-matching-overload]
             cur.execute(assertions_sql)
 
             # Step 4: Collect complete object inventory & role privileges
@@ -307,3 +309,4 @@ if __name__ == "__main__":
     summary = run_verification()
     print(json.dumps(summary, indent=2))
     sys.exit(0)
+

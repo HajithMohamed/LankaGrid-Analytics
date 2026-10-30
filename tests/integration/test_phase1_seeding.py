@@ -79,3 +79,4 @@ def test_reference_seeding_idempotency_and_zero_fabricated_facts(
                     f"Non-idempotent seed detected on {tbl}: "
                     f"before={counts_before[tbl]}, after={cnt_after}"
                 )
+

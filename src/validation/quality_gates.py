@@ -70,3 +70,4 @@ def evaluate_generation_quality_gate(
         "missing_cells_count": missing_report["missing_cells_count"],
     }
     return clean_df, quarantine_df, metrics
+

@@ -82,3 +82,4 @@ def test_reference_definitions_completeness_and_sri_lanka_bounds() -> None:
     for loc in WEATHER_LOCATIONS:
         assert 5.8 <= loc["latitude_deg"] <= 10.0
         assert 79.4 <= loc["longitude_deg"] <= 82.0
+

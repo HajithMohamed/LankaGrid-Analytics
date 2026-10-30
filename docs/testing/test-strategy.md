@@ -58,3 +58,4 @@ Executed against `sl_grid_warehouse_test` running on Docker (`postgres:18-alpine
 .\.venv\Scripts\ruff.exe check src scripts tests
 .\.venv\Scripts\mypy.exe src scripts
 ```
+

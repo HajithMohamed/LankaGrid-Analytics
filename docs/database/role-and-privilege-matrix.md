@@ -34,3 +34,4 @@ Implemented in [016_roles_and_privileges.sql](file:///c:/Fullstack%20development
 Verified by `test_least_privilege_database_roles` in [test_phase1_advanced_objects.py](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/tests/integration/test_phase1_advanced_objects.py):
 - `grid_analyst` succeeds on `SELECT` from `dw.dim_energy_source`, `mart.vw_generation_by_energy_source`, and `mart.mv_monthly_generation_summary`, and raises `psycopg.errors.InsufficientPrivilege` on `DELETE FROM dw.dim_energy_source` and `DELETE FROM dw.fact_generation_period`.
 - `grid_etl` raises `psycopg.errors.InsufficientPrivilege` when attempting `DROP TABLE dw.fact_capacity_period`.
+

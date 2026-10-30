@@ -119,3 +119,4 @@ The Kimball Bus Matrix maps the six analytical business processes in schema `dw`
 | Sum `fact_dispatch_interval.active_power_mw` across 96 daily intervals | **NO** | Summing instantaneous `MW` over 96 intervals inflates energy by $4\times$; integrate via $\sum (\text{MW} \times 0.25\text{ h}) = \text{MWh}$. |
 | Sum `fact_capacity_period.installed_capacity_mw` across 12 months | **NO** | Capacity is a semi-additive stock measure, not a flow measure. |
 | Sum `fact_published_metric` with `fact_generation_period` or `fact_dispatch_interval` | **NO** | `fact_published_metric` stores headline aggregates already summarizing plant/interval operations. |
+

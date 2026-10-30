@@ -25,3 +25,4 @@ def wait_for_database(max_attempts: int = 30, delay_seconds: float = 1.0) -> boo
 
 if __name__ == "__main__":
     sys.exit(0 if wait_for_database() else 1)
+

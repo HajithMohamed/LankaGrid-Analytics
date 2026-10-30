@@ -221,3 +221,4 @@ erDiagram
     REF_UNIT ||--o{ REF_UNIT_CONVERSION : converts
     REF_REPORTING_PERIOD_TYPE ||--o{ REF_SOURCE_PRECEDENCE : scopes
 ```
+

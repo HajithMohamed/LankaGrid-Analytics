@@ -22,3 +22,4 @@ Forcing all measurements into a single denormalized table or a single star schem
 ## Consequences
 - **Positive**: Eliminates mixed-grain summation hazards, preserves full `raw -> staging -> dw` lineage, supports sub-2ms partition-pruned dispatch lookups, and enforces least-privilege security (`grid_admin`, `grid_etl`, `grid_analyst`).
 - **Trade-offs**: Requires ETL loaders ([batch_loader.py](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/src/etl/batch_loader.py) and [012_procedures.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/012_procedures.sql)) to resolve conformed surrogate keys and respect `period_type_code` and `is_current_revision` predicates.
+

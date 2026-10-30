@@ -125,3 +125,4 @@ class ManifestValidator:
             for chunk in iter(lambda: handle.read(65536), b""):
                 hasher.update(chunk)
         return hasher.hexdigest()
+

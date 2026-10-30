@@ -42,3 +42,4 @@ Every issue recorded in `audit.data_quality_issue` transitions through four cont
    - **Monthly & Annual Generation, Provincial/Tariff Sales & Revenue**: `CEB` (Statistical Digest) is rank 1.
    - **Daily Meteorology**: `NASA_POWER` is rank 1.
 3. **Both Values Preserved**: Neither source record is deleted or overwritten; variances above threshold are surfaced in `mart.vw_conflicting_source_metrics` as `CONFLICT_FLAGGED`.
+

@@ -70,3 +70,4 @@ Planning Time: 2.366 ms
 Execution Time: 1.449 ms
 ```
 **Key Observation**: PostgreSQL 18 pruned partitions `y2023`, `y2025`, `y2026`, and `default` at plan time, executed a single B-Tree `Index Scan` (`Index Searches: 1`) on `fact_dispatch_interval_y2024`, and completed in **1.449 ms** (`< 200 ms` target).
+

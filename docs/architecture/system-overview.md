@@ -98,3 +98,4 @@ Implemented in [001_bootstrap.sql](file:///c:/Fullstack%20development%20course/D
   - [dimensional-bus-matrix.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/architecture/dimensional-bus-matrix.md)
   - [erd-fact-constellation.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/database/erd-fact-constellation.md)
   - [data-dictionary.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/database/data-dictionary.md)
+

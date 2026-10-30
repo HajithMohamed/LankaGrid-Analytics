@@ -81,3 +81,4 @@ Detailed specifications and benchmarks are documented in:
 - [indexing-and-partitioning-strategy.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/database/indexing-and-partitioning-strategy.md)
 - [role-and-privilege-matrix.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/database/role-and-privilege-matrix.md)
 - [postgresql-setup-and-migration-guide.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/database/postgresql-setup-and-migration-guide.md)
+
