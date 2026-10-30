@@ -263,13 +263,9 @@ BEGIN
             is_current_revision = TRUE,
             etl_run_id = EXCLUDED.etl_run_id,
             loaded_at = CURRENT_TIMESTAMP
-        RETURNING dispatch_fact_id, (xmax = 0) INTO v_fact_id, v_was_inserted;
+        RETURNING dispatch_fact_id INTO v_fact_id;
 
-        IF v_was_inserted THEN
-            p_inserted_count := p_inserted_count + 1;
-        ELSE
-            p_updated_count := p_updated_count + 1;
-        END IF;
+        p_inserted_count := p_inserted_count + 1;
 
         INSERT INTO audit.record_lineage (
             etl_run_id,
@@ -603,7 +599,15 @@ BEGIN
           FROM dw.dim_consumption_sector dcs
          WHERE UPPER(dcs.sector_name) = UPPER(BTRIM(rec.raw_sector_name))
             OR UPPER(dcs.sector_code) = UPPER(BTRIM(rec.raw_sector_name))
-            OR UPPER(dcs.tariff_group) = UPPER(BTRIM(rec.raw_sector_name));
+            OR UPPER(dcs.tariff_group) = UPPER(BTRIM(rec.raw_sector_name))
+            OR (UPPER(rec.raw_sector_name) LIKE 'GENERAL PURPOSE%' AND dcs.sector_code = 'GENERAL_PURPOSE')
+            OR (UPPER(rec.raw_sector_name) LIKE 'HOTEL%' AND dcs.sector_code = 'HOTEL')
+            OR (UPPER(rec.raw_sector_name) LIKE 'INDUSTRIAL%' AND dcs.sector_code = 'INDUSTRIAL')
+            OR (UPPER(rec.raw_sector_name) LIKE 'GOVERNMENT%' AND dcs.sector_code = 'GOVERNMENT')
+            OR (UPPER(rec.raw_sector_name) LIKE 'STREET LIGHT%' AND dcs.sector_code = 'STREET_LIGHTING')
+            OR (UPPER(rec.raw_sector_name) LIKE 'AGRICULTURE%' AND dcs.sector_code = 'AGRICULTURE')
+            OR (UPPER(rec.raw_sector_name) = 'TOTAL' AND dcs.sector_code = 'ALL_SECTORS')
+         LIMIT 1;
 
         IF v_sector_key IS NULL THEN
             v_has_error := TRUE;
@@ -691,7 +695,15 @@ BEGIN
           FROM dw.dim_consumption_sector dcs
          WHERE UPPER(dcs.sector_name) = UPPER(BTRIM(rec.raw_sector_name))
             OR UPPER(dcs.sector_code) = UPPER(BTRIM(rec.raw_sector_name))
-            OR UPPER(dcs.tariff_group) = UPPER(BTRIM(rec.raw_sector_name));
+            OR UPPER(dcs.tariff_group) = UPPER(BTRIM(rec.raw_sector_name))
+            OR (UPPER(rec.raw_sector_name) LIKE 'GENERAL PURPOSE%' AND dcs.sector_code = 'GENERAL_PURPOSE')
+            OR (UPPER(rec.raw_sector_name) LIKE 'HOTEL%' AND dcs.sector_code = 'HOTEL')
+            OR (UPPER(rec.raw_sector_name) LIKE 'INDUSTRIAL%' AND dcs.sector_code = 'INDUSTRIAL')
+            OR (UPPER(rec.raw_sector_name) LIKE 'GOVERNMENT%' AND dcs.sector_code = 'GOVERNMENT')
+            OR (UPPER(rec.raw_sector_name) LIKE 'STREET LIGHT%' AND dcs.sector_code = 'STREET_LIGHTING')
+            OR (UPPER(rec.raw_sector_name) LIKE 'AGRICULTURE%' AND dcs.sector_code = 'AGRICULTURE')
+            OR (UPPER(rec.raw_sector_name) = 'TOTAL' AND dcs.sector_code = 'ALL_SECTORS')
+         LIMIT 1;
 
         -- Resolve metric
         SELECT dm.metric_key
@@ -725,7 +737,7 @@ BEGIN
             consumer_account_count,
             revenue_lkr,
             reported_energy_value,
-            reported_unit_code,
+            reported_energy_unit_code,
             is_current_revision,
             source_document_id,
             raw_record_id,
@@ -755,17 +767,13 @@ BEGIN
             consumer_account_count = EXCLUDED.consumer_account_count,
             revenue_lkr = EXCLUDED.revenue_lkr,
             reported_energy_value = EXCLUDED.reported_energy_value,
-            reported_unit_code = EXCLUDED.reported_unit_code,
+            reported_energy_unit_code = EXCLUDED.reported_energy_unit_code,
             is_current_revision = TRUE,
             etl_run_id = EXCLUDED.etl_run_id,
             loaded_at = CURRENT_TIMESTAMP
-        RETURNING sales_fact_id, (xmax = 0) INTO v_fact_id, v_was_inserted;
+        RETURNING sales_fact_id INTO v_fact_id;
 
-        IF v_was_inserted THEN
-            p_inserted_count := p_inserted_count + 1;
-        ELSE
-            p_updated_count := p_updated_count + 1;
-        END IF;
+        p_inserted_count := p_inserted_count + 1;
 
         INSERT INTO audit.record_lineage (
             etl_run_id,
