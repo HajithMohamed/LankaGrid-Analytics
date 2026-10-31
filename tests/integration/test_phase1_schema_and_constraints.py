@@ -338,7 +338,7 @@ def test_missing_weather_sentinel_preserved_as_null_and_duplicate_prevented(
                             original_reported_value, original_unit_code, missing_value_code,
                             is_missing, source_document_id, raw_record_id, etl_run_id
                         ) VALUES (
-                            20240115, %s, %s, %s, 'ALLSKY_SFC_SW_DWN',
+                            20250115, %s, %s, %s, 'ALLSKY_SFC_SW_DWN',
                             0.0, 'MJ/m2/day', -999.0, 'MJ/m2/day', '-999.0',
                             TRUE, %s, %s, %s
                         );
@@ -356,7 +356,7 @@ def test_missing_weather_sentinel_preserved_as_null_and_duplicate_prevented(
                         original_reported_value, original_unit_code, missing_value_code,
                         is_missing, source_document_id, raw_record_id, etl_run_id
                     ) VALUES (
-                        20240115, %s, %s, %s, 'ALLSKY_SFC_SW_DWN',
+                        20250115, %s, %s, %s, 'ALLSKY_SFC_SW_DWN',
                         NULL, 'MJ/m2/day', NULL, 'MJ/m2/day', '-999.0',
                         TRUE, %s, %s, %s
                     );
@@ -375,7 +375,7 @@ def test_missing_weather_sentinel_preserved_as_null_and_duplicate_prevented(
                             original_reported_value, original_unit_code,
                             is_missing, source_document_id, raw_record_id, etl_run_id
                         ) VALUES (
-                            20240115, %s, %s, %s, 'ALLSKY_SFC_SW_DWN',
+                            20250115, %s, %s, %s, 'ALLSKY_SFC_SW_DWN',
                             18.5, 'MJ/m2/day', 18.5, 'MJ/m2/day',
                             FALSE, %s, %s, %s
                         );

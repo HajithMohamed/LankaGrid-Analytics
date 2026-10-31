@@ -296,7 +296,9 @@ class RealDataWarehouseLoader:
             try:
                 with conn.transaction():
                     with conn.cursor() as cur:
-                        for _idx, rec in enumerate(all_records, start=1):
+                        raw_rows = []
+                        stg_rows = []
+                        for rec in all_records:
                             row_loc = f"{rec.sheet_name}:r{rec.row_index}:c{rec.column_index}"
                             payload_json = json.dumps(
                                 {
@@ -307,50 +309,67 @@ class RealDataWarehouseLoader:
                                     "power_mw": rec.power_mw,
                                 }
                             )
-                            cur.execute(
-                                """
-                                INSERT INTO raw.extracted_record (
-                                    batch_id, source_document_id, source_row_locator, raw_payload, content_sha256
-                                ) VALUES (%s, %s, %s, %s::jsonb, %s)
-                                ON CONFLICT (batch_id, source_row_locator) DO UPDATE SET raw_payload = EXCLUDED.raw_payload
-                                RETURNING raw_record_id;
-                                """,
+                            raw_rows.append(
                                 (
                                     batch_id,
                                     doc_id,
                                     row_loc,
                                     payload_json,
                                     hashlib.sha256(payload_json.encode("utf-8")).hexdigest(),
-                                ),
+                                )
                             )
-                            raw_rec_id = _fetch_scalar(cur)
-
-                            cur.execute(
-                                """
-                                INSERT INTO staging.stg_dispatch_observation (
-                                    batch_id, source_document_id, raw_record_id, source_code,
-                                    raw_entity_name, raw_timestamp_text, parsed_timestamp,
-                                    interval_duration_minutes, raw_power_text, parsed_power_mw,
-                                    reported_unit_code, metric_code, dataset_revision, validation_status
-                                ) VALUES (
-                                    %s, %s, %s, 'PUCSL',
-                                    %s, %s, %s,
-                                    15, %s, %s,
-                                    'MW', 'PLANT_DISPATCH_MW', %s, 'pending'
-                                );
-                                """,
+                            stg_rows.append(
                                 (
                                     batch_id,
                                     doc_id,
-                                    raw_rec_id,
                                     rec.raw_entity_name,
                                     rec.observation_timestamp.isoformat(),
                                     rec.observation_timestamp,
                                     str(rec.power_mw),
                                     rec.power_mw,
                                     revision,
-                                ),
+                                )
                             )
+
+                        cur.executemany(
+                            """
+                            INSERT INTO raw.extracted_record (
+                                batch_id, source_document_id, source_row_locator, raw_payload, content_sha256
+                            ) VALUES (%s, %s, %s, %s::jsonb, %s)
+                            ON CONFLICT (batch_id, source_row_locator) DO UPDATE SET raw_payload = EXCLUDED.raw_payload;
+                            """,
+                            raw_rows,
+                        )
+
+                        cur.executemany(
+                            """
+                            INSERT INTO staging.stg_dispatch_observation (
+                                batch_id, source_document_id, source_code,
+                                raw_entity_name, raw_timestamp_text, parsed_timestamp,
+                                interval_duration_minutes, raw_power_text, parsed_power_mw,
+                                reported_unit_code, metric_code, dataset_revision, validation_status
+                            ) VALUES (
+                                %s, %s, 'PUCSL',
+                                %s, %s, %s,
+                                15, %s, %s,
+                                'MW', 'PLANT_DISPATCH_MW', %s, 'pending'
+                            );
+                            """,
+                            stg_rows,
+                        )
+
+                        cur.execute(
+                            """
+                            UPDATE staging.stg_dispatch_observation stg
+                            SET raw_record_id = er.raw_record_id
+                            FROM raw.extracted_record er
+                            WHERE er.batch_id = stg.batch_id
+                              AND stg.batch_id = %s
+                              AND (er.raw_payload->>'station') = stg.raw_entity_name
+                              AND (er.raw_payload->>'timestamp') = stg.raw_timestamp_text;
+                            """,
+                            (batch_id,),
+                        )
 
                         cur.execute(
                             "CALL etl.sp_validate_staged_dispatch(%s, %s, 0, 0);",
@@ -409,7 +428,10 @@ class RealDataWarehouseLoader:
 
         first_date = records[0].observation_date
         last_date = records[-1].observation_date
-        doc_code = "NASA-POWER-DAILY-2024-M01"
+        if first_date.year != last_date.year:
+            doc_code = f"NASA-POWER-DAILY-5YR-{first_date.year}-{last_date.year}"
+        else:
+            doc_code = f"NASA-POWER-DAILY-{first_date.year}-M{first_date.month:02d}"
         batch_code = f"BATCH-{doc_code}-{revision}"
         file_sha256 = self._compute_sha256(json_path)
 
@@ -471,45 +493,24 @@ class RealDataWarehouseLoader:
             try:
                 with conn.transaction():
                     with conn.cursor() as cur:
-                        for _idx, rec in enumerate(records, start=1):
+                        raw_rows = []
+                        stg_rows = []
+                        for rec in records:
                             row_loc = f"{rec.location_code}:{rec.source_variable_name}:{rec.observation_date.isoformat()}"
                             payload_json = json.dumps(rec.__dict__, default=str)
-                            cur.execute(
-                                """
-                                INSERT INTO raw.extracted_record (
-                                    batch_id, source_document_id, source_row_locator, raw_payload, content_sha256
-                                ) VALUES (%s, %s, %s, %s::jsonb, %s)
-                                ON CONFLICT (batch_id, source_row_locator) DO UPDATE SET raw_payload = EXCLUDED.raw_payload
-                                RETURNING raw_record_id;
-                                """,
+                            raw_rows.append(
                                 (
                                     batch_id,
                                     doc_id,
                                     row_loc,
                                     payload_json,
                                     hashlib.sha256(payload_json.encode("utf-8")).hexdigest(),
-                                ),
+                                )
                             )
-                            raw_rec_id = _fetch_scalar(cur)
-
-                            cur.execute(
-                                """
-                                INSERT INTO staging.stg_weather_observation (
-                                    batch_id, source_document_id, raw_record_id, source_code,
-                                    location_code, observation_date, source_variable_name,
-                                    raw_value_text, parsed_value, original_unit_code,
-                                    missing_value_code, dataset_revision, validation_status
-                                ) VALUES (
-                                    %s, %s, %s, 'NASA_POWER',
-                                    %s, %s, %s,
-                                    %s, %s, %s,
-                                    %s, %s, 'pending'
-                                );
-                                """,
+                            stg_rows.append(
                                 (
                                     batch_id,
                                     doc_id,
-                                    raw_rec_id,
                                     rec.location_code,
                                     rec.observation_date,
                                     rec.source_variable_name,
@@ -518,8 +519,47 @@ class RealDataWarehouseLoader:
                                     rec.reported_unit_code,
                                     rec.missing_value_code,
                                     revision,
-                                ),
+                                )
                             )
+
+                        cur.executemany(
+                            """
+                            INSERT INTO raw.extracted_record (
+                                batch_id, source_document_id, source_row_locator, raw_payload, content_sha256
+                            ) VALUES (%s, %s, %s, %s::jsonb, %s)
+                            ON CONFLICT (batch_id, source_row_locator) DO UPDATE SET raw_payload = EXCLUDED.raw_payload;
+                            """,
+                            raw_rows,
+                        )
+
+                        cur.executemany(
+                            """
+                            INSERT INTO staging.stg_weather_observation (
+                                batch_id, source_document_id, source_code,
+                                location_code, observation_date, source_variable_name,
+                                raw_value_text, parsed_value, original_unit_code,
+                                missing_value_code, dataset_revision, validation_status
+                            ) VALUES (
+                                %s, %s, 'NASA_POWER',
+                                %s, %s, %s,
+                                %s, %s, %s,
+                                %s, %s, 'pending'
+                            );
+                            """,
+                            stg_rows,
+                        )
+
+                        cur.execute(
+                            """
+                            UPDATE staging.stg_weather_observation stg
+                            SET raw_record_id = er.raw_record_id
+                            FROM raw.extracted_record er
+                            WHERE er.batch_id = stg.batch_id
+                              AND er.source_row_locator = (stg.location_code || ':' || stg.source_variable_name || ':' || TO_CHAR(stg.observation_date, 'YYYY-MM-DD'))
+                              AND stg.batch_id = %s;
+                            """,
+                            (batch_id,),
+                        )
 
                         cur.execute(
                             "CALL etl.sp_validate_staged_weather(%s, %s, 0, 0);",
@@ -561,18 +601,66 @@ class RealDataWarehouseLoader:
                         )
                 raise
 
+    def load_5yr_ceb_sales(self, revision: str = "v1") -> list[BatchExecutionResult]:
+        """Load all 5 historical years of CEB billed electricity sales (2020-2024)."""
+        results: list[BatchExecutionResult] = []
+
+        # 1. 2020 from 2020 digest
+        p2020 = Path("data/raw/ceb/2020/Statistical_Digest_2020.pdf")
+        if p2020.exists():
+            results.append(
+                self.load_ceb_sales_pdf(
+                    p2020, reporting_year=2020, target_year=2020, revision=revision
+                )
+            )
+
+        # 2. 2021 and 2022 from 2022 digest
+        p2022 = Path("data/raw/ceb/2022/Statistical_Digest_2022.pdf")
+        if p2022.exists():
+            results.append(
+                self.load_ceb_sales_pdf(
+                    p2022, reporting_year=2022, target_year=2021, revision=revision
+                )
+            )
+            results.append(
+                self.load_ceb_sales_pdf(
+                    p2022, reporting_year=2022, target_year=2022, revision=revision
+                )
+            )
+
+        # 3. 2023 and 2024 from 2024 digest
+        p2024 = Path("data/raw/ceb/2024/Statistical_Digest_2024.pdf")
+        if p2024.exists():
+            results.append(
+                self.load_ceb_sales_pdf(
+                    p2024, reporting_year=2024, target_year=2023, revision=revision
+                )
+            )
+            results.append(
+                self.load_ceb_sales_pdf(
+                    p2024, reporting_year=2024, target_year=2024, revision=revision
+                )
+            )
+
+        return results
+
     def load_ceb_sales_pdf(
-        self, pdf_path: Path, reporting_year: int = 2024, revision: str = "v1"
+        self,
+        pdf_path: Path,
+        reporting_year: int = 2024,
+        revision: str = "v1",
+        target_year: int | None = None,
     ) -> BatchExecutionResult:
         """Load CEB Statistical Digest billed electricity sales into dw.fact_electricity_sales."""
-        parser = CebDigestParser(reporting_year=reporting_year)
-        tariff_records = parser.extract_tariff_sales(pdf_path)
+        effective_year = target_year if target_year is not None else reporting_year
+        parser = CebDigestParser(reporting_year=effective_year)
+        tariff_records = parser.extract_tariff_sales(pdf_path, target_year=effective_year)
         if not tariff_records:
-            raise ValueError(f"No tariff sales parsed from {pdf_path}")
+            raise ValueError(f"No tariff sales parsed from {pdf_path} for year {effective_year}")
 
-        start_date = date(reporting_year, 1, 1)
-        end_date = date(reporting_year, 12, 31)
-        doc_code = f"CEB-STAT-DIGEST-{reporting_year}"
+        start_date = date(effective_year, 1, 1)
+        end_date = date(effective_year, 12, 31)
+        doc_code = f"CEB-STAT-DIGEST-{effective_year}"
         batch_code = f"BATCH-{doc_code}-{revision}"
         file_sha256 = self._compute_sha256(pdf_path)
 

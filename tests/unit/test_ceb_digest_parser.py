@@ -64,9 +64,15 @@ def test_ceb_digest_extracts_tariff_sales(sample_ceb_pdf_path: Path):
 
     # Total granular sectors must reconcile with published national total
     granular_keys = [
-        "Domestic", "Religious", "General Purpose Total", "Hotel Total",
-        "Industrial Total", "Government Total", "Agriculture",
-        "Street Lighting(Estimate)", "Bulk Supply to LECO"
+        "Domestic",
+        "Religious",
+        "General Purpose Total",
+        "Hotel Total",
+        "Industrial Total",
+        "Government Total",
+        "Agriculture",
+        "Street Lighting(Estimate)",
+        "Bulk Supply to LECO",
     ]
     reconciled_sum = sum(tariff_dict[k] for k in granular_keys if k in tariff_dict)
     assert reconciled_sum == pytest.approx(15191.0, abs=2.0)
