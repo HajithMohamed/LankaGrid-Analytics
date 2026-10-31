@@ -1,6 +1,7 @@
 """
 Sequential PostgreSQL migration runner with SHA-256 immutability verification.
 """
+
 from __future__ import annotations
 
 import argparse

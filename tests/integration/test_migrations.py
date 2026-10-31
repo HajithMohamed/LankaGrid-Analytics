@@ -1,6 +1,7 @@
 """
 Integration tests for database migration runner and schema bootstrap.
 """
+
 from pathlib import Path
 
 import pytest

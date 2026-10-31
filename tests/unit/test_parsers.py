@@ -1,6 +1,7 @@
 """
 Unit tests for data parsers (CSV and JSON 15-minute dispatch profiles).
 """
+
 from pathlib import Path
 
 import pytest
@@ -27,4 +28,6 @@ def test_load_dispatch_15min_json():
     assert len(data["intervals"]) == 4
     first_interval = data["intervals"][0]
     assert first_interval["system_demand_mw"] == 1420.5
-    assert first_interval["thermal_mw"] + first_interval["major_hydro_mw"] + first_interval["renewable_mw"] == pytest.approx(1420.5, rel=1e-3)
+    assert first_interval["thermal_mw"] + first_interval["major_hydro_mw"] + first_interval[
+        "renewable_mw"
+    ] == pytest.approx(1420.5, rel=1e-3)

@@ -1,6 +1,7 @@
 """
 Phase 1 TDD Integration Tests for Idempotent Reference Seeding and Zero-Fabrication Policy.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -65,7 +66,9 @@ def test_reference_seeding_idempotency_and_zero_fabricated_facts(
             for fact_tbl in WAREHOUSE_FACT_TABLES:
                 cur.execute(f"SELECT COUNT(*) FROM {fact_tbl};")
                 fact_cnt = int(cur.fetchone()[0])  # type: ignore[index]
-                assert fact_cnt == 0, f"Fact table {fact_tbl} must have 0 rows after seeding, got {fact_cnt}"
+                assert fact_cnt == 0, (
+                    f"Fact table {fact_tbl} must have 0 rows after seeding, got {fact_cnt}"
+                )
 
     # Re-run seed_all() to prove strict idempotency
     seeder.seed_all(migrated_and_seeded_test_db)
@@ -79,4 +82,3 @@ def test_reference_seeding_idempotency_and_zero_fabricated_facts(
                     f"Non-idempotent seed detected on {tbl}: "
                     f"before={counts_before[tbl]}, after={cnt_after}"
                 )
-

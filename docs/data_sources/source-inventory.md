@@ -7,81 +7,88 @@
 
 ---
 
-## 1. Ceylon Electricity Board (CEB) — Statistical Digest & Annual Publications
+## 1. Ceylon Electricity Board (CEB) — Statistical Digest 2024
 
 | Field | Detail |
 |---|---|
 | **Provider** | Ceylon Electricity Board (CEB) |
-| **Official Portal URL** | [https://ceb.lk/](https://ceb.lk/) & [https://ceb.lk/publication-types/statistical-digest/en](https://ceb.lk/publication-types/statistical-digest/en) |
-| **Publication Title** | CEB Statistical Digest 2024 (and 2023 for baseline comparisons) |
-| **Reporting Period** | Monthly aggregates & Annual summary (2024) |
-| **Retrieval Date** | 2026-10-29 |
-| **File Format** | PDF / Scanned Tabular Data |
-| **Original Filename** | `CEB_Statistical_Digest_2024.pdf` |
-| **File Checksum (SHA-256)** | `Pending official full-annual release; audited 2023 baseline recorded: a72b9148d5f...` |
-| **Units & Measurements** | Peak Demand (MW), Gross & Net Generation (GWh), Sales by Tariff Category (GWh), Transmission & Distribution Loss (%), System Load Factor (%) |
-| **Data Granularity** | Monthly totals per province, station type, and consumer tariff category |
-| **Time Standard** | Sri Lanka Standard Time (UTC+05:30), aggregated by calendar month |
-| **Source Status** | Confirmed authoritative utility publication |
-| **Download & Parsing Status** | Ingestion pipeline strategy: PDF table extraction via `pdfplumber` with tabular layout bounding boxes and manual cross-checks |
+| **Official Portal URL** | [https://ceb.lk/publication-media/other-publications/en](https://ceb.lk/publication-media/other-publications/en) |
+| **Direct Download URL** | `https://ceb.lk/front_img/img_reports/1751344341Statistical_Digest_2024.pdf` |
+| **Publication Title** | CEB Statistical Digest 2024 Operational and Commercial Summary |
+| **Reporting Period** | Calendar Year 2024 (with 2023 restated baseline) |
+| **Retrieval Date** | 2026-10-30T17:21:30+05:30 |
+| **Local Immutable File** | [Statistical_Digest_2024.pdf](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/data/raw/ceb/2024/Statistical_Digest_2024.pdf) |
+| **File Checksum (SHA-256)** | `b0af3107c2eb4847e1b67cc7487e960f8c05e5d4501d0138b4c516e479d6905b` |
+| **File Size** | 675,770 bytes |
+| **Units & Measurements** | Peak Demand (MW), Installed Capacity (MW), Gross & Net Generation (GWh), Sales by Tariff (GWh), Sales by Province (GWh), Revenue (LKR Million), Loss Ratio (%) |
+| **Data Granularity** | Annual totals, monthly provincial sales, and consumer accounts by tariff class |
+| **Time Standard** | Sri Lanka Standard Time (UTC+05:30) |
+| **Source Status** | DOWNLOADED_VERIFIED |
+| **Profiling Report** | [ceb-statistical-digest-2024-profiling.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/data_sources/ceb-statistical-digest-2024-profiling.md) |
 | **Citation / Reference** | Ceylon Electricity Board, Corporate Planning Division, Colombo, Sri Lanka |
-| **Known Limitations & Challenges**| Published as PDF documents with varied layouts; scanned tables require coordinate-based boundary extraction and row reconciliation; monthly granularity lacks sub-hourly dispatch dynamics. |
 
 ---
 
-## 2. Public Utilities Commission of Sri Lanka (PUCSL) — Daily Generation & Dispatch Reports
+## 2. Public Utilities Commission of Sri Lanka (PUCSL) — 15-Minute Generation Dispatch (March 2024)
 
 | Field | Detail |
 |---|---|
 | **Provider** | Public Utilities Commission of Sri Lanka (PUCSL) / CEB System Control Centre |
 | **Official Portal URL** | [https://www.pucsl.gov.lk/daily-generation-reports-2/](https://www.pucsl.gov.lk/daily-generation-reports-2/) |
-| **Publication Title** | Daily Generation and Dispatch Report (Daily bulletin published 365 days/year) |
-| **Reporting Period** | Daily historical records throughout 2024 (e.g. 2024-01-01 to 2024-12-31) |
-| **Retrieval Date** | 2026-10-29 |
-| **File Format** | PDF containing structured data tables and dispatch load curves |
-| **Sample Filenames** | `Daily-Generation-Report-2024-01-15.pdf`, `Daily-Generation-Report-2024-07-20.pdf` |
-| **File Checksum (SHA-256)** | Recorded in `data/raw/manifest.json` per downloaded sample |
-| **Units & Measurements** | Station Generation (MWh), Peak Capacity (MW), Reservoir Water Levels / Storage (MCM & GWh equivalent), 15-minute dispatch profiles (MW) |
-| **Data Granularity** | 15-minute intervals for system total dispatch; daily totals per individual thermal, major hydro, mini-hydro, solar, and wind plant |
-| **Time Standard** | Sri Lanka Standard Time (UTC+05:30), 15-minute discrete time steps (00:00 to 23:45) |
-| **Source Status** | Operational public regulatory release |
-| **Download & Parsing Status** | Representative sample acquired; parser validated against tabular structure in `tests/unit/test_parsers.py` |
-| **Citation / Reference** | PUCSL Electricity Sector Directorate & CEB System Control Centre Daily Dispatch Reports |
-| **Known Limitations & Challenges**| Table layout variations between weekday and weekend reports; minor plant name spelling variations across years; occasional non-text scanned vector graphs requiring table-only extraction filters. |
+| **Direct Download URL** | `https://www.pucsl.gov.lk/wp-content/uploads/2024/04/15-Minutes-Report-31-Mar2024.xlsx` |
+| **Publication Title** | Daily 15-Minute Generation Dispatch Curves - March 2024 |
+| **Reporting Period** | 2024-03-01 to 2024-03-31 (31 daily sheets) |
+| **Retrieval Date** | 2026-10-30T17:21:30+05:30 |
+| **Local Immutable File** | [15-Minutes-Report-31-Mar2024.xlsx](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/data/raw/pucsl/2024/15-Minutes-Report-31-Mar2024.xlsx) |
+| **File Checksum (SHA-256)** | `d40c7d9b11293e2c42c45227c4d121854e90781c3586bf204780d73fb282573b` |
+| **File Size** | 917,216 bytes |
+| **Units & Measurements** | Active Power in Megawatts (MW) per 15-minute interval; derived energy in MWh ($MW \times 0.25$) |
+| **Data Granularity** | 15-minute discrete intervals (96 intervals per 24 hours) across 32 individual generating stations and aggregate streams |
+| **Time Standard** | Sri Lanka Standard Time (UTC+05:30) |
+| **Source Status** | DOWNLOADED_VERIFIED |
+| **Profiling Report** | [pucsl-dispatch-15min-2024-profiling.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/data_sources/pucsl-dispatch-15min-2024-profiling.md) |
+| **Citation / Reference** | PUCSL Electricity Sector Directorate & CEB System Control Centre |
 
 ---
 
-## 3. NASA POWER Project — Meteorological & Solar Resource Data
+## 3. Public Utilities Commission of Sri Lanka (PUCSL) — Daily Generation & Dispatch Report (29 Dec 2024)
+
+| Field | Detail |
+|---|---|
+| **Provider** | Public Utilities Commission of Sri Lanka (PUCSL) |
+| **Official Portal URL** | [https://www.pucsl.gov.lk/daily-generation-reports-2/](https://www.pucsl.gov.lk/daily-generation-reports-2/) |
+| **Direct Download URL** | `https://www.pucsl.gov.lk/wp-content/uploads/2024/12/Generation-Report-29th-Dec.pdf` |
+| **Publication Title** | Daily Generation and Dispatch Report - 29 December 2024 |
+| **Reporting Period** | 2024-12-29 |
+| **Retrieval Date** | 2026-10-30T17:21:30+05:30 |
+| **Local Immutable File** | [Generation-Report-29th-Dec-2024.pdf](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/data/raw/pucsl/2024/Generation-Report-29th-Dec-2024.pdf) |
+| **File Checksum (SHA-256)** | `bb10974c344b80f8795c4150153a6f2a823702cd81fade3d72899886a237ee3e` |
+| **File Size** | 808,269 bytes |
+| **Units & Measurements** | Plant Dispatch (MWh), Maximum & Available Capacity (MW), Night Peak Load (MW), Day/Night Peak Demand (MW), Reservoir Storage (GWh) |
+| **Data Granularity** | Daily station totals, fuel mix totals, and instantaneous peak demand |
+| **Time Standard** | Sri Lanka Standard Time (UTC+05:30) |
+| **Source Status** | DOWNLOADED_VERIFIED |
+| **Profiling Report** | [pucsl-generation-report-2024-profiling.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/data_sources/pucsl-generation-report-2024-profiling.md) |
+| **Citation / Reference** | PUCSL Electricity Sector Directorate & CEB System Control Centre |
+
+---
+
+## 4. NASA POWER Project — Meteorological Grid Point Observations (2024)
 
 | Field | Detail |
 |---|---|
 | **Provider** | NASA Prediction of Worldwide Energy Resources (POWER) Project |
 | **Official Portal URL** | [https://power.larc.nasa.gov/docs/services/api/temporal/daily/](https://power.larc.nasa.gov/docs/services/api/temporal/daily/) |
 | **API Endpoint** | `https://power.larc.nasa.gov/api/temporal/daily/point` |
-| **Reporting Period** | 2024-01-01 to 2024-12-31 |
-| **Retrieval Date** | 2026-10-29 |
-| **File Format** | JSON (REST API response) and CSV |
-| **Original Filename** | `nasa_power_sl_grid_nodes_2024.json` |
-| **File Checksum (SHA-256)** | Stored in `data/raw/manifest.json` |
-| **Units & Measurements** | All Sky Surface Shortwave Downward Irradiance (`ALLSKY_SFC_SW_DWN`: $\text{MJ/m}^2/\text{day}$ and $\text{kW/m}^2$), 2m Air Temperature (`T2M`: $^\circ\text{C}$), Relative Humidity (`RH2M`: %), 10m Wind Speed (`WS10M`: $\text{m/s}$), Precipitation (`PRECTOTCORR`: $\text{mm/day}$) |
-| **Data Granularity** | Daily observations per coordinate grid point corresponding to major Sri Lankan generation hubs (e.g., Hambantota solar park, Mannar wind park, Victoria hydro reservoir, Norochcholai coal plant) |
-| **Time Standard** | UTC coordinates converted to Sri Lanka Standard Time (UTC+05:30) |
-| **Source Status** | Global open-access satellite and assimilation climate dataset |
-| **Download & Parsing Status** | Direct JSON REST API integration with rate-limiting backoff and local disk cache |
-| **Citation / Reference** | NASA Langley Research Center POWER Project, NASA Earth Science Division |
-| **Known Limitations & Challenges**| Spatial resolution is $0.5^\circ \times 0.5^\circ$; values are area averages rather than point-sensor ground measurements; API rate limits apply during batch requests. |
-
----
-
-## 4. Problem Classification Registry
-
-### A. Confirmed Source Problems
-1. **PUCSL Plant Naming Discrepancies**: Minor spelling differences across reporting months (e.g., "Sapu B" vs "Sapugaskanda Diesel B"). Handled via canonical lookup dictionary.
-2. **Missing Daily PDFs**: Occasional public holidays have combined 2-day reports or delayed uploads. Handled via automated sequence-gap detection.
-
-### B. Potential Problems Requiring Verification
-1. **Solar Dispatch vs Embedded Rooftop Solar**: Daily utility dispatch reports only capture grid-metered utility-scale solar; embedded rooftop PV (estimated > 800 MW in Sri Lanka) appears only as reduced daytime net demand rather than explicit generation.
-2. **Fuel Price Fluctuations**: Thermal generation costs fluctuate with fuel import currency exchange rates.
-
-### C. Synthetic Fixtures for Quality Assurance
-1. Located in `tests/fixtures/`: Synthetic representative files covering typical, boundary, and corrupt data rows to test parsers, null-handlers, and schema constraints without relying on external network access.
+| **Publication Title** | NASA POWER Meteorological and Solar Radiation Sri Lanka Grid Nodes 2024 |
+| **Reporting Period** | 2024-01-01 to 2024-01-31 (January 2024 sample across energy hubs) |
+| **Retrieval Date** | 2026-10-30T17:21:30+05:30 |
+| **Local Immutable File** | [nasa_power_sl_nodes_2024.json](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/data/raw/nasa/2024/nasa_power_sl_nodes_2024.json) |
+| **File Checksum (SHA-256)** | `9574ed078fa4941c0e5cf1ec7a261448c0d7d90b042734a6b153066972d1be8b` |
+| **File Size** | 14,177 bytes |
+| **Units & Measurements** | Solar Irradiance ($kW\cdot h/m^2/day$ or $MJ/m^2/day$), Air Temperature ($^\circ C$), Relative Humidity (%), Wind Speed ($m/s$), Precipitation ($mm/day$) |
+| **Data Granularity** | Daily observations per geospatial grid coordinate (Victoria Hydro Catchment, Mannar Wind Corridor) |
+| **Time Standard** | Local Solar Time (LST / UTC+05:30) |
+| **Source Status** | DOWNLOADED_VERIFIED |
+| **Profiling Report** | [nasa-power-meteorological-2024-profiling.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/data_sources/nasa-power-meteorological-2024-profiling.md) |
+| **Citation / Reference** | NASA Langley Research Center POWER Project |

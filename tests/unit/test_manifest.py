@@ -1,6 +1,7 @@
 """
 Unit tests for data source manifest loading, structure validation, and SHA-256 verification.
 """
+
 from pathlib import Path
 
 import pytest
@@ -33,7 +34,7 @@ def test_manifest_validation_rejects_missing_fields():
                 "source_id": "BAD-001",
                 # missing provider, original_filename, sha256_checksum, etc.
             }
-        ]
+        ],
     }
     validator = ManifestValidator()
     with pytest.raises(ValueError, match="Missing required manifest fields"):

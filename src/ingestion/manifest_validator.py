@@ -1,6 +1,7 @@
 """
 Provenance manifest schema validation and SHA-256 verification.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -75,7 +76,9 @@ class ManifestValidator:
         for idx, entry in enumerate(raw_sources):
             if not isinstance(entry, dict):
                 raise ValueError(f"Manifest source at index {idx} must be an object.")
-            missing_entry = [f for f in REQUIRED_SOURCE_FIELDS if f not in entry or entry[f] in (None, "")]
+            missing_entry = [
+                f for f in REQUIRED_SOURCE_FIELDS if f not in entry or entry[f] in (None, "")
+            ]
             if missing_entry:
                 raise ValueError(
                     f"Missing required manifest fields in source[{idx}]: {', '.join(missing_entry)}"
@@ -125,4 +128,3 @@ class ManifestValidator:
             for chunk in iter(lambda: handle.read(65536), b""):
                 hasher.update(chunk)
         return hasher.hexdigest()
-
