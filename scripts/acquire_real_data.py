@@ -19,10 +19,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-# SSL context that allows standard certificates
+# Standard SSL context with strict certificate verification
 SSL_CTX = ssl.create_default_context()
-SSL_CTX.check_hostname = False
-SSL_CTX.verify_mode = ssl.CERT_NONE
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",

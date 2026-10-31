@@ -84,6 +84,113 @@
         "mm/day"
       ],
       "status": "DOWNLOADED_VERIFIED"
+    },
+    {
+      "source_id": "CEB-STAT-DIGEST-2020",
+      "provider": "CEB",
+      "title": "CEB Statistical Digest 2020 Operational and Commercial Summary",
+      "source_url": "https://ceb.lk/front_img/img_reports/1626946210CEB-Statistical_Digest-Form-2020-Web_Version.pdf",
+      "original_filename": "Statistical_Digest_2020.pdf",
+      "local_path": "data/raw/ceb/2020/Statistical_Digest_2020.pdf",
+      "reporting_period": "2020-01-01 to 2020-12-31",
+      "file_format": "PDF",
+      "file_size_bytes": 5299544,
+      "sha256_checksum": "58228a1ce42e68b6a77553a0d95dc7bc02925afb314df2f9c3442f6cd4d6991a",
+      "time_zone": "Asia/Colombo",
+      "data_granularity": "Monthly Provincial & Tariff Summary",
+      "units": [
+        "GWh",
+        "MW",
+        "LKR/kWh",
+        "%"
+      ],
+      "status": "DOWNLOADED_VERIFIED"
+    },
+    {
+      "source_id": "CEB-STAT-DIGEST-2021",
+      "provider": "CEB",
+      "title": "CEB Statistical Digest 2021 Operational and Commercial Summary",
+      "source_url": "https://ceb.lk/front_img/img_reports/1656311266CEB-Statistical-Digest-2021-cover.pdf",
+      "original_filename": "Statistical_Digest_2021.pdf",
+      "local_path": "data/raw/ceb/2021/Statistical_Digest_2021.pdf",
+      "reporting_period": "2021-01-01 to 2021-12-31",
+      "file_format": "PDF",
+      "file_size_bytes": 714608,
+      "sha256_checksum": "d0d83805b0a271ed9d0bc9aee01f2549d8e6fe18ee3661b84fe3682b96633d72",
+      "time_zone": "Asia/Colombo",
+      "data_granularity": "Monthly Provincial & Tariff Summary",
+      "units": [
+        "GWh",
+        "MW",
+        "LKR/kWh",
+        "%"
+      ],
+      "status": "DOWNLOADED_VERIFIED"
+    },
+    {
+      "source_id": "CEB-STAT-DIGEST-2022",
+      "provider": "CEB",
+      "title": "CEB Statistical Digest 2022 Operational and Commercial Summary",
+      "source_url": "https://ceb.lk/front_img/img_reports/1687251830Statistical_Digest_2022.pdf",
+      "original_filename": "Statistical_Digest_2022.pdf",
+      "local_path": "data/raw/ceb/2022/Statistical_Digest_2022.pdf",
+      "reporting_period": "2022-01-01 to 2022-12-31",
+      "file_format": "PDF",
+      "file_size_bytes": 1999717,
+      "sha256_checksum": "a33560020cc904928cebcf090a1738a2e7b1995c365445e07f9471c15c8fefe4",
+      "time_zone": "Asia/Colombo",
+      "data_granularity": "Monthly Provincial & Tariff Summary",
+      "units": [
+        "GWh",
+        "MW",
+        "LKR/kWh",
+        "%"
+      ],
+      "status": "DOWNLOADED_VERIFIED"
+    },
+    {
+      "source_id": "CEB-STAT-DIGEST-2023",
+      "provider": "CEB",
+      "title": "CEB Statistical Digest 2023 Operational and Commercial Summary",
+      "source_url": "https://ceb.lk/front_img/img_reports/1719383943Statistical_Digest_2023_n.pdf",
+      "original_filename": "Statistical_Digest_2023.pdf",
+      "local_path": "data/raw/ceb/2023/Statistical_Digest_2023.pdf",
+      "reporting_period": "2023-01-01 to 2023-12-31",
+      "file_format": "PDF",
+      "file_size_bytes": 580335,
+      "sha256_checksum": "db8a8237c764822a98ba3b2ef6c466a490e31ebe4cf079d2ff9c66eedc20502e",
+      "time_zone": "Asia/Colombo",
+      "data_granularity": "Monthly Provincial & Tariff Summary",
+      "units": [
+        "GWh",
+        "MW",
+        "LKR/kWh",
+        "%"
+      ],
+      "status": "DOWNLOADED_VERIFIED"
+    },
+    {
+      "source_id": "NASA-POWER-DAILY-5YR-2020-2024",
+      "provider": "NASA POWER",
+      "title": "NASA POWER Meteorological and Solar Radiation Grid Nodes (2020-2024)",
+      "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
+      "original_filename": "nasa_power_sl_nodes_2020_2024.json",
+      "local_path": "data/raw/nasa/5yr/nasa_power_sl_nodes_2020_2024.json",
+      "reporting_period": "2020-01-01 to 2024-12-31",
+      "file_format": "JSON",
+      "file_size_bytes": 695087,
+      "sha256_checksum": "fe590598b0a559229a18c24cd1e5c0448057acc1a59b4ba8039540e17d52c109",
+      "time_zone": "UTC+05:30",
+      "data_granularity": "Daily Point Observations (1,827 days x 6 params x 2 nodes = 21,924 obs)",
+      "units": [
+        "kWh/m2/day",
+        "C",
+        "%",
+        "m/s",
+        "mm/day"
+      ],
+      "status": "DOWNLOADED_VERIFIED"
     }
-  ]
+  ],
+  "updated_at": "2026-10-31T12:35:20.372387+00:00"
 }

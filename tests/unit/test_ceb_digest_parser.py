@@ -55,3 +55,24 @@ def test_ceb_digest_extracts_tariff_sales(sample_ceb_pdf_path: Path):
     assert tariff_dict.get("Religious") == 75.0
     assert tariff_dict.get("Industrial Total") == 4622.0
     assert tariff_dict.get("General Purpose Total") == 3472.0
+    assert tariff_dict.get("Hotel Total") == 355.0
+    assert tariff_dict.get("Government Total") == 241.0
+    assert tariff_dict.get("Agriculture") == 3.5
+    assert tariff_dict.get("Street Lighting(Estimate)") == 96.0
+    # Bulk Supply to LECO (1,625 GWh) must be extracted to reconcile with TOTAL (15,191 GWh)
+    assert tariff_dict.get("Bulk Supply to LECO") == 1625.0
+
+    # Total granular sectors must reconcile with published national total
+    granular_keys = [
+        "Domestic",
+        "Religious",
+        "General Purpose Total",
+        "Hotel Total",
+        "Industrial Total",
+        "Government Total",
+        "Agriculture",
+        "Street Lighting(Estimate)",
+        "Bulk Supply to LECO",
+    ]
+    reconciled_sum = sum(tariff_dict[k] for k in granular_keys if k in tariff_dict)
+    assert reconciled_sum == pytest.approx(15191.0, abs=2.0)

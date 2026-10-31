@@ -18,7 +18,7 @@ NODE_LOCATION_MAPPING = {
 }
 
 PARAMETER_UNIT_MAPPING = {
-    "ALLSKY_SFC_SW_DWN": "MJ/m2/day",
+    "ALLSKY_SFC_SW_DWN": "kWh/m2/day",
     "T2M": "C",
     "RH2M": "PCT",
     "WS10M": "m/s",

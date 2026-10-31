@@ -1,7 +1,8 @@
 """
-Source-specific extractor for Ceylon Electricity Board (CEB) Statistical Digest 2024 PDF.
+Source-specific extractor for Ceylon Electricity Board (CEB) Statistical Digest PDFs.
 Extracts billed electricity sales by distribution division/province and by consumer tariff class,
 converting GWh to canonical warehouse MWh (1 GWh = 1,000 MWh).
+Supports historical annual digests across 2020-2024.
 """
 
 from __future__ import annotations
@@ -74,12 +75,12 @@ class CebDigestParser:
                 if not row or len(row) < 3:
                     continue
                 region_name = row[0]
-                val_2024 = row[2] if len(row) > 2 else None
+                val = row[2] if len(row) > 2 else None
 
-                if val_2024 is None:
+                if val is None:
                     continue
 
-                cleaned_val = self._clean_numeric(val_2024)
+                cleaned_val = self._clean_numeric(val)
                 if cleaned_val is None:
                     continue
 
@@ -96,45 +97,120 @@ class CebDigestParser:
 
         return records
 
-    def extract_tariff_sales(self, pdf_path: Path) -> list[TariffSalesRecord]:
-        """Extract sales by consumer tariff group from Page 5 Table 1."""
+    def extract_tariff_sales(
+        self, pdf_path: Path, target_year: int | None = None
+    ) -> list[TariffSalesRecord]:
+        """Extract sales by consumer tariff group with version-aware multi-year support."""
+        year = target_year if target_year is not None else self.reporting_year
         records: list[TariffSalesRecord] = []
+
         with pdfplumber.open(pdf_path) as pdf:
             if len(pdf.pages) < 5:
                 return []
 
             p5 = pdf.pages[4]
             tables = p5.extract_tables()
-            if len(tables) < 2:
+            if not tables:
                 return []
 
-            tbl1 = tables[1]
-            # Table 1 columns: [Tariff, Sub-tariff, 2023 sales, 2024 sales, ...]
-            for row in tbl1[3:]:
-                if not row or len(row) < 4:
-                    continue
-                tariff_name = row[0] or row[1]
-                val_2024 = row[3] if len(row) > 3 else None
+            # Format 1: 2020 Digest (Page 5 single combined table of 52 rows)
+            if len(tables) == 1 and len(tables[0]) >= 50:
+                t = tables[0]
+                col = 3 if year == 2020 else 2
+                for r in t[29:51]:
+                    name = r[0]
+                    val = r[col] if col < len(r) else None
+                    if name and name.strip():
+                        n_str = name.strip()
+                        if n_str == "Bulk Supply to LECO" and len(t) > 48:
+                            val = t[48][col]
+                        cleaned_val = self._clean_numeric(val)
+                        if cleaned_val is not None:
+                            records.append(
+                                TariffSalesRecord(
+                                    reporting_year=year,
+                                    tariff_group=n_str,
+                                    sales_gwh=cleaned_val,
+                                    sales_mwh=round(cleaned_val * 1000.0, 4),
+                                    reported_unit_code="GWh",
+                                )
+                            )
+                return records
 
-                if not tariff_name or val_2024 is None:
-                    continue
+            # Format 2: 2022 Digest (Table 1 has 16 rows, columns: Col 1 = 2021, Col 2 = 2022)
+            if len(tables) > 1 and len(tables[1]) == 16:
+                t = tables[1]
+                col = 2 if year == 2022 else 1
+                # Row 2 contains Domestic & Religious concatenated with newline
+                if t[2][col]:
+                    dom_rel = str(t[2][col]).split("\n")
+                    if len(dom_rel) >= 2:
+                        d_val = self._clean_numeric(dom_rel[0])
+                        r_val = self._clean_numeric(dom_rel[1])
+                        if d_val is not None:
+                            records.append(
+                                TariffSalesRecord(year, "Domestic", d_val, round(d_val * 1000.0, 4))
+                            )
+                        if r_val is not None:
+                            records.append(
+                                TariffSalesRecord(
+                                    year, "Religious", r_val, round(r_val * 1000.0, 4)
+                                )
+                            )
 
-                cleaned_val = self._clean_numeric(val_2024)
-                if cleaned_val is None:
-                    continue
+                # Standard category rows in 2022 Table 1
+                for idx in [3, 5, 7, 9, 11, 14, 15]:
+                    name = str(t[idx][0]).strip()
+                    cat_val = self._clean_numeric(t[idx][col])
+                    if cat_val is not None:
+                        records.append(
+                            TariffSalesRecord(year, name, cat_val, round(cat_val * 1000.0, 4))
+                        )
 
-                t_str = str(tariff_name).strip()
-                if t_str.upper() in ("TARIFF", "SALES (GWH)"):
-                    continue
-
-                records.append(
-                    TariffSalesRecord(
-                        reporting_year=self.reporting_year,
-                        tariff_group=t_str,
-                        sales_gwh=cleaned_val,
-                        sales_mwh=round(cleaned_val * 1000.0, 4),
-                        reported_unit_code="GWh",
+                # LECO is located in row 13
+                leco_val = self._clean_numeric(t[13][col])
+                if leco_val is not None:
+                    records.append(
+                        TariffSalesRecord(
+                            year, "Bulk Supply to LECO", leco_val, round(leco_val * 1000.0, 4)
+                        )
                     )
-                )
+                return records
+
+            # Format 3: 2024 Digest (Table 1 has 25 rows, Col 2 = 2023, Col 3 = 2024)
+            if len(tables) > 1 and len(tables[1]) >= 20:
+                t = tables[1]
+                col = 3 if year == 2024 else 2
+                for idx, row in enumerate(t[3:], start=3):
+                    if not row or len(row) <= col:
+                        continue
+                    tariff_name = row[0] or row[1]
+                    val = row[col]
+
+                    # Row 22 in 2024 Table 1 is Bulk Supply to LECO
+                    if idx == 22 and val is not None:
+                        tariff_name = "Bulk Supply to LECO"
+
+                    if not tariff_name or val is None:
+                        continue
+
+                    cleaned_val = self._clean_numeric(val)
+                    if cleaned_val is None:
+                        continue
+
+                    t_str = str(tariff_name).strip()
+                    if t_str.upper() in ("TARIFF", "SALES (GWH)"):
+                        continue
+
+                    records.append(
+                        TariffSalesRecord(
+                            reporting_year=year,
+                            tariff_group=t_str,
+                            sales_gwh=cleaned_val,
+                            sales_mwh=round(cleaned_val * 1000.0, 4),
+                            reported_unit_code="GWh",
+                        )
+                    )
+                return records
 
         return records

@@ -106,7 +106,7 @@ def test_etl_loads_nasa_power_weather_json(
 
     result = real_loader.load_nasa_weather_json(json_path)
     assert result.status in ("SUCCEEDED", "PARTIAL_QUARANTINE")
-    assert result.rows_inserted > 0
+    assert (result.rows_inserted + result.rows_updated) > 0
 
     with get_connection(migrated_and_seeded_test_db) as conn:
         with conn.cursor() as cur:

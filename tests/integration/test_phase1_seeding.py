@@ -54,6 +54,12 @@ def test_reference_seeding_idempotency_and_zero_fabricated_facts(
     """
     seeder = ReferenceSeeder()
 
+    # Ensure fact tables are clear before testing that reference seeding creates zero facts
+    with get_connection(migrated_and_seeded_test_db, autocommit=True) as conn:
+        with conn.cursor() as cur:
+            for fact_tbl in WAREHOUSE_FACT_TABLES:
+                cur.execute(f"TRUNCATE TABLE {fact_tbl} CASCADE;")
+
     with get_connection(migrated_and_seeded_test_db) as conn:
         with conn.cursor() as cur:
             counts_before: dict[str, int] = {}
