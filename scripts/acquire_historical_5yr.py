@@ -133,7 +133,8 @@ def fetch_nasa_power_5yr(dest_path: Path) -> tuple[int, str]:
 def update_manifest(manifest_entries: list[dict[str, Any]]) -> None:
     manifest_path = Path("data/raw/manifest.json")
     if manifest_path.exists():
-        manifest_data = json.loads(manifest_path.read_text(encoding="utf-8"))
+        loaded: Any = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest_data: dict[str, Any] = loaded if isinstance(loaded, dict) else {}
     else:
         manifest_data = {
             "version": "1.0",
@@ -142,20 +143,28 @@ def update_manifest(manifest_entries: list[dict[str, Any]]) -> None:
             "sources": [],
         }
 
-    existing_ids = {s.get("source_id") for s in manifest_data.get("sources", [])}
+    raw_sources = manifest_data.get("sources")
+    sources: list[dict[str, Any]] = raw_sources if isinstance(raw_sources, list) else []
+
+    existing_ids: set[str] = {
+        str(s["source_id"]) for s in sources if isinstance(s, dict) and "source_id" in s
+    }
+
     for entry in manifest_entries:
-        if entry["source_id"] in existing_ids:
+        entry_id = str(entry.get("source_id", ""))
+        if entry_id in existing_ids:
             # Update existing
-            for idx, s in enumerate(manifest_data["sources"]):
-                if s["source_id"] == entry["source_id"]:
-                    manifest_data["sources"][idx] = entry
+            for idx, s in enumerate(sources):
+                if isinstance(s, dict) and str(s.get("source_id")) == entry_id:
+                    sources[idx] = entry
                     break
         else:
-            manifest_data["sources"].append(entry)
+            sources.append(entry)
 
+    manifest_data["sources"] = sources
     manifest_data["updated_at"] = datetime.now(UTC).isoformat()
     manifest_path.write_text(json.dumps(manifest_data, indent=2), encoding="utf-8")
-    print(f"Updated manifest at {manifest_path} with {len(manifest_data['sources'])} sources.")
+    print(f"Updated manifest at {manifest_path} with {len(sources)} sources.")
 
 
 def main() -> int:
