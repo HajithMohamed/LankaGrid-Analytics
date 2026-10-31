@@ -116,6 +116,12 @@ class CebDigestParser:
                 tariff_name = row[0] or row[1]
                 val_2024 = row[3] if len(row) > 3 else None
 
+                # PDF layout fix: In Page 5 Table 1, "Bulk Supply to LECO" spans columns where
+                # pdfplumber extracts None for cells 0 and 1, but has valid sales numbers (1,625 GWh).
+                if not tariff_name and val_2024 is not None:
+                    # Look at Table 0 or check if next row is Street Lighting
+                    tariff_name = "Bulk Supply to LECO"
+
                 if not tariff_name or val_2024 is None:
                     continue
 

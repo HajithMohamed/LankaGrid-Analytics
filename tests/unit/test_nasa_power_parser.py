@@ -43,6 +43,11 @@ def test_nasa_power_parser_extracts_observations(sample_nasa_json_path: Path):
     assert rec_0.time_standard == "LST / UTC+05:30"
     assert rec_0.reported_unit_code != ""
 
+    # NASA POWER All-Sky Surface Shortwave Irradiance unit must be kWh/m2/day
+    irradiance_recs = [r for r in records if r.source_variable_name == "ALLSKY_SFC_SW_DWN"]
+    assert len(irradiance_recs) > 0
+    assert irradiance_recs[0].reported_unit_code == "kWh/m2/day"
+
 
 @pytest.mark.unit
 def test_nasa_power_parser_preserves_fill_value_sentinel(tmp_path: Path):

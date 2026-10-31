@@ -594,6 +594,13 @@ CONSUMPTION_SECTORS: list[dict[str, Any]] = [
         "source_classification": "CEB Statistical Digest 2024",
     },
     {
+        "sector_code": "BULK_LECO",
+        "sector_name": "Bulk Supply to LECO",
+        "tariff_group": "Bulk Supply",
+        "is_aggregate_bucket": False,
+        "source_classification": "CEB Provincial Sales Summary",
+    },
+    {
         "sector_code": "ALL_SECTORS",
         "sector_name": "All Consumer Sectors Combined",
         "tariff_group": "Aggregate Total",
@@ -1320,14 +1327,6 @@ PLANT_ALIASES: list[dict[str, Any]] = [
         "canonical_plant_code": "AGG_MINI_HYDRO",
         "verification_status": "VERIFIED",
         "verification_evidence": "PUCSL 15-Minute Dispatch Report 2024 mini hydro aggregate row.",
-        "verified_by": "db_architect",
-    },
-    {
-        "source_code": "PUCSL",
-        "alias_name": "Total MW ****",
-        "canonical_plant_code": "AGG_SYSTEM_TOTAL",
-        "verification_status": "VERIFIED",
-        "verification_evidence": "PUCSL 15-Minute Dispatch Report 2024 national grid system total row.",
         "verified_by": "db_architect",
     },
 ]

@@ -110,6 +110,10 @@ class PucslDispatchParser:
                 if not raw_station or raw_station.upper() in ("TIME", "ACTUAL SYSTEM DISPATCH"):
                     continue
 
+                # Stop reading once we reach the summary block starting with Total MW
+                if raw_station.upper().startswith("TOTAL MW") or raw_station.upper() == "TOTAL":
+                    break
+
                 for col_idx, (slot_num, slot_time) in enumerate(time_slots, start=1):
                     val = row[col_idx] if col_idx < len(row) else None
                     power_mw: float | None = None

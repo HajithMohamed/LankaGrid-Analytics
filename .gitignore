@@ -39,8 +39,13 @@ coverage.xml
 
 # Large Data & Pipelines
 data/raw/*
+!data/raw/**/
 !data/raw/.gitkeep
 !data/raw/manifest.json
+!data/raw/ceb/2024/Statistical_Digest_2024.pdf
+!data/raw/pucsl/2024/15-Minutes-Report-31-Mar2024.xlsx
+!data/raw/pucsl/2024/Generation-Report-29th-Dec-2024.pdf
+!data/raw/nasa/2024/nasa_power_sl_nodes_2024.json
 data/staging/*
 !data/staging/.gitkeep
 data/processed/*
