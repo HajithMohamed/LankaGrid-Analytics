@@ -2,10 +2,12 @@
 Integration tests for database migration runner and schema bootstrap.
 """
 from pathlib import Path
+
 import pytest
+
+from scripts.migrate import MigrationRunner
 from src.common.config import DatabaseConfig
 from src.common.db import get_connection
-from scripts.migrate import MigrationRunner
 
 
 @pytest.mark.integration
@@ -36,8 +38,8 @@ def test_migration_application_and_idempotency() -> None:
         with conn.cursor() as cur:
             cur.execute("""
                 SELECT EXISTS (
-                    SELECT FROM information_schema.tables 
-                    WHERE table_schema = 'public' 
+                    SELECT FROM information_schema.tables
+                    WHERE table_schema = 'public'
                     AND table_name = 'schema_migrations'
                 );
             """)

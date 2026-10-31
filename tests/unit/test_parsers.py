@@ -1,9 +1,10 @@
 """
 Unit tests for data parsers (CSV and JSON 15-minute dispatch profiles).
 """
-import json
 from pathlib import Path
+
 import pytest
+
 from src.ingestion.parsers import load_csv_data, load_dispatch_15min_json
 
 
