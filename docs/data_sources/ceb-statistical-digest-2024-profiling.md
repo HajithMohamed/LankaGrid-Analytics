@@ -62,3 +62,4 @@
   - `dw.dim_consumption_sector` (`sector_key`)
   - `dw.dim_metric` (`ELECTRICITY_SALES_MWH`)
   - `dw.dim_source_system` (`CEB`)
+

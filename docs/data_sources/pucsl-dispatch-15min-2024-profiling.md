@@ -61,3 +61,4 @@
   - `dw.dim_energy_source` (`energy_source_key`)
   - `dw.dim_metric` (`metric_code = 'PLANT_DISPATCH_MW'`)
   - `dw.dim_source_system` (`source_code = 'PUCSL'`)
+

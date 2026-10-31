@@ -68,3 +68,4 @@
   - `dw.dim_energy_source` (`energy_source_key`)
   - `dw.dim_metric` (`GROSS_GENERATION_MWH`, `INSTALLED_CAPACITY_MW`, `DEPENDABLE_CAPACITY_MW`)
   - `dw.dim_source_system` (`PUCSL`)
+

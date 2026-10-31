@@ -59,3 +59,4 @@
   - `dw.dim_weather_location` (`weather_location_key`)
   - `dw.dim_metric` (`SOLAR_IRRADIANCE_SW_DWN`, `AIR_TEMP_2M_C`, `REL_HUMIDITY_2M_PCT`, `WIND_SPEED_10M_MS`, `PRECIPITATION_DAILY_MM`)
   - `dw.dim_source_system` (`NASA_POWER`)
+
