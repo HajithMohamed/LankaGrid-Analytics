@@ -6,6 +6,7 @@ Data preprocessing routines following Data Warehousing Lecture 6 standards:
 - Verified station alias standardization
 - Timezone-aware timestamp normalization to Asia/Colombo (UTC+05:30)
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -54,7 +55,9 @@ def detect_and_clean_missing_values(
     NEVER replaces missing measurements with 0.0.
     """
     cleaned = df.copy()
-    sentinel_set = {s.strip() for s in (sentinels if sentinels is not None else DEFAULT_MISSING_SENTINELS)}
+    sentinel_set = {
+        s.strip() for s in (sentinels if sentinels is not None else DEFAULT_MISSING_SENTINELS)
+    }
 
     missing_by_column: dict[str, int] = {}
     total_missing = 0
@@ -65,9 +68,11 @@ def detect_and_clean_missing_values(
         series = cleaned[col]
         if pd.api.types.is_object_dtype(series) or pd.api.types.is_string_dtype(series):
             normalized = series.map(
-                lambda val: np.nan
-                if pd.isna(val) or (isinstance(val, str) and val.strip() in sentinel_set)
-                else val
+                lambda val: (
+                    np.nan
+                    if pd.isna(val) or (isinstance(val, str) and val.strip() in sentinel_set)
+                    else val
+                )
             )
             cleaned[col] = pd.to_numeric(normalized, errors="coerce")
         else:
@@ -151,4 +156,3 @@ def parse_grid_timestamps(
     else:
         result["timestamp_normalized"] = parsed.dt.tz_convert(COLOMBO_TZ)
     return result
-

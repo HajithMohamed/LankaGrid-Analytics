@@ -6,6 +6,7 @@ Phase 1 TDD Integration Tests for Advanced PostgreSQL 18 Objects:
 - Views & Materialized Views (grain separation, revision deduplication, no double counting between operational and published facts)
 - Least-Privilege Database Roles (grid_analyst read-only enforcement, grid_etl restricted from DDL/TRUNCATE)
 """
+
 from __future__ import annotations
 
 import os
@@ -42,18 +43,28 @@ def test_plpgsql_functions_contracts(migrated_and_seeded_test_db: DatabaseConfig
                     cur.execute("SELECT etl.fn_convert_unit(200.0, 'MW', 'MWh', NULL);")
 
             # 5. Reporting period validation
-            cur.execute("SELECT etl.fn_validate_reporting_period('DAILY', DATE '2024-01-15', DATE '2024-01-15');")
+            cur.execute(
+                "SELECT etl.fn_validate_reporting_period('DAILY', DATE '2024-01-15', DATE '2024-01-15');"
+            )
             assert cur.fetchone()[0] is True  # type: ignore[index]
-            cur.execute("SELECT etl.fn_validate_reporting_period('DAILY', DATE '2024-01-01', DATE '2024-12-31');")
+            cur.execute(
+                "SELECT etl.fn_validate_reporting_period('DAILY', DATE '2024-01-01', DATE '2024-12-31');"
+            )
             assert cur.fetchone()[0] is False  # type: ignore[index]
-            cur.execute("SELECT etl.fn_validate_reporting_period('MONTHLY', DATE '2024-02-01', DATE '2024-02-29');")
+            cur.execute(
+                "SELECT etl.fn_validate_reporting_period('MONTHLY', DATE '2024-02-01', DATE '2024-02-29');"
+            )
             assert cur.fetchone()[0] is True  # type: ignore[index]
-            cur.execute("SELECT etl.fn_validate_reporting_period('ANNUAL', DATE '2024-01-01', DATE '2024-12-31');")
+            cur.execute(
+                "SELECT etl.fn_validate_reporting_period('ANNUAL', DATE '2024-01-01', DATE '2024-12-31');"
+            )
             assert cur.fetchone()[0] is True  # type: ignore[index]
 
             # 6. 15-minute interval normalization in Asia/Colombo (+05:30)
             # 13:35 UTC = 19:05 Asia/Colombo -> slot 77 (19:00), PEAK block
-            cur.execute("SELECT colombo_date, date_key, interval_index, tariff_block FROM etl.fn_normalize_interval_15min('2024-01-15T13:35:00Z'::timestamptz);")
+            cur.execute(
+                "SELECT colombo_date, date_key, interval_index, tariff_block FROM etl.fn_normalize_interval_15min('2024-01-15T13:35:00Z'::timestamptz);"
+            )
             norm_row = cur.fetchone()
             assert norm_row is not None
             assert norm_row[1] == 20240115
@@ -173,7 +184,9 @@ def test_procedures_views_mvs_reconciliation_and_no_double_counting(
     with get_connection(migrated_and_seeded_test_db) as conn:
         with conn.cursor() as cur:
             doc_id, raw_rec_id, _ = _create_synthetic_lineage(cur, "PROC_MV")
-            cur.execute("SELECT batch_id FROM raw.extracted_record WHERE raw_record_id = %s;", (raw_rec_id,))
+            cur.execute(
+                "SELECT batch_id FROM raw.extracted_record WHERE raw_record_id = %s;", (raw_rec_id,)
+            )
             batch_id = int(cur.fetchone()[0])  # type: ignore[index]
 
             # Start ETL run via stored procedure
@@ -196,7 +209,17 @@ def test_procedures_views_mvs_reconciliation_and_no_double_counting(
                 (%s, %s, %s, 'CEB', 'Victoria', 'MONTHLY', DATE '2024-01-01', DATE '2024-01-31', '35.0', 35.0, 'GWh', 'GROSS', 'v1'),
                 (%s, %s, %s, 'PUCSL', 'Victoria', 'DAILY', DATE '2024-01-16', DATE '2024-01-16', '-50.0', -50.0, 'MWh', 'GROSS', 'v1');
                 """,
-                (batch_id, doc_id, raw_rec_id, batch_id, doc_id, raw_rec_id, batch_id, doc_id, raw_rec_id),
+                (
+                    batch_id,
+                    doc_id,
+                    raw_rec_id,
+                    batch_id,
+                    doc_id,
+                    raw_rec_id,
+                    batch_id,
+                    doc_id,
+                    raw_rec_id,
+                ),
             )
 
             # Validate staged rows
@@ -287,7 +310,10 @@ def test_procedures_views_mvs_reconciliation_and_no_double_counting(
             recon_id = cur.fetchone()[0]  # type: ignore[index]
             assert recon_id is not None
 
-            cur.execute("SELECT reconciliation_status FROM mart.vw_conflicting_source_metrics WHERE reconciliation_id = %s;", (recon_id,))
+            cur.execute(
+                "SELECT reconciliation_status FROM mart.vw_conflicting_source_metrics WHERE reconciliation_id = %s;",
+                (recon_id,),
+            )
             assert cur.fetchone()[0] == "CONFLICT_FLAGGED"  # type: ignore[index]
 
             # Finalize ETL run
@@ -297,7 +323,10 @@ def test_procedures_views_mvs_reconciliation_and_no_double_counting(
             )
 
             # Check DQ summary view
-            cur.execute("SELECT SUM(issue_count) FROM audit.data_quality_summary WHERE etl_run_id = %s;", (etl_run_id,))
+            cur.execute(
+                "SELECT SUM(issue_count) FROM audit.data_quality_summary WHERE etl_run_id = %s;",
+                (etl_run_id,),
+            )
             assert int(cur.fetchone()[0]) >= 1  # type: ignore[index]
 
         # Commit temporarily to exercise CONCURRENT materialized view refresh (which cannot run inside a dirty tx block with uncommitted DDL, or runs cleanly on committed data), then clean up synthetic records!
@@ -321,16 +350,41 @@ def test_procedures_views_mvs_reconciliation_and_no_double_counting(
         finally:
             with get_connection(migrated_and_seeded_test_db, autocommit=True) as cleanup_conn:
                 with cleanup_conn.cursor() as c_cur:
-                    c_cur.execute("DELETE FROM audit.record_lineage WHERE source_document_id = %s;", (doc_id,))
-                    c_cur.execute("DELETE FROM audit.reconciliation_case WHERE etl_run_id = %s;", (etl_run_id,))
-                    c_cur.execute("DELETE FROM audit.data_quality_issue WHERE source_document_id = %s;", (doc_id,))
-                    c_cur.execute("DELETE FROM dw.fact_published_metric WHERE source_document_id = %s;", (doc_id,))
-                    c_cur.execute("DELETE FROM dw.fact_generation_period WHERE source_document_id = %s;", (doc_id,))
-                    c_cur.execute("DELETE FROM staging.stg_generation_report WHERE source_document_id = %s;", (doc_id,))
-                    c_cur.execute("DELETE FROM audit.etl_run WHERE source_document_id = %s;", (doc_id,))
-                    c_cur.execute("DELETE FROM raw.extracted_record WHERE source_document_id = %s;", (doc_id,))
-                    c_cur.execute("DELETE FROM raw.ingestion_batch WHERE source_document_id = %s;", (doc_id,))
-                    c_cur.execute("DELETE FROM raw.source_document WHERE source_document_id = %s;", (doc_id,))
+                    c_cur.execute(
+                        "DELETE FROM audit.record_lineage WHERE source_document_id = %s;", (doc_id,)
+                    )
+                    c_cur.execute(
+                        "DELETE FROM audit.reconciliation_case WHERE etl_run_id = %s;",
+                        (etl_run_id,),
+                    )
+                    c_cur.execute(
+                        "DELETE FROM audit.data_quality_issue WHERE source_document_id = %s;",
+                        (doc_id,),
+                    )
+                    c_cur.execute(
+                        "DELETE FROM dw.fact_published_metric WHERE source_document_id = %s;",
+                        (doc_id,),
+                    )
+                    c_cur.execute(
+                        "DELETE FROM dw.fact_generation_period WHERE source_document_id = %s;",
+                        (doc_id,),
+                    )
+                    c_cur.execute(
+                        "DELETE FROM staging.stg_generation_report WHERE source_document_id = %s;",
+                        (doc_id,),
+                    )
+                    c_cur.execute(
+                        "DELETE FROM audit.etl_run WHERE source_document_id = %s;", (doc_id,)
+                    )
+                    c_cur.execute(
+                        "DELETE FROM raw.extracted_record WHERE source_document_id = %s;", (doc_id,)
+                    )
+                    c_cur.execute(
+                        "DELETE FROM raw.ingestion_batch WHERE source_document_id = %s;", (doc_id,)
+                    )
+                    c_cur.execute(
+                        "DELETE FROM raw.source_document WHERE source_document_id = %s;", (doc_id,)
+                    )
                     c_cur.execute("CALL etl.sp_refresh_mart_views(TRUE);")
 
 

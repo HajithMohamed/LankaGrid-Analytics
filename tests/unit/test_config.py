@@ -1,6 +1,7 @@
 """
 Unit tests for application configuration and environment variables.
 """
+
 import pytest
 
 from src.common.config import DatabaseConfig, get_config

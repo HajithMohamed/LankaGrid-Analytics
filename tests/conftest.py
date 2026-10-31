@@ -1,6 +1,7 @@
 """
 Shared pytest fixtures providing isolated PostgreSQL 18 test database setup.
 """
+
 from __future__ import annotations
 
 from collections.abc import Iterator

@@ -7,6 +7,7 @@ Phase 1 TDD Integration Tests:
 - SCD Type 2 uniqueness on dw.dim_power_plant
 - Range partition pruning on dw.fact_dispatch_interval via EXPLAIN (FORMAT JSON)
 """
+
 from __future__ import annotations
 
 import json
@@ -23,9 +24,7 @@ from src.common.db import get_connection
 
 def _create_synthetic_lineage(cur: psycopg.Cursor[Any], suffix: str) -> tuple[int, int, int]:
     """Insert explicitly marked SYNTHETIC_FIXTURE source_document, batch, raw_record, and etl_run."""
-    cur.execute(
-        "SELECT source_system_id FROM raw.source_system WHERE source_code = 'PUCSL';"
-    )
+    cur.execute("SELECT source_system_id FROM raw.source_system WHERE source_code = 'PUCSL';")
     row = cur.fetchone()
     assert row is not None
     source_sys_id = int(row[0])
@@ -107,7 +106,9 @@ def test_migration_sequence_001_to_017(migrated_and_seeded_test_db: DatabaseConf
 
 
 @pytest.mark.integration
-def test_all_seven_schemas_and_core_tables_exist(migrated_and_seeded_test_db: DatabaseConfig) -> None:
+def test_all_seven_schemas_and_core_tables_exist(
+    migrated_and_seeded_test_db: DatabaseConfig,
+) -> None:
     """Verify all 7 warehouse schemas and expected dimension, fact, ref, raw, staging, and audit tables exist."""
     with get_connection(migrated_and_seeded_test_db) as conn:
         with conn.cursor() as cur:
@@ -164,13 +165,21 @@ def test_negative_and_impossible_measurements_rejected(
     with get_connection(migrated_and_seeded_test_db) as conn:
         with conn.cursor() as cur:
             doc_id, raw_rec_id, etl_run_id = _create_synthetic_lineage(cur, "CONSTRAINTS")
-            cur.execute("SELECT plant_key, energy_source_key FROM dw.dim_power_plant WHERE plant_code = 'VICTORIA' AND is_current = TRUE;")
+            cur.execute(
+                "SELECT plant_key, energy_source_key FROM dw.dim_power_plant WHERE plant_code = 'VICTORIA' AND is_current = TRUE;"
+            )
             plant_key, energy_source_key = cur.fetchone()  # type: ignore[misc]
-            cur.execute("SELECT metric_key FROM dw.dim_metric WHERE metric_code = 'PLANT_DISPATCH_MW';")
+            cur.execute(
+                "SELECT metric_key FROM dw.dim_metric WHERE metric_code = 'PLANT_DISPATCH_MW';"
+            )
             dispatch_metric_key = cur.fetchone()[0]  # type: ignore[index]
-            cur.execute("SELECT metric_key FROM dw.dim_metric WHERE metric_code = 'INSTALLED_CAPACITY_MW';")
+            cur.execute(
+                "SELECT metric_key FROM dw.dim_metric WHERE metric_code = 'INSTALLED_CAPACITY_MW';"
+            )
             cap_metric_key = cur.fetchone()[0]  # type: ignore[index]
-            cur.execute("SELECT source_system_key FROM dw.dim_source_system WHERE source_code = 'PUCSL';")
+            cur.execute(
+                "SELECT source_system_key FROM dw.dim_source_system WHERE source_code = 'PUCSL';"
+            )
             src_key = cur.fetchone()[0]  # type: ignore[index]
 
             # 1. Negative active power must fail CHECK constraint
@@ -188,7 +197,15 @@ def test_negative_and_impossible_measurements_rejected(
                             15, -25.0, -25.0, 'MW', 'REPORTED', %s, %s, %s
                         );
                         """,
-                        (plant_key, energy_source_key, dispatch_metric_key, src_key, doc_id, raw_rec_id, etl_run_id),
+                        (
+                            plant_key,
+                            energy_source_key,
+                            dispatch_metric_key,
+                            src_key,
+                            doc_id,
+                            raw_rec_id,
+                            etl_run_id,
+                        ),
                     )
 
             # 2. Incompatible derived energy (100 MW for 15 min is 25 MWh, NOT 100 MWh!)
@@ -207,7 +224,15 @@ def test_negative_and_impossible_measurements_rejected(
                             15, 100.0, 100.0, TRUE, 100.0, 'MW', 'REPORTED', %s, %s, %s
                         );
                         """,
-                        (plant_key, energy_source_key, dispatch_metric_key, src_key, doc_id, raw_rec_id, etl_run_id),
+                        (
+                            plant_key,
+                            energy_source_key,
+                            dispatch_metric_key,
+                            src_key,
+                            doc_id,
+                            raw_rec_id,
+                            etl_run_id,
+                        ),
                     )
 
             # 3. Dependable capacity > Installed capacity must fail CHECK constraint
@@ -225,7 +250,15 @@ def test_negative_and_impossible_measurements_rejected(
                             210.0, 250.0, 210.0, 'MW', %s, %s, %s
                         );
                         """,
-                        (plant_key, energy_source_key, cap_metric_key, src_key, doc_id, raw_rec_id, etl_run_id),
+                        (
+                            plant_key,
+                            energy_source_key,
+                            cap_metric_key,
+                            src_key,
+                            doc_id,
+                            raw_rec_id,
+                            etl_run_id,
+                        ),
                     )
 
             # 4. Invalid / unregistered unit code must fail FK constraint
@@ -243,7 +276,15 @@ def test_negative_and_impossible_measurements_rejected(
                             210.0, 210.0, 'FAKE_UNIT_XYZ', %s, %s, %s
                         );
                         """,
-                        (plant_key, energy_source_key, cap_metric_key, src_key, doc_id, raw_rec_id, etl_run_id),
+                        (
+                            plant_key,
+                            energy_source_key,
+                            cap_metric_key,
+                            src_key,
+                            doc_id,
+                            raw_rec_id,
+                            etl_run_id,
+                        ),
                     )
 
             # 5. Coordinates outside Sri Lanka must fail CHECK constraint
@@ -277,9 +318,13 @@ def test_missing_weather_sentinel_preserved_as_null_and_duplicate_prevented(
             doc_id, raw_rec_id, etl_run_id = _create_synthetic_lineage(cur, "WEATHER")
             cur.execute("SELECT weather_location_key FROM dw.dim_weather_location LIMIT 1;")
             loc_key = cur.fetchone()[0]  # type: ignore[index]
-            cur.execute("SELECT metric_key FROM dw.dim_metric WHERE metric_code = 'SOLAR_IRRADIANCE_SW_DWN';")
+            cur.execute(
+                "SELECT metric_key FROM dw.dim_metric WHERE metric_code = 'SOLAR_IRRADIANCE_SW_DWN';"
+            )
             metric_key = cur.fetchone()[0]  # type: ignore[index]
-            cur.execute("SELECT source_system_key FROM dw.dim_source_system WHERE source_code = 'NASA_POWER';")
+            cur.execute(
+                "SELECT source_system_key FROM dw.dim_source_system WHERE source_code = 'NASA_POWER';"
+            )
             src_key = cur.fetchone()[0]  # type: ignore[index]
 
             # Attempting to store is_missing = TRUE with standardized_value = 0.0 must be rejected!

@@ -1,6 +1,7 @@
 """
 Automated data quality gates separating clean warehouse-ready rows from quarantined rows.
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -27,11 +28,12 @@ def evaluate_generation_quality_gate(
     )
     working = standardize_station_names(working, column="station_name")
 
-    dup_mask = working.duplicated(subset=["station_name", "timestamp", "generation_mwh"], keep="first")
+    dup_mask = working.duplicated(
+        subset=["station_name", "timestamp", "generation_mwh"], keep="first"
+    )
     missing_mask = working["peak_demand_mw"].isna() | working["generation_mwh"].isna()
-    negative_mask = (
-        (working["peak_demand_mw"].notna() & (working["peak_demand_mw"] < 0.0))
-        | (working["generation_mwh"].notna() & (working["generation_mwh"] < 0.0))
+    negative_mask = (working["peak_demand_mw"].notna() & (working["peak_demand_mw"] < 0.0)) | (
+        working["generation_mwh"].notna() & (working["generation_mwh"] < 0.0)
     )
     overflow_mask = (
         working["peak_demand_mw"].notna()
@@ -70,4 +72,3 @@ def evaluate_generation_quality_gate(
         "missing_cells_count": missing_report["missing_cells_count"],
     }
     return clean_df, quarantine_df, metrics
-

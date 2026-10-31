@@ -5,6 +5,7 @@ Phase 1 TDD Integration Tests for Transactional ETL Batch Execution:
 - Complete transaction rollback on mid-batch failure (zero partial fact inserts)
 - Audit evidence preserved in audit.etl_run even when data transaction rolls back
 """
+
 from __future__ import annotations
 
 import pytest
@@ -129,4 +130,3 @@ def test_transactional_batch_commit_idempotency_and_rollback(
                 assert audit_row[1] is not None
     finally:
         loader.cleanup_synthetic_documents([doc_code_ok, doc_code_fail])
-
