@@ -10,7 +10,7 @@ import json
 import time
 from decimal import Decimal
 from pathlib import Path
-from typing import Any
+from typing import Any, LiteralString, cast
 
 from src.common.config import DatabaseConfig
 from src.common.db import get_connection
@@ -68,12 +68,13 @@ def run_phase3_pipeline() -> None:
 
     with get_connection(cfg) as conn:
         for q_id, q_path, q_desc in query_mapping:
-            sql_text = Path(q_path).read_text(encoding="utf-8")
+            sql_text = cast(LiteralString, Path(q_path).read_text(encoding="utf-8"))
             with conn.cursor() as cur:
                 t0 = time.perf_counter()
                 cur.execute(sql_text)
                 elapsed_ms = round((time.perf_counter() - t0) * 1000.0, 2)
 
+                assert cur.description is not None, f"Cursor description is None for {q_id}"
                 col_names = [desc[0] for desc in cur.description]
                 rows = cur.fetchall()
 
@@ -85,7 +86,7 @@ def run_phase3_pipeline() -> None:
                     writer.writerows(rows)
 
                 # Export JSON
-                dict_rows = [dict(zip(col_names, r)) for r in rows]
+                dict_rows = [dict(zip(col_names, r, strict=True)) for r in rows]
                 json_path = output_dir / f"{q_id}.json"
                 with open(json_path, "w", encoding="utf-8") as f_json:
                     json.dump(dict_rows, f_json, default=default_serializer, indent=2)
@@ -100,9 +101,11 @@ def run_phase3_pipeline() -> None:
 
                 # Capture EXPLAIN (ANALYZE, BUFFERS) for representative queries
                 if q_id in ("Q01", "Q05", "Q09", "Q15", "Q17", "Q24"):
-                    explain_sql = f"EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) {sql_text}"
+                    explain_sql = cast(LiteralString, f"EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) {sql_text}")
                     cur.execute(explain_sql)
-                    explain_plan = cur.fetchone()[0]
+                    row_plan = cur.fetchone()
+                    assert row_plan is not None, f"Explain plan row is None for {q_id}"
+                    explain_plan = row_plan[0]
                     plan_path = plans_dir / f"{q_id}_explain_analyze.json"
                     with open(plan_path, "w", encoding="utf-8") as f_plan:
                         json.dump(explain_plan, f_plan, indent=2)

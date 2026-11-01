@@ -9,6 +9,7 @@ import csv
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
@@ -43,7 +44,7 @@ def generate_all_charts() -> None:
             "WIND": "#38a169",
             "BIOMASS": "#9f7aea",
         }
-        with open(q01_path, "r", encoding="utf-8") as f:
+        with open(q01_path, encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 if row["grp_src"] == "0" and row["grp_cat"] == "0":
@@ -75,7 +76,7 @@ def generate_all_charts() -> None:
     q02_path = output_dir / "Q02.csv"
     if q02_path.exists():
         days, ren_shares, ren_7d = [], [], []
-        with open(q02_path, "r", encoding="utf-8") as f:
+        with open(q02_path, encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 day_num = int(row["calendar_date"].split("-")[2])
@@ -106,7 +107,7 @@ def generate_all_charts() -> None:
     q05_path = output_dir / "Q05.csv"
     if q05_path.exists():
         slots, weekday_mw, weekend_mw = [], [], []
-        with open(q05_path, "r", encoding="utf-8") as f:
+        with open(q05_path, encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 slots.append(int(row["interval_slot_number"]))
@@ -137,7 +138,7 @@ def generate_all_charts() -> None:
     q09_path = output_dir / "Q09.csv"
     if q09_path.exists():
         sector_series: dict[str, dict[int, float]] = {}
-        with open(q09_path, "r", encoding="utf-8") as f:
+        with open(q09_path, encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 sec = row["sector_code"]
@@ -180,7 +181,7 @@ def generate_all_charts() -> None:
     if q13_path.exists():
         years = [2020, 2021, 2022, 2023, 2024]
         mannar_psh, victoria_psh = [], []
-        with open(q13_path, "r", encoding="utf-8") as f:
+        with open(q13_path, encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 loc = row["location_code"]
@@ -200,7 +201,7 @@ def generate_all_charts() -> None:
         ax.set_ylabel("Peak Sun Hours (PSH = kWh/m2/day)", fontsize=11, fontweight="bold")
         ax.set_title("GridLens — Annual Solar Resource Comparison: Victoria vs Mannar (2020-2024)\nNASA POWER Meteorological Database (1,827 Days, LST Standard)", fontsize=12, pad=15)
         ax.set_xticks(x)
-        ax.set_xticklabels(years)
+        ax.set_xticklabels([str(y) for y in years])
         ax.set_ylim(0, 7.0)
         ax.legend(loc="lower right", framealpha=0.9)
         ax.grid(True, axis="y")
@@ -216,7 +217,7 @@ def generate_all_charts() -> None:
     q04_path = output_dir / "Q04.csv"
     if q04_path.exists():
         technologies, day_shares, peak_shares = [], [], []
-        with open(q04_path, "r", encoding="utf-8") as f:
+        with open(q04_path, encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 technologies.append(row["energy_category"])
