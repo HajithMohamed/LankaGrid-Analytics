@@ -1,0 +1,64 @@
+flowchart LR
+    %% ==============================================================================
+    %% GridLens Analytical Query Architecture (24 Queries Across 6 Members)
+    %% Advanced OLAP, Aggregation Operators & Analytical Algorithms
+    %% ==============================================================================
+
+    subgraph M1["Member 1: Generation Mix & Renewables"]
+        Q01["Q01: Generation Mix by Source<br/>[ROLLUP (category, source)]"]
+        Q02["Q02: Daily Renewable Share<br/>[Centered 7-Day Moving Average]"]
+        Q03["Q03: Plant Capacity Factor<br/>[Non-Additive Ratio & Boundary Screening]"]
+        Q04["Q04: Peak/Day/Off-Peak Dispatch<br/>[TOU Dimensional Slicing & CTEs]"]
+    end
+
+    subgraph M2["Member 2: Dispatch Dynamics & Ramping"]
+        Q05["Q05: Weekday vs Weekend Dispatch<br/>[96-Interval Diurnal Load Curves]"]
+        Q06["Q06: Dispatch Ramp Rate Analysis<br/>[LAG Window Functions & First Derivatives]"]
+        Q07["Q07: Baseload vs Peaking Behavior<br/>[Coefficient of Variation CV Screening]"]
+        Q08["Q08: Telemetry Reconciliation<br/>[Riemann Integral vs Sheet 01.03 Benchmarks]"]
+    end
+
+    subgraph M3["Member 3: Electricity Demand & Customer Dynamics"]
+        Q09["Q09: 5-Year Sectoral Trends<br/>[YoY Growth & Window Partitions]"]
+        Q10["Q10: Structural Sector Consumption Shifts<br/>[Multi-Year Pivot & 5-Year CAGR]"]
+        Q11["Q11: Consumption per Customer Account<br/>[Semi-Additive Average Intensity Metrics]"]
+        Q12["Q12: LECO Bulk Supply vs CEB Retail<br/>[Avoiding Double-Counting in Sales Aggregates]"]
+    end
+
+    subgraph M4["Member 4: Weather & Solar Coupling"]
+        Q13["Q13: 5-Year Solar Irradiance Profiles<br/>[Peak Sun Hours & Solar Resource Conversion]"]
+        Q14["Q14: Temperature vs Peak Dispatch<br/>[Pearson Correlation CORR & Aligned Facts]"]
+        Q15["Q15: Rainfall Monsoon Seasonality<br/>[CUBE Operator: Multi-Way Monsoon Aggregates]"]
+        Q16["Q16: Wind Resource & Generation Coupling<br/>[Pearson Correlation CORR(v, MW) & v3 Cubic]"]
+    end
+
+    subgraph M5["Member 5: Plant Operations & Capacity Performance"]
+        Q17["Q17: Zero-Generation Interval Analysis<br/>[Filtering True Zeros vs Missing Sentinels]"]
+        Q18["Q18: Installed Capacity Utilization Ratio<br/>[Peak Dispatch vs Reference Nameplate Ratings]"]
+        Q19["Q19: Lakvijaya Coal Baseload Continuity<br/>[Unit-Level Availability Factor & Outage Audit]"]
+        Q20["Q20: Evening Peak Generation Contribution<br/>[Peak Window Slicing & Merit-Order Ranking]"]
+    end
+
+    subgraph M6["Member 6: Grid Efficiency, Reconciliation & Quality"]
+        Q21["Q21: 5-Year Sales Efficiency Trends<br/>[GROUPING SETS Multilevel Aggregation]"]
+        Q22["Q22: Multi-Tier Loss Reconciliation<br/>[Gross Generation vs Billed Sales Loss Proxy]"]
+        Q23["Q23: Quarantine Audit Trail<br/>[Audit Schema Lineage & Quarantine Fractions]"]
+        Q24["Q24: ETL Execution Performance<br/>[Pipeline Execution Throughput & Audit Logs]"]
+    end
+
+    subgraph OUTCOMES["Analytical Business Insights"]
+        OUT_RE["Renewable Target Tracking<br/>(29.75% Mean Renewable Penetration)"]
+        OUT_ST["Grid Stability & Ramping<br/>(+141.00 MW Max Surge at 18:30)"]
+        OUT_ECO["Economic Shift Tracking<br/>(Hotel Sector +83.94% Growth, CAGR +16.46%)"]
+        OUT_RES["Resource Potential Modeling<br/>(Mannar 5.16 PSH/day, Wind r = +0.7143)"]
+        OUT_CAP["Capacity Bottleneck Detection<br/>(10 Plants Delivered >=95% Nameplate)"]
+        OUT_GOV["Data Governance & Quality<br/>(926 Quarantined Records, Reconciled to 100%)"]
+    end
+
+    M1 --> OUT_RE
+    M2 --> OUT_ST
+    M3 --> OUT_ECO
+    M4 --> OUT_RES
+    M5 --> OUT_CAP
+    M6 --> OUT_GOV
+

@@ -1,0 +1,109 @@
+flowchart TD
+    %% ==============================================================================
+    %% GridLens System Architecture Diagram
+    %% Academic Data Warehouse Architecture for Sri Lanka National Electricity Grid
+    %% ==============================================================================
+
+    subgraph SOURCES["1. Authentic Data Sources"]
+        SRC_PUCSL["PUCSL Operational Telemetry<br/>(15-Minute SCADA Generation)"]
+        SRC_CEB["CEB Statistical Digests<br/>(2020-2024 Audited Sales & Tariffs)"]
+        SRC_NASA["NASA POWER Satellite API<br/>(Daily Meteorological Reanalysis)"]
+    end
+
+    subgraph RAW_ZONE["2. Immutable Raw Zone & Provenance"]
+        RAW_FILES["Raw Storage (data/raw/)<br/>(Immutable XLSX, CSV, JSON)"]
+        MANIFEST["Audit Manifest (manifest.json)<br/>(SHA-256 Checksums, Timestamps)"]
+    end
+
+    subgraph PREPROCESSING["3. Preprocessing & Quality Engineering"]
+        CLEAN_DISPATCH["Dispatch Cleaner<br/>(IQR Outlier Detection, Range Bounds)"]
+        CLEAN_SALES["Sales Parser<br/>(Sector Pivot, Double-Counting Prevention)"]
+        CLEAN_WEATHER["Weather Normalizer<br/>(Standardized Units, SL Timezone UTC+05:30)"]
+        QUALITY_GATE["Automated Quality Gate<br/>(Schema Checks, Physical Validation)"]
+    end
+
+    subgraph STAGING["4. PostgreSQL Staging Schema (stg)"]
+        STG_DISPATCH["stg.dispatch_intervals_raw"]
+        STG_SALES["stg.ceb_sales_raw"]
+        STG_WEATHER["stg.nasa_weather_raw"]
+        QUARANTINE["audit.quarantine_records<br/>(Isolated Anomalies with Reason Codes)"]
+    end
+
+    subgraph ETL_CORE["5. Idempotent Dimensional ETL"]
+        LOADER["Warehouse Loader Engine<br/>(Surrogate Key Resolution, UPSERT)"]
+        LINEAGE["audit.record_lineage<br/>(Source-to-Target Row Audit Trail)"]
+        BATCH_LOG["audit.etl_batch_log<br/>(Execution Times, Row Counts, Errors)"]
+    end
+
+    subgraph WAREHOUSE["6. Dimensional Warehouse Core (dw)"]
+        subgraph CONFORMED_DIMS["Conformed Dimensions"]
+            DIM_DATE["dw.dim_date"]
+            DIM_TIME["dw.dim_time_of_day"]
+            DIM_PLANT["dw.dim_power_plant"]
+            DIM_ENERGY["dw.dim_energy_source"]
+            DIM_SECTOR["dw.dim_tariff_sector"]
+            DIM_CLASS["dw.dim_customer_class"]
+            DIM_LOC["dw.dim_weather_location"]
+            DIM_METRIC["dw.dim_metric"]
+        end
+        subgraph FACTS["Fact Constellation"]
+            FACT_DISPATCH["dw.fact_dispatch_interval<br/>(Partitioned by date_key)"]
+            FACT_GEN["dw.fact_daily_generation"]
+            FACT_SALES["dw.fact_electricity_sales"]
+            FACT_WEATHER["dw.fact_weather_daily"]
+        end
+    end
+
+    subgraph MARTS["7. Analytical Marts Schema (mart)"]
+        MV_DISPATCH["mart.mv_daily_dispatch_by_source<br/>(Indexed Materialized View)"]
+        MV_WEATHER["mart.mv_monthly_weather_summary<br/>(Indexed Materialized View)"]
+        SP_REFRESH["mart.sp_refresh_analytical_marts()<br/>(Concurrent Atomic Refresh)"]
+    end
+
+    subgraph ANALYTICS["8. Business Intelligence & OLAP (24 Queries)"]
+        M1["Member 1: Generation Mix & Renewables<br/>(Q01-Q04: ROLLUP, Moving Avg, TOU)"]
+        M2["Member 2: Dispatch Dynamics & Ramping<br/>(Q05-Q08: Diurnal Curves, LAG, Reconciliation)"]
+        M3["Member 3: Demand & Sector Trajectories<br/>(Q09-Q12: YoY Growth, CAGR, LECO Split)"]
+        M4["Member 4: Weather & Solar Coupling<br/>(Q13-Q16: PSH, CUBE, Wind Correlation)"]
+        M5["Member 5: Plant Operations & Capacity<br/>(Q17-Q20: Duty Cycles, Peak Ratios, Baseload)"]
+        M6["Member 6: Efficiency & Data Quality<br/>(Q21-Q24: GROUPING SETS, Losses, Lineage)"]
+    end
+
+    %% Data Flow Connections
+    SRC_PUCSL --> RAW_FILES
+    SRC_CEB --> RAW_FILES
+    SRC_NASA --> RAW_FILES
+    RAW_FILES --> MANIFEST
+
+    RAW_FILES --> CLEAN_DISPATCH
+    RAW_FILES --> CLEAN_SALES
+    RAW_FILES --> CLEAN_WEATHER
+
+    CLEAN_DISPATCH --> QUALITY_GATE
+    CLEAN_SALES --> QUALITY_GATE
+    CLEAN_WEATHER --> QUALITY_GATE
+
+    QUALITY_GATE -->|Valid Records| STG_DISPATCH
+    QUALITY_GATE -->|Valid Records| STG_SALES
+    QUALITY_GATE -->|Valid Records| STG_WEATHER
+    QUALITY_GATE -->|Anomalies| QUARANTINE
+
+    STG_DISPATCH --> LOADER
+    STG_SALES --> LOADER
+    STG_WEATHER --> LOADER
+    LOADER --> LINEAGE
+    LOADER --> BATCH_LOG
+
+    LOADER --> CONFORMED_DIMS
+    LOADER --> FACTS
+
+    CONFORMED_DIMS -.-> FACTS
+    FACTS --> MV_DISPATCH
+    FACTS --> MV_WEATHER
+    SP_REFRESH -.-> MV_DISPATCH
+    SP_REFRESH -.-> MV_WEATHER
+
+    FACTS --> ANALYTICS
+    MV_DISPATCH --> ANALYTICS
+    MV_WEATHER --> ANALYTICS
+

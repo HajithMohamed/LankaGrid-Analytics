@@ -1,0 +1,52 @@
+flowchart TD
+    %% ==============================================================================
+    %% GridLens Advanced PostgreSQL 18 Database Workflow
+    %% Partitioning, Concurrency, Materialized Views & Integrity
+    %% ==============================================================================
+
+    subgraph PARTITIONING["1. Declarative Range Partitioning (PostgreSQL 18)"]
+        PARENT["dw.fact_dispatch_interval<br/>PARTITION BY RANGE (date_key)"]
+        PART_202403["fact_dispatch_interval_y2024m03<br/>FOR VALUES FROM (20240301) TO (20240401)<br/>(107,115 facts)"]
+        PART_FUTURE["fact_dispatch_interval_default<br/>DEFAULT PARTITION<br/>(Future data catch-all)"]
+        PARENT -->|Range Router| PART_202403
+        PARENT -->|Range Router| PART_FUTURE
+        
+        QUERY["Analytical Query (e.g., Q01, Q05, Q06)<br/>WHERE date_key BETWEEN 20240301 AND 20240331"]
+        QUERY -.->|Partition Pruning: Prunes all partitions except March 2024| PART_202403
+    end
+
+    subgraph CONCURRENT_MVS["2. Concurrency-Safe Analytical Materialized Views"]
+        BASE_DATA["dw.fact_dispatch_interval + dw.dim_*"]
+        MV["mart.mv_daily_dispatch_by_source"]
+        MV_IDX["CREATE UNIQUE INDEX idx_mv_daily_dispatch_grain<br/>ON mart.mv_daily_dispatch_by_source (date_key, energy_source_key)"]
+        
+        BASE_DATA -->|Populates| MV
+        MV --> MV_IDX
+        
+        REFRESH_CMD["REFRESH MATERIALIZED VIEW CONCURRENTLY mart.mv_daily_dispatch_by_source"]
+        MV_IDX -.->|Enables non-blocking read access during refresh| REFRESH_CMD
+    end
+
+    subgraph TX_INTEGRITY["3. Transactional Integrity & Migration Governance"]
+        MIG_FILE["database/migrations/0XX_*.sql"]
+        RUNNER["MigrationRunner (scripts/migrate.py)"]
+        SHA["Compute Normalized SHA-256 Checksum"]
+        TX_BLOCK["BEGIN TRANSACTION; ... COMMIT;"]
+        TRACK_TABLE["public.schema_migrations"]
+        
+        MIG_FILE --> RUNNER
+        RUNNER --> SHA
+        SHA --> TX_BLOCK
+        TX_BLOCK -->|On Success| TRACK_TABLE
+        TX_BLOCK -.->|On Checksum Mismatch or Failure| ROLLBACK["ROLLBACK TRANSACTION<br/>(Prevents Partial / Corrupted State)"]
+    end
+
+    subgraph AUDIT_GOV["4. Provenance & Quarantine Architecture"]
+        LOADER_EVENT["ETL Batch Processing"]
+        LINEAGE_INS["INSERT INTO audit.record_lineage<br/>(target_pk, source_file, source_row, hash)"]
+        QUAR_INS["INSERT INTO audit.quarantine_records<br/>(raw_payload, error_rule, severity, batch_id)"]
+        
+        LOADER_EVENT -->|Successful Load| LINEAGE_INS
+        LOADER_EVENT -->|Quality Violation| QUAR_INS
+    end
+
