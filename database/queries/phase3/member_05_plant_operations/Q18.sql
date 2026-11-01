@@ -78,10 +78,11 @@ SELECT
         2
     ) AS peak_headroom_mw,
     CASE
+        WHEN (odp.observed_peak_mw / NULLIF(prr.installed_capacity_mw, 0)) > 1.00 THEN 'OBSERVED PEAK EXCEEDS REFERENCE NAMEPLATE (FURTHER EVIDENCE REQUIRED)'
         WHEN (odp.observed_peak_mw / NULLIF(prr.installed_capacity_mw, 0)) >= 0.95 THEN 'FULL NAMEPLATE CAPABILITY DELIVERED'
         WHEN (odp.observed_peak_mw / NULLIF(prr.installed_capacity_mw, 0)) BETWEEN 0.80 AND 0.95 THEN 'NEAR-RATED DISPATCH (MILD DERATING)'
         WHEN odp.observed_peak_mw > 0 THEN 'CONSTRAINED / PARTIAL DISPATCH'
-        ELSE 'ZERO GENERATION / EXTENDED OUTAGE'
+        ELSE 'ZERO RECORDED DISPATCH (RESERVE STANDBY OR OUTAGE)'
     END AS operational_delivery_status,
     RANK() OVER (ORDER BY (odp.observed_peak_mw / NULLIF(prr.installed_capacity_mw, 0)) DESC) AS peak_ratio_rank
 FROM plant_reference_ratings prr
