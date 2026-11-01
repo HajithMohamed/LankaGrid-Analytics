@@ -122,3 +122,4 @@ To optimize expensive repeated OLAP queries, Migration 021 deployed:
    - Accelerates solar irradiance and wind profile queries from ~95ms to <1.5ms (**60x speedup**).
 3. Concurrent Refresh via `mart.sp_refresh_analytical_marts()`:
    - Uses `REFRESH MATERIALIZED VIEW CONCURRENTLY` enabled by unique composite indexes, ensuring zero analytical query blocking during refresh.
+

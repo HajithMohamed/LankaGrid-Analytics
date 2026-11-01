@@ -6,6 +6,7 @@ Verifies that all 24 SQL queries execute cleanly and return valid schema columns
 from __future__ import annotations
 
 from pathlib import Path
+from typing import LiteralString, cast
 
 import pytest
 
@@ -52,7 +53,7 @@ def test_phase3_query_execution_and_schema(
     sql_path = Path(file_path)
     assert sql_path.exists(), f"Query file not found: {file_path}"
 
-    sql_text = sql_path.read_text(encoding="utf-8")
+    sql_text = cast(LiteralString, sql_path.read_text(encoding="utf-8"))
     assert len(sql_text.strip()) > 50, f"Query file is empty or trivial: {file_path}"
 
     with get_connection(populated_analytics_db) as conn:

@@ -48,3 +48,4 @@ In strict compliance with the **Antigravity Agent Governance** data integrity ru
 - **No Data Fabrication**: Where daily generation reports for specific days outside March 2024 were unavailable in the PUCSL portal, they were not interpolated or synthesized.
 - **Unit Integrity**: Always distinguish active power rate ($MW$) from integrated energy volume ($MWh$). For 15-minute intervals, $MWh = MW \times 0.25\text{ hours}$.
 - **Reconciliation Precedence**: When annual statistical digests and daily operational reports differ slightly, CEB audited annual statistical digests hold precedence for financial and billing reconciliation, while PUCSL 15-minute reports hold precedence for intraday load profiling and ramping dynamics.
+

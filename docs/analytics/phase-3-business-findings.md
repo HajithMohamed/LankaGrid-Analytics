@@ -110,3 +110,4 @@ This report synthesizes the core findings and numerical insights produced by the
 
 3. **Transmission and Distribution Loss Trends (Q24)**:
    - Gross generation minus billed retail sales revealed a national loss proxy of **8.8% to 9.6%** over the 5-year historical window (2020–2024), consistent with audited CEB transmission and distribution losses.
+

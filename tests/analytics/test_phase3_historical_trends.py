@@ -6,10 +6,9 @@ Verifies YoY calculations, CAGR formulas, and materialized view data consistency
 from __future__ import annotations
 
 from pathlib import Path
+from typing import LiteralString, cast
 
-from psycopg import sql as psql
 import pytest
-from psycopg import sql as psql
 
 from src.common.config import DatabaseConfig
 from src.common.db import get_connection
@@ -18,10 +17,13 @@ from src.common.db import get_connection
 @pytest.mark.integration
 def test_five_year_sales_yoy_calculations_q09(populated_analytics_db: DatabaseConfig) -> None:
     """Verify that Q09 YoY changes correctly compute (Sales_t - Sales_t-1) / Sales_t-1 * 100%."""
-    sql = Path("database/queries/phase3/member_03_sales/Q09.sql").read_text(encoding="utf-8")
+    sql = cast(
+        LiteralString,
+        Path("database/queries/phase3/member_03_sales/Q09.sql").read_text(encoding="utf-8"),
+    )
     with get_connection(populated_analytics_db) as conn:
         with conn.cursor() as cur:
-            cur.execute(psql.SQL(sql))
+            cur.execute(sql)
             rows = cur.fetchall()
             assert rows is not None and len(rows) > 0, "Query Q09 must return result rows"
             for r in rows:

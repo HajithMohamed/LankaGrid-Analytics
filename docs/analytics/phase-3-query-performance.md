@@ -71,3 +71,4 @@ All 24 analytical queries were executed against the live warehouse database (`sl
 2. **Composite Indexes on Materialized Views**:
    - `idx_mv_daily_dispatch_date_source` on `mart.mv_daily_dispatch_by_source (date_key, energy_source_key)`
    - Enables `REFRESH MATERIALIZED VIEW CONCURRENTLY`, allowing analysts to query the mart during daily batch refreshes with zero blocking.
+

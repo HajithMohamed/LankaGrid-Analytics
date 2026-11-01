@@ -218,3 +218,4 @@ This catalogue documents all 24 analytical queries designed and implemented acro
 - **Fact Grain**: Annual gross generation ($GWh$) vs. billed retail sales ($GWh$).
 - **Tables Consulted**: `dw.fact_electricity_sales`, `dw.fact_published_statistic`, `dw.dim_date`.
 - **Formulas**: $\text{Loss Proxy (GWh)} = \text{Gross Generation} - \text{Billed Sales}$, $\text{Loss \%} = \frac{\text{Loss}}{\text{Gross Generation}} \times 100\%$.
+

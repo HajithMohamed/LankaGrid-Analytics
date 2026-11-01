@@ -6,10 +6,9 @@ Verifies MW vs MWh consistency, non-negative bounds, zero vs null preservation, 
 from __future__ import annotations
 
 from pathlib import Path
+from typing import LiteralString, cast
 
-from psycopg import sql as psql
 import pytest
-from psycopg import sql as psql
 
 from src.common.config import DatabaseConfig
 from src.common.db import get_connection
@@ -36,10 +35,13 @@ def test_dispatch_energy_integration_consistency(populated_analytics_db: Databas
 @pytest.mark.integration
 def test_no_double_counting_in_sales_queries(populated_analytics_db: DatabaseConfig) -> None:
     """Verify that analytical queries do not aggregate ALL_SECTORS alongside individual retail sectors."""
-    sql = Path("database/queries/phase3/member_03_sales/Q12.sql").read_text(encoding="utf-8")
+    sql = cast(
+        LiteralString,
+        Path("database/queries/phase3/member_03_sales/Q12.sql").read_text(encoding="utf-8"),
+    )
     with get_connection(populated_analytics_db) as conn:
         with conn.cursor() as cur:
-            cur.execute(psql.SQL(sql))
+            cur.execute(sql)
             rows = cur.fetchall()
             assert rows is not None and len(rows) > 0, "Query Q12 must return result rows"
             for r in rows:

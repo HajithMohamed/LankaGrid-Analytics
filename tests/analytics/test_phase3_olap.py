@@ -6,6 +6,7 @@ Verifies that multidimensional cubes calculate mathematically consistent subtota
 from __future__ import annotations
 
 from pathlib import Path
+from typing import LiteralString, cast
 
 import pytest
 
@@ -16,7 +17,10 @@ from src.common.db import get_connection
 @pytest.mark.integration
 def test_olap_rollup_consistency_q01(populated_analytics_db: DatabaseConfig) -> None:
     """Verify that Q01 ROLLUP subtotals equal sum of individual technology entries and grand total matches."""
-    sql = Path("database/queries/phase3/member_01_generation/Q01.sql").read_text(encoding="utf-8")
+    sql = cast(
+        LiteralString,
+        Path("database/queries/phase3/member_01_generation/Q01.sql").read_text(encoding="utf-8"),
+    )
     with get_connection(populated_analytics_db) as conn:
         with conn.cursor() as cur:
             cur.execute(sql)
@@ -40,7 +44,10 @@ def test_olap_rollup_consistency_q01(populated_analytics_db: DatabaseConfig) -> 
 @pytest.mark.integration
 def test_olap_cube_consistency_q15(populated_analytics_db: DatabaseConfig) -> None:
     """Verify that Q15 CUBE computes consistent 2D cube cells for locations and monsoon seasons."""
-    sql = Path("database/queries/phase3/member_04_weather/Q15.sql").read_text(encoding="utf-8")
+    sql = cast(
+        LiteralString,
+        Path("database/queries/phase3/member_04_weather/Q15.sql").read_text(encoding="utf-8"),
+    )
     with get_connection(populated_analytics_db) as conn:
         with conn.cursor() as cur:
             cur.execute(sql)
@@ -61,7 +68,10 @@ def test_olap_cube_consistency_q15(populated_analytics_db: DatabaseConfig) -> No
 @pytest.mark.integration
 def test_olap_grouping_sets_q21(populated_analytics_db: DatabaseConfig) -> None:
     """Verify that Q21 GROUPING SETS computes exact annual subtotals and 5-year grand total."""
-    sql = Path("database/queries/phase3/member_06_grid_efficiency/Q21.sql").read_text(encoding="utf-8")
+    sql = cast(
+        LiteralString,
+        Path("database/queries/phase3/member_06_grid_efficiency/Q21.sql").read_text(encoding="utf-8"),
+    )
     with get_connection(populated_analytics_db) as conn:
         with conn.cursor() as cur:
             cur.execute(sql)
