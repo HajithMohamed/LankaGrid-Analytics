@@ -118,6 +118,31 @@ def test_telemetry_reconciliation_q08(populated_analytics_db: DatabaseConfig) ->
                 f"Detailed telemetered sums {sum_tele} != total {tele_mwh}"
             )
 
+            # Verify exact cell reconciliation for Coal, Major Hydro, and Solar
+            coal_row = next(r for r in cat_rows if r[0] == "Thermal Coal")
+            assert float(coal_row[1]) == 19493.00, (
+                f"Coal published must be 19493.00 MWh, got {coal_row[1]}"
+            )
+            assert abs(float(coal_row[3]) - 8.75) < 0.1, (
+                f"Coal variance must be +8.75 MWh, got {coal_row[3]}"
+            )
+
+            hydro_row = next(r for r in cat_rows if r[0] == "Major Hydro")
+            assert float(hydro_row[1]) == 10375.60, (
+                f"Hydro published must be 10375.60 MWh, got {hydro_row[1]}"
+            )
+            assert abs(float(hydro_row[3]) - 5.10) < 0.1, (
+                f"Hydro variance must be +5.10 MWh, got {hydro_row[3]}"
+            )
+
+            solar_row = next(r for r in cat_rows if r[0] == "Solar Utility & Embedded")
+            assert float(solar_row[1]) == 2379.70, (
+                f"Solar published must be 2379.70 MWh, got {solar_row[1]}"
+            )
+            assert abs(float(solar_row[3]) - 1728.20) < 0.1, (
+                f"Solar variance must be +1728.20 MWh, got {solar_row[3]}"
+            )
+
 
 @pytest.mark.integration
 def test_data_quality_quarantine_rates_q23(populated_analytics_db: DatabaseConfig) -> None:

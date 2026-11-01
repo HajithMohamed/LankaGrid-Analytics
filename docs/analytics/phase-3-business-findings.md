@@ -9,14 +9,14 @@ This report synthesizes the core findings and numerical insights produced by the
 
 1. **March 2024 Generation Mix (Q01)**:
    - Total national dispatched electrical energy in March 2024 was **1,399,337.00 MWh** (~1.40 TWh).
-   - **Thermal Coal (Lakvijaya Units 1–3)** provided the largest single source of electrical energy: **595,502.50 MWh (42.56%)**.
-   - **Thermal Oil (Heavy Fuel Oil & Diesel)** contributed **387,489.25 MWh (27.69%)**, demonstrating substantial ongoing dependence on imported fossil fuels during dry pre-monsoon conditions.
-   - **Major Hydro** supplied **321,570.00 MWh (22.98%)**.
+   - **Thermal Coal (Lakvijaya Units 1–3)** provided the largest single source of electrical energy: **595,524.50 MWh (42.56%)**.
+   - **Thermal Oil (Heavy Fuel Oil & Diesel)** contributed **387,450.75 MWh (27.69%)**, demonstrating substantial ongoing dependence on imported fossil fuels during dry pre-monsoon conditions.
+   - **Major Hydro** supplied **321,595.50 MWh (22.98%)**.
    - Non-conventional renewable energy (NCRE) contributed:
-     - Mini Hydro: **40,248.50 MWh (2.88%)**
-     - Utility Solar PV: **22,763.50 MWh (1.63%)**
-     - Wind (Thambapavani & SPP): **19,836.75 MWh (1.42%)**
-     - Biomass: **11,926.50 MWh (0.84%)**
+     - Mini Hydro: **40,313.75 MWh (2.88%)**
+     - Utility Solar PV: **22,839.50 MWh (1.63%)**
+     - Wind (Thambapavani & SPP): **19,848.00 MWh (1.42%)**
+     - Biomass: **11,765.00 MWh (0.84%)**
 
 2. **Daily Renewable Penetration Variability (Q02)**:
    - Total renewable generation (Major Hydro + Mini Hydro + Solar + Wind + Biomass) averaged **29.75%** across March 2024.
@@ -27,7 +27,7 @@ This report synthesizes the core findings and numerical insights produced by the
    - Lakvijaya Coal units operated as steady baseload with capacity factors of **88.74% to 89.15%** (peak utilization 94.74%–97.60%).
    - Combined cycle thermal oil (Kelanitissa CC) maintained an **82.43%** capacity factor.
    - Major hydro stations were modulated for peaking duty and water conservation: Victoria operated at **38.15%** capacity factor, Samanalawewa at **56.01%**, and Kotmale at **12.21%**.
-   - Stations exceeding nominal baseline ratings (Polpitiya 87.0 MW peak vs 75.0 MW; West Coast 289.0 MW peak vs 270.0 MW; Victoria 220.0 MW peak vs 210.0 MW) reflect repowering upgrades (Polpitiya repowered to 86.4 MW in 2021), contract overfire firing (West Coast 300 MW contract capacity), and high hydraulic head overload.
+   - Stations where observed peak dispatch exceeds reference baseline ratings (Polpitiya 87.0 MW peak vs 75.0 MW; West Coast 289.0 MW peak vs 270.0 MW; Victoria 220.0 MW peak vs 210.0 MW) are recorded as observed dispatch exceedances against reference registries, noting that verification of physical plant repowering or high-head conditions requires further technical commissioning records.
 
 4. **Time-of-Use Peaking Contribution (Q04)**:
    - During the **Evening Peak (18:30–22:30)**, major hydro generation surged to **32.40%** of total generation, compared to 20.95% during the Daytime (05:30–18:30).
@@ -44,17 +44,24 @@ This report synthesizes the core findings and numerical insights produced by the
 
 2. **Ramping Rates and Operational Stress (Q06)**:
    - The grid experiences its steepest positive ramping stress systematically at **Slot 75 (18:30–18:45)**.
-   - The maximum observed 15-minute system upward ramp reached **+141.25 MW** (+9.42 MW/min) on March 12, driven by the simultaneous cessation of solar generation and the evening domestic lighting surge.
+   - The maximum observed 15-minute system upward ramp reached **+141.00 MW** (+9.40 MW/min) on Sunday, March 17, 2024 (Interval 75, 18:30–18:45), driven by the sharp evening lighting demand surge.
    - The steepest downward ramp occurred at **Slot 92 (22:45–23:00)** with a drop of **-122.40 MW** (-8.16 MW/min).
 
 3. **Baseload vs Peaking Plant Classification (Q07)**:
    - **Lakvijaya Coal** maintained an availability factor of **100.0%** and a coefficient of variation ($CV$) of **0.09**, confirming its role as primary baseload.
-   - **Kothmale** ($CV = 0.94$, 43.8% availability) and **Upper Kotmale** ($CV = 1.39$, 23.7% availability) exhibited high volatility, confirming designated peaking duty.
+   - **Kotmale** ($CV = 0.94$, 43.8% availability) and **Upper Kotmale** ($CV = 1.39$, 23.7% availability) exhibited high volatility, confirming designated peaking duty.
 
 4. **Telemetry-to-Published-Energy Reconciliation (Q08)**:
-   - On the March 1, 2024 benchmark day, discrete 15-minute Riemann integration of transmission SCADA telemetry totaled **46,308.00 MWh**, compared to **48,223.00 MWh** on audited utility settlement sheets, revealing an authentic net variance of **1,915.00 MWh (3.97%)**.
-   - The variance is overwhelmingly driven by **distributed rooftop solar PV (1,837.50 MWh, 73.82% category variance)** metered behind the meter at consumer distribution boards, and **embedded 33kV mini-hydro (294.00 MWh, 15.57% category variance)**.
-   - Transmission-connected thermal coal (-0.19%), thermal oil (+0.29%), and biomass (+2.56%) reconcile within tight operational tolerances.
+   - On the March 1, 2024 baseline day, discrete 15-minute Riemann integration of transmission SCADA telemetry totaled **46,308.00 MWh**, compared to **48,223.00 MWh** from official PUCSL settlement records (`15-Minutes-Report-31-Mar2024.xlsx`, Sheet `01.03`, Col 98, Rows 41–48), establishing an authentic net variance of **1,915.00 MWh (3.97%)**.
+   - The variance is overwhelmingly explained by untelemetered distributed sources:
+     - Commercial utility & embedded rooftop solar: published **2,379.70 MWh** vs telemetered **651.50 MWh** (variance **+1,728.20 MWh**, 72.62%).
+     - Embedded 33kV mini-hydro: published **1,896.80 MWh** vs telemetered **1,594.00 MWh** (variance **+302.80 MWh**, 15.96%).
+   - Transmission-connected grid dispatch reconciles with extreme precision:
+     - Major Hydro: published **10,375.60 MWh** vs telemetered **10,370.50 MWh** (variance **+5.10 MWh**, +0.05%).
+     - Thermal Coal: published **19,493.00 MWh** vs telemetered **19,484.25 MWh** (variance **+8.75 MWh**, +0.04%).
+     - Wind: published **1,502.40 MWh** vs telemetered **1,472.50 MWh** (variance **+29.90 MWh**, +1.99%).
+     - Biomass: published **382.30 MWh** vs telemetered **389.75 MWh** (variance **-7.45 MWh**, -1.95%).
+     - Thermal Oil: published **12,193.20 MWh** vs telemetered **12,345.50 MWh** (variance **-152.30 MWh**, -1.25%).
 
 ---
 
@@ -84,8 +91,8 @@ This report synthesizes the core findings and numerical insights produced by the
    - Both stations exhibit clear pre-monsoon solar peaks in March–April (5.8–6.4 PSH/day) and cloud-induced depressions during the Southwest Monsoon (June–July).
 
 2. **Empirical Temperature vs Grid Demand Correlation (Q14)**:
-   - Paired daily observations across March 2024 revealed an empirical Pearson correlation of **$r = 0.0083$** between national composite ambient temperature (Victoria & Mannar) and daily grid peak demand, confirming that temperature at highland catchment and northern coastal nodes does not dictate evening peak demand.
-   - Aligned temperature exhibits a mild positive correlation with total daily electrical energy (**$r = +0.1248$**), reflecting daylight cooling loads across the pre-monsoon dry season.
+   - Paired daily observations across March 2024 revealed an empirical Pearson correlation of **$r = +0.0083$** between two-station mean ambient temperature (`LOC_VICTORIA_CATCHMENT` and `LOC_MANNAR_WIND`) and peak dispatch MW, confirming near-zero coupling at these specific non-urban monitoring nodes.
+   - The two-station mean temperature exhibits a mild positive correlation with total daily electrical energy (**$r = +0.1248$**) across the 31 paired March days, reflecting seasonal daytime thermal demand across the pre-monsoon dry season.
 
 3. **Precipitation Seasonality & Monsoon CUBE Dynamics (Q15)**:
    - The multi-dimensional cube over 1,827 days revealed a 5-year total rainfall of **16,929.50 mm** across the two nodes.
@@ -105,9 +112,9 @@ This report synthesizes the core findings and numerical insights produced by the
    - Peaking hydro stations were dispatched selectively: Victoria was online for 96.2% of intervals (modulating power), while Bowatenna was dispatched for only 8.5% of intervals.
 
 2. **Observed Peak Dispatch vs Rated Nameplate Capacity (Q18)**:
-   - 10 stations delivered $\ge 95\%$ of their rated baseline capacities during March 2024.
-   - Stations operating above nominal rating: Polpitiya (**116.0% peak ratio**, 87.0 MW observed vs 75.0 MW baseline due to 2021 runner repowering to 86.4 MW), West Coast Yugadanavi (**107.0%**, 289.0 MW observed vs 270.0 MW nominal under auxiliary overfiring), and Victoria Hydro (**104.8%**, 220.0 MW observed vs 210.0 MW nominal during high hydraulic head).
-   - Kelanitissa Gas Turbine 7 was maintained on standby reserve (0 MW observed peak).
+   - 10 stations delivered $\ge 95\%$ of their rated reference nameplate capacities during March 2024.
+   - Stations where observed peak dispatch exceeded reference nameplate rating (Polpitiya **116.0% peak ratio**, 87.0 MW observed vs 75.0 MW reference; West Coast Yugadanavi **107.0%**, 289.0 MW observed vs 270.0 MW reference; Victoria Hydro **104.8%**, 220.0 MW observed vs 210.0 MW reference; Samanalawewa **101.7%**, 122.0 MW observed vs 120.0 MW reference; New Laxapana **101.0%**, 101.0 MW observed vs 100.0 MW reference; Randenigala **100.8%**, 123.0 MW observed vs 122.0 MW reference) are systematically catalogued with status `OBSERVED PEAK EXCEEDS REFERENCE NAMEPLATE (FURTHER EVIDENCE REQUIRED)`. These empirical exceedances reflect telemetry observations against reference registries, and any underlying physical factors (such as plant repowering, high hydraulic head, or plant overload margins) require secondary engineering documentation.
+   - Kelanitissa Gas Turbine 7 recorded zero dispatch during March 2024, catalogued as `ZERO RECORDED DISPATCH (RESERVE STANDBY OR OUTAGE)` (0 MW observed peak vs 115.0 MW rated).
 
 3. **Lakvijaya Unit Baseload Continuity (Q19)**:
    - Lakvijaya Unit 1 generated **198,478.00 MWh**, Unit 2 generated **198,973.00 MWh**, and Unit 3 generated **198,073.50 MWh**, totaling **595,524.50 MWh** with zero forced outages.

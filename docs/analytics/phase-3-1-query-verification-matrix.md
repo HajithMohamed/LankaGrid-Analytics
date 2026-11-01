@@ -50,3 +50,4 @@
 - **Queries Executing Under 500 ms:** 24 (100.0%)
 - **Slowest Query:** Q17 (441.7 ms — full table scan across 107,115 facts with plant-level filtering)
 - **Fastest Query:** Q12 (2.1 ms — indexed dimensional join over 5 rows)
+

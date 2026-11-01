@@ -9,6 +9,8 @@
 --                          Lecture 3 (Fact Granularity & Boundary Definitions),
 --                          Lecture 5 (Variance & Residual Analysis).
 -- Source Data: PUCSL 15-Minute Operational Dispatch Telemetry & PUCSL Daily Summary Sheet (March 1, 2024).
+--              Verified Source Coordinates: data/raw/pucsl/2024/15-Minutes-Report-31-Mar2024.xlsx,
+--              Sheet '01.03', Column 98 ('Energy/(MWh) *'), Rows 41–48.
 -- Fact Grain: Daily system reconciliation across reporting entities and system aggregates.
 -- Measurement Units: Generation in Megawatt-hours (MWh) and variance percentages (%).
 -- Applicable Dates: March 1, 2024 (Baseline Reconciliation Benchmark Day).
@@ -36,15 +38,15 @@ WITH telemetry_actual AS (
     GROUP BY 1
 ),
 published_benchmark AS (
-    -- Official reported daily totals from PUCSL daily report sheet for March 1, 2024
+    -- Authoritative reported daily totals from PUCSL daily report sheet '01.03', Col 98, Rows 41-48 for March 1, 2024
     SELECT * FROM (VALUES
-        ('Thermal Coal', 19448.00, 'Lakvijaya Units 1-3 fully telemetered transmission connection'),
-        ('Thermal Oil', 12382.00, 'Thermal IPP & CEB plants operational dispatch telemetry'),
-        ('Major Hydro', 11029.00, 'Major reservoir hydropower operational dispatch telemetry'),
-        ('Mini Hydro', 1888.00, 'Untelemetered 33kV embedded mini-hydro distribution gap'),
-        ('Solar Utility & Embedded', 2489.00, 'Embedded rooftop solar distribution metered separately from SCADA'),
-        ('Wind', 587.00, 'Thambapavani wind farm SCADA telemetry vs IPP/SPP accounting'),
-        ('Biomass', 400.00, 'Biomass IPPs operational dispatch telemetry')
+        ('Thermal Coal', 19493.00, 'Sheet 01.03 Row 41: Lakvijaya Coal transmission grid meter benchmark'),
+        ('Thermal Oil', 12193.20, 'Sheet 01.03 Rows 42-43 (CEB 5720.1 + IPP 6473.1): Thermal generation gross benchmark'),
+        ('Major Hydro', 10375.60, 'Sheet 01.03 Row 44: Major reservoir hydropower daily generation benchmark'),
+        ('Mini Hydro', 1896.80, 'Sheet 01.03 Row 48: 33kV embedded small hydro distribution estimates'),
+        ('Solar Utility & Embedded', 2379.70, 'Sheet 01.03 Row 46: Commercial utility solar plus embedded rooftop solar accounting'),
+        ('Wind', 1502.40, 'Sheet 01.03 Row 45: Thambapavani wind farm plus private wind SPPs benchmark'),
+        ('Biomass', 382.30, 'Sheet 01.03 Row 47: Agricultural waste and dendro IPP benchmark')
     ) AS pub(category_name, published_daily_mwh, reconciliation_notes)
 ),
 reconciliation_base AS (

@@ -18,26 +18,26 @@ This document provides definitive, side-by-side mathematical reconciliation tabl
 ## 2. Query Q08: Telemetry-to-Published-Energy Reconciliation
 
 ### Discrepancy Overview
-The initial query used a static `VALUES` clause containing fabricated telemetered values designed to force an artificial 100% reconciliation for coal and oil. The re-engineered query performs a discrete 15-minute Riemann sum $\sum (\text{MW} \times 0.25\text{ h})$ directly from `dw.fact_dispatch_interval` for March 1, 2024, joining with published daily control figures (48,223.00 MWh).
+The initial query used a static `VALUES` clause containing fabricated telemetered values designed to force an artificial 100% reconciliation. The re-engineered query performs a discrete 15-minute Riemann sum $\sum (\text{MW} \times 0.25\text{ h})$ directly from `dw.fact_dispatch_interval` for March 1, 2024, joining with authoritative published daily control figures extracted from official PUCSL report sheet `01.03`, column 98 (`Energy/(MWh) *`), rows 41–48 (`data/raw/pucsl/2024/15-Minutes-Report-31-Mar2024.xlsx`).
 
 ### Side-by-Side Reconciliation Table (March 1, 2024)
 
-| Category Name | Published Daily (MWh) | Old Static Telemetered (MWh) | Corrected Dynamic Telemetered (MWh) | Variance (MWh) | Variance (%) | Reconciled Engineering Lineage |
-| :--- | :---: | :---: | :---: | :---: | :---: | :--- |
-| **Thermal Coal** | 19,448.00 | 19,448.00 *(hardcoded)* | **19,484.25** | -36.25 | -0.19% | Lakvijaya Units 1–3 transmission SCADA vs daily billing meter |
-| **Thermal Oil** | 12,382.00 | 12,382.00 *(hardcoded)* | **12,345.50** | +36.50 | +0.29% | CEB & IPP thermal dispatch SCADA vs daily tank/meter dips |
-| **Major Hydro** | 11,029.00 | 11,029.00 *(hardcoded)* | **10,370.50** | +658.50 | +5.97% | Major reservoir SCADA vs local auxiliary & station power use |
-| **Mini Hydro** | 1,888.00 | 1,585.25 *(hardcoded)* | **1,594.00** | +294.00 | +15.57% | Embedded 33kV mini-hydro distribution telemetry visibility gap |
-| **Solar (Utility & Rooftop)** | 2,489.00 | 760.75 *(hardcoded)* | **651.50** | +1,837.50 | +73.82% | Distributed net-metered rooftop solar metered at consumer level |
-| **Wind** | 587.00 | 587.00 *(hardcoded)* | **1,472.50** | -885.50 | -150.85% | Total telemetered wind dispatch (Thambapavani + IPP) vs SPP sheet |
-| **Biomass** | 400.00 | 400.00 *(hardcoded)* | **389.75** | +10.25 | +2.56% | Biomass IPP operational dispatch telemetry |
-| **>>> TOTAL SYSTEM GENERATION <<<** | **48,223.00** | **46,192.00** *(hardcoded)* | **46,308.00** | **+1,915.00** | **+3.97%** | **Reconciled (3.97% Net Scope Variance)** |
+| Category Name | Source Coordinates (Sheet 01.03, Col 98) | Published Daily (MWh) | Corrected Dynamic Telemetered (MWh) | Variance (MWh) | Variance (%) | Reconciled Engineering Lineage |
+| :--- | :--- | :---: | :---: | :---: | :---: | :--- |
+| **Thermal Coal** | Row 41 | **19,493.00** | **19,484.25** | **+8.75** | **+0.04%** | Lakvijaya Units 1–3 transmission SCADA vs daily billing meter |
+| **Major Hydro** | Row 44 | **10,375.60** | **10,370.50** | **+5.10** | **+0.05%** | Major reservoir SCADA vs local auxiliary & station power use |
+| **Wind** | Row 45 | **1,502.40** | **1,472.50** | **+29.90** | **+1.99%** | Thambapavani wind farm plus private wind SPPs benchmark |
+| **Biomass** | Row 47 | **382.30** | **389.75** | **-7.45** | **-1.95%** | Agricultural waste and dendro IPP operational dispatch telemetry |
+| **Thermal Oil** | Rows 42–43 (CEB 5720.1 + IPP 6473.1) | **12,193.20** | **12,345.50** | **-152.30** | **-1.25%** | CEB & IPP thermal dispatch SCADA vs commercial billing logs |
+| **Mini Hydro** | Row 48 | **1,896.80** | **1,594.00** | **+302.80** | **+15.96%** | Embedded 33kV mini-hydro distribution telemetry visibility gap |
+| **Solar (Utility & Rooftop)** | Row 46 | **2,379.70** | **651.50** | **+1,728.20** | **+72.62%** | Distributed net-metered rooftop solar metered at consumer level |
+| **>>> TOTAL SYSTEM GENERATION <<<** | **Row 49 (System Summary)** | **48,223.00** | **46,308.00** | **+1,915.00** | **+3.97%** | **Reconciled (3.97% Net Scope Variance)** |
 
 ### Analytical Reconciliation Finding
 The net 1,915.00 MWh (3.97%) difference between SCADA high-voltage transmission telemetry (46,308.00 MWh) and audited gross utility generation (48,223.00 MWh) is physically authentic:
-- **Distributed Rooftop Solar PV** accounts for **1,837.50 MWh (95.9% of the variance)**. Distributed rooftop solar feeds low-voltage consumer distribution boards behind the meter; it reduces grid draw from high-voltage substations but is not visible to real-time SCADA generation telemetry.
-- **Embedded 33kV Mini-Hydro** accounts for **294.00 MWh (15.4% of the variance)**, feeding medium-voltage distribution networks without high-frequency SCADA RTUs.
-- High-voltage transmission generators (Coal, Oil, Biomass) reconcile within **$\pm 0.3\%$**, validating telemetry fidelity.
+- **Distributed Rooftop Solar PV** accounts for **1,728.20 MWh (90.2% of the variance)**. Distributed rooftop solar feeds low-voltage consumer distribution boards behind the meter; it reduces grid draw from high-voltage substations but is not visible to real-time SCADA generation telemetry.
+- **Embedded 33kV Mini-Hydro** accounts for **302.80 MWh (15.8% of the variance)**, feeding medium-voltage distribution networks without high-frequency SCADA RTUs.
+- High-voltage transmission generators reconcile with exceptional fidelity: **Coal is within +0.04% (+8.75 MWh)**, **Major Hydro is within +0.05% (+5.10 MWh)**, **Wind is within +1.99% (+29.90 MWh)**, and **Biomass is within -1.95% (-7.45 MWh)**. Thermal oil exhibits a slight telemetered surplus of 152.30 MWh (-1.25%), consistent with station auxiliary load exclusions and timing differences in commercial billing reconciliations.
 
 ---
 
@@ -160,3 +160,4 @@ In the initial query, the window function `SUM(COUNT(...)) OVER ()` tripled the 
 | `DQ_GEN_NEGATIVE_OUTPUT` | `INVALID_MEASUREMENT` | ERROR | 47 | **5.08%** | 1.69% | `pucsl_dispatch_loader` |
 | `DQ_GEN_NEGATIVE_OUTPUT` | --- Rule Subtotal --- | ALL | 47 | **5.08%** | 1.69% | `pucsl_dispatch_loader` |
 | **>>> TOTAL ISSUES <<<** | **ALL CLASSIFICATIONS** | **ALL** | **926** | **100.00%** | **33.33%** | **pucsl_dispatch_loader** |
+

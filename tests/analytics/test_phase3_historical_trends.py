@@ -123,6 +123,10 @@ def test_temperature_demand_correlation_bounds_q14(populated_analytics_db: Datab
             assert 0.05 <= corr_energy <= 0.20, (
                 f"Expected mild positive correlation, got {corr_energy}"
             )
+            # Verify dynamic finding text
+            finding = str(row[11])
+            assert "Mild positive correlation" in finding
+            assert "31 paired March days" in finding
 
 
 @pytest.mark.integration
