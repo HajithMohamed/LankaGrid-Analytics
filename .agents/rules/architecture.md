@@ -5,9 +5,9 @@ description: Architectural constraints, Kimball dimensional modeling guidelines,
 # Architecture Rules
 
 ## Phase Governance
-- **Current Phase: Phase 2 (Real Data Acquisition, Data Preprocessing and PostgreSQL ETL).**
-- Phase 0 foundation, Phase 1 dimensional schema, and Phase 2 real-data ingestion/preprocessing/ETL are authorized.
-- Do NOT build frontend applications (no React, Next.js, Spring Boot, etc.) or the Phase 3+ analytics dashboard/24-query reporting layer until Phase 2 is approved.
+- **Current Phase: Phase 3 (Business Intelligence, Advanced OLAP and Historical Data Analysis).**
+- Phase 0 foundation, Phase 1 dimensional schema, Phase 2 real-data ETL, and Phase 3 Business Analytics are authorized.
+- Do NOT build frontend applications (no React, Next.js, Spring Boot, etc.) or machine-learning forecasting until Phase 3 is approved.
 - Never advance to a subsequent phase without explicit user approval.
 
 ## Dimensional Modeling Standards (Kimball Architecture)

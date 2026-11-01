@@ -1,0 +1,15 @@
+energy_category,energy_source_code,total_generation_mwh,share_pct,reporting_plants,grp_cat,grp_src
+Thermal Coal,THERMAL_COAL,595524.50,42.56,3,0,0
+Thermal Coal,--- Category Subtotal ---,595524.50,42.56,3,0,1
+Thermal Oil,THERMAL_OIL,387450.75,27.69,13,0,0
+Thermal Oil,--- Category Subtotal ---,387450.75,27.69,13,0,1
+Hydro,--- Category Subtotal ---,361909.25,25.86,16,0,1
+Hydro,MAJOR_HYDRO,321595.50,22.98,16,0,0
+Hydro,MINI_HYDRO,40313.75,2.88,1,0,0
+Solar,--- Category Subtotal ---,22839.50,1.63,1,0,1
+Solar,SOLAR_UTILITY,22839.50,1.63,1,0,0
+Wind,WIND,19848.00,1.42,1,0,0
+Wind,--- Category Subtotal ---,19848.00,1.42,1,0,1
+Biomass,--- Category Subtotal ---,11765.00,0.84,1,0,1
+Biomass,BIOMASS,11765.00,0.84,1,0,0
+>>> NATIONAL TOTAL <<<,ALL TECHNOLOGIES,1399337.00,100.00,16,1,1

@@ -1,0 +1,93 @@
+[
+  {
+    "energy_category": "Thermal Coal",
+    "energy_source_code": "THERMAL_COAL",
+    "fuel_class": "CONVENTIONAL",
+    "day_mwh": 319693.0,
+    "day_share_pct": 41.5,
+    "peak_mwh": 100560.75,
+    "peak_share_pct": 36.49,
+    "off_peak_mwh": 175270.75,
+    "off_peak_share_pct": 49.59,
+    "total_mwh": 595524.5,
+    "month_share_pct": 42.56
+  },
+  {
+    "energy_category": "Hydro",
+    "energy_source_code": "MAJOR_HYDRO",
+    "fuel_class": "RENEWABLE",
+    "day_mwh": 179584.75,
+    "day_share_pct": 23.31,
+    "peak_mwh": 89291.25,
+    "peak_share_pct": 32.4,
+    "off_peak_mwh": 52719.5,
+    "off_peak_share_pct": 14.92,
+    "total_mwh": 321595.5,
+    "month_share_pct": 22.98
+  },
+  {
+    "energy_category": "Thermal Oil",
+    "energy_source_code": "THERMAL_OIL",
+    "fuel_class": "CONVENTIONAL",
+    "day_mwh": 211015.75,
+    "day_share_pct": 27.4,
+    "peak_mwh": 72549.25,
+    "peak_share_pct": 26.32,
+    "off_peak_mwh": 103885.75,
+    "off_peak_share_pct": 29.39,
+    "total_mwh": 387450.75,
+    "month_share_pct": 27.69
+  },
+  {
+    "energy_category": "Hydro",
+    "energy_source_code": "MINI_HYDRO",
+    "fuel_class": "RENEWABLE",
+    "day_mwh": 20704.25,
+    "day_share_pct": 2.69,
+    "peak_mwh": 7094.0,
+    "peak_share_pct": 2.57,
+    "off_peak_mwh": 12515.5,
+    "off_peak_share_pct": 3.54,
+    "total_mwh": 40313.75,
+    "month_share_pct": 2.88
+  },
+  {
+    "energy_category": "Wind",
+    "energy_source_code": "WIND",
+    "fuel_class": "RENEWABLE",
+    "day_mwh": 10179.0,
+    "day_share_pct": 1.32,
+    "peak_mwh": 4144.25,
+    "peak_share_pct": 1.5,
+    "off_peak_mwh": 5524.75,
+    "off_peak_share_pct": 1.56,
+    "total_mwh": 19848.0,
+    "month_share_pct": 1.42
+  },
+  {
+    "energy_category": "Biomass",
+    "energy_source_code": "BIOMASS",
+    "fuel_class": "RENEWABLE",
+    "day_mwh": 6241.25,
+    "day_share_pct": 0.81,
+    "peak_mwh": 1975.5,
+    "peak_share_pct": 0.72,
+    "off_peak_mwh": 3548.25,
+    "off_peak_share_pct": 1.0,
+    "total_mwh": 11765.0,
+    "month_share_pct": 0.84
+  },
+  {
+    "energy_category": "Solar",
+    "energy_source_code": "SOLAR_UTILITY",
+    "fuel_class": "RENEWABLE",
+    "day_mwh": 22839.5,
+    "day_share_pct": 2.97,
+    "peak_mwh": 0.0,
+    "peak_share_pct": 0.0,
+    "off_peak_mwh": 0.0,
+    "off_peak_share_pct": 0.0,
+    "total_mwh": 22839.5,
+    "month_share_pct": 1.63
+  }
+]

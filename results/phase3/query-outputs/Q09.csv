@@ -1,0 +1,45 @@
+calendar_year,sector_code,sector_name,tariff_group,energy_sold_gwh,prior_year_sales_gwh,yoy_change_gwh,yoy_growth_pct,retail_market_share_pct
+2021,AGRICULTURE,Agriculture Tariff,Agriculture,2.00,,,,0.01
+2022,AGRICULTURE,Agriculture Tariff,Agriculture,2.00,2.00,0.00,0.00,0.02
+2023,AGRICULTURE,Agriculture Tariff,Agriculture,2.50,2.00,0.50,25.00,0.02
+2024,AGRICULTURE,Agriculture Tariff,Agriculture,3.50,2.50,1.00,40.00,0.03
+2020,BULK_LECO,Bulk Supply to LECO,Bulk Supply,1605.00,,,,12.66
+2021,BULK_LECO,Bulk Supply to LECO,Bulk Supply,1633.00,1605.00,28.00,1.74,12.02
+2022,BULK_LECO,Bulk Supply to LECO,Bulk Supply,1550.00,1633.00,-83.00,-5.08,11.95
+2023,BULK_LECO,Bulk Supply to LECO,Bulk Supply,1539.00,1550.00,-11.00,-0.71,12.20
+2024,BULK_LECO,Bulk Supply to LECO,Bulk Supply,1625.00,1539.00,86.00,5.59,11.98
+2020,DOMESTIC,Domestic,Domestic,5090.00,,,,40.14
+2021,DOMESTIC,Domestic,Domestic,5238.00,5090.00,148.00,2.91,38.57
+2022,DOMESTIC,Domestic,Domestic,5044.00,5238.00,-194.00,-3.70,38.89
+2023,DOMESTIC,Domestic,Domestic,4495.00,5044.00,-549.00,-10.88,35.63
+2024,DOMESTIC,Domestic,Domestic,4701.00,4495.00,206.00,4.58,34.65
+2020,GENERAL_PURPOSE,"General Purpose (GP-1, GP-2, GP-3)",Commercial & General,2837.00,,,,22.37
+2021,GENERAL_PURPOSE,"General Purpose (GP-1, GP-2, GP-3)",Commercial & General,2897.00,2837.00,60.00,2.11,21.33
+2022,GENERAL_PURPOSE,"General Purpose (GP-1, GP-2, GP-3)",Commercial & General,2962.00,2897.00,65.00,2.24,22.84
+2023,GENERAL_PURPOSE,"General Purpose (GP-1, GP-2, GP-3)",Commercial & General,3158.00,2962.00,196.00,6.62,25.03
+2024,GENERAL_PURPOSE,"General Purpose (GP-1, GP-2, GP-3)",Commercial & General,3472.00,3158.00,314.00,9.94,25.59
+2020,GOVERNMENT,"Government Institutions (GV-1, GV-2, GV-3)",Government,208.00,,,,1.64
+2021,GOVERNMENT,"Government Institutions (GV-1, GV-2, GV-3)",Government,226.00,208.00,18.00,8.65,1.66
+2022,GOVERNMENT,"Government Institutions (GV-1, GV-2, GV-3)",Government,207.00,226.00,-19.00,-8.41,1.60
+2023,GOVERNMENT,"Government Institutions (GV-1, GV-2, GV-3)",Government,220.00,207.00,13.00,6.28,1.74
+2024,GOVERNMENT,"Government Institutions (GV-1, GV-2, GV-3)",Government,241.00,220.00,21.00,9.55,1.78
+2020,HOTEL,"Hotel (H-1, H-2, H-3)",Hotel & Tourism,193.00,,,,1.52
+2021,HOTEL,"Hotel (H-1, H-2, H-3)",Hotel & Tourism,220.00,193.00,27.00,13.99,1.62
+2022,HOTEL,"Hotel (H-1, H-2, H-3)",Hotel & Tourism,245.00,220.00,25.00,11.36,1.89
+2023,HOTEL,"Hotel (H-1, H-2, H-3)",Hotel & Tourism,293.00,245.00,48.00,19.59,2.32
+2024,HOTEL,"Hotel (H-1, H-2, H-3)",Hotel & Tourism,355.00,293.00,62.00,21.16,2.62
+2020,INDUSTRIAL,"Industrial (I-1, I-2, I-3)",Industrial,4164.00,,,,32.83
+2021,INDUSTRIAL,"Industrial (I-1, I-2, I-3)",Industrial,4820.00,4164.00,656.00,15.75,35.49
+2022,INDUSTRIAL,"Industrial (I-1, I-2, I-3)",Industrial,4332.00,4820.00,-488.00,-10.12,33.40
+2023,INDUSTRIAL,"Industrial (I-1, I-2, I-3)",Industrial,4278.00,4332.00,-54.00,-1.25,33.91
+2024,INDUSTRIAL,"Industrial (I-1, I-2, I-3)",Industrial,4622.00,4278.00,344.00,8.04,34.07
+2020,RELIGIOUS,Religious & Charitable,Religious,82.00,,,,0.65
+2021,RELIGIOUS,Religious & Charitable,Religious,81.00,82.00,-1.00,-1.22,0.60
+2022,RELIGIOUS,Religious & Charitable,Religious,81.00,81.00,0.00,0.00,0.62
+2023,RELIGIOUS,Religious & Charitable,Religious,72.00,81.00,-9.00,-11.11,0.57
+2024,RELIGIOUS,Religious & Charitable,Religious,75.00,72.00,3.00,4.17,0.55
+2020,STREET_LIGHTING,Street Lighting,Public Lighting,108.00,,,,0.85
+2021,STREET_LIGHTING,Street Lighting,Public Lighting,97.00,108.00,-11.00,-10.19,0.71
+2022,STREET_LIGHTING,Street Lighting,Public Lighting,97.00,97.00,0.00,0.00,0.75
+2023,STREET_LIGHTING,Street Lighting,Public Lighting,96.00,97.00,-1.00,-1.03,0.76
+2024,STREET_LIGHTING,Street Lighting,Public Lighting,96.00,96.00,0.00,0.00,0.71

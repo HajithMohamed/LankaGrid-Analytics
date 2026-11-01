@@ -1,0 +1,128 @@
+[
+  {
+    "energy_category": "Thermal Coal",
+    "energy_source_code": "THERMAL_COAL",
+    "total_generation_mwh": 595524.5,
+    "share_pct": 42.56,
+    "reporting_plants": 3,
+    "grp_cat": 0,
+    "grp_src": 0
+  },
+  {
+    "energy_category": "Thermal Coal",
+    "energy_source_code": "--- Category Subtotal ---",
+    "total_generation_mwh": 595524.5,
+    "share_pct": 42.56,
+    "reporting_plants": 3,
+    "grp_cat": 0,
+    "grp_src": 1
+  },
+  {
+    "energy_category": "Thermal Oil",
+    "energy_source_code": "THERMAL_OIL",
+    "total_generation_mwh": 387450.75,
+    "share_pct": 27.69,
+    "reporting_plants": 13,
+    "grp_cat": 0,
+    "grp_src": 0
+  },
+  {
+    "energy_category": "Thermal Oil",
+    "energy_source_code": "--- Category Subtotal ---",
+    "total_generation_mwh": 387450.75,
+    "share_pct": 27.69,
+    "reporting_plants": 13,
+    "grp_cat": 0,
+    "grp_src": 1
+  },
+  {
+    "energy_category": "Hydro",
+    "energy_source_code": "--- Category Subtotal ---",
+    "total_generation_mwh": 361909.25,
+    "share_pct": 25.86,
+    "reporting_plants": 16,
+    "grp_cat": 0,
+    "grp_src": 1
+  },
+  {
+    "energy_category": "Hydro",
+    "energy_source_code": "MAJOR_HYDRO",
+    "total_generation_mwh": 321595.5,
+    "share_pct": 22.98,
+    "reporting_plants": 16,
+    "grp_cat": 0,
+    "grp_src": 0
+  },
+  {
+    "energy_category": "Hydro",
+    "energy_source_code": "MINI_HYDRO",
+    "total_generation_mwh": 40313.75,
+    "share_pct": 2.88,
+    "reporting_plants": 1,
+    "grp_cat": 0,
+    "grp_src": 0
+  },
+  {
+    "energy_category": "Solar",
+    "energy_source_code": "--- Category Subtotal ---",
+    "total_generation_mwh": 22839.5,
+    "share_pct": 1.63,
+    "reporting_plants": 1,
+    "grp_cat": 0,
+    "grp_src": 1
+  },
+  {
+    "energy_category": "Solar",
+    "energy_source_code": "SOLAR_UTILITY",
+    "total_generation_mwh": 22839.5,
+    "share_pct": 1.63,
+    "reporting_plants": 1,
+    "grp_cat": 0,
+    "grp_src": 0
+  },
+  {
+    "energy_category": "Wind",
+    "energy_source_code": "WIND",
+    "total_generation_mwh": 19848.0,
+    "share_pct": 1.42,
+    "reporting_plants": 1,
+    "grp_cat": 0,
+    "grp_src": 0
+  },
+  {
+    "energy_category": "Wind",
+    "energy_source_code": "--- Category Subtotal ---",
+    "total_generation_mwh": 19848.0,
+    "share_pct": 1.42,
+    "reporting_plants": 1,
+    "grp_cat": 0,
+    "grp_src": 1
+  },
+  {
+    "energy_category": "Biomass",
+    "energy_source_code": "--- Category Subtotal ---",
+    "total_generation_mwh": 11765.0,
+    "share_pct": 0.84,
+    "reporting_plants": 1,
+    "grp_cat": 0,
+    "grp_src": 1
+  },
+  {
+    "energy_category": "Biomass",
+    "energy_source_code": "BIOMASS",
+    "total_generation_mwh": 11765.0,
+    "share_pct": 0.84,
+    "reporting_plants": 1,
+    "grp_cat": 0,
+    "grp_src": 0
+  },
+  {
+    "energy_category": ">>> NATIONAL TOTAL <<<",
+    "energy_source_code": "ALL TECHNOLOGIES",
+    "total_generation_mwh": 1399337.0,
+    "share_pct": 100.0,
+    "reporting_plants": 16,
+    "grp_cat": 1,
+    "grp_src": 1
+  }
+]
