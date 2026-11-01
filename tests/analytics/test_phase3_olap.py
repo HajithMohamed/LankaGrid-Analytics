@@ -70,7 +70,9 @@ def test_olap_grouping_sets_q21(populated_analytics_db: DatabaseConfig) -> None:
     """Verify that Q21 GROUPING SETS computes exact annual subtotals and 5-year grand total."""
     sql = cast(
         LiteralString,
-        Path("database/queries/phase3/member_06_grid_efficiency/Q21.sql").read_text(encoding="utf-8"),
+        Path("database/queries/phase3/member_06_grid_efficiency/Q21.sql").read_text(
+            encoding="utf-8"
+        ),
     )
     with get_connection(populated_analytics_db) as conn:
         with conn.cursor() as cur:
@@ -81,7 +83,9 @@ def test_olap_grouping_sets_q21(populated_analytics_db: DatabaseConfig) -> None:
             grand_total_rows = [r for r in rows if r[4] == 1 and r[5] == 1]
             assert len(grand_total_rows) == 1
             grand_total_gwh = float(grand_total_rows[0][2])
-            assert 70000.0 <= grand_total_gwh <= 75000.0, f"Expected 5-year sales around 73,365 GWh, got {grand_total_gwh}"
+            assert 70000.0 <= grand_total_gwh <= 75000.0, (
+                f"Expected 5-year sales around 73,365 GWh, got {grand_total_gwh}"
+            )
 
             # Sum of annual subtotals (grp_year = 0, grp_class = 1)
             annual_subtotals = sum(float(r[2]) for r in rows if r[4] == 0 and r[5] == 1)

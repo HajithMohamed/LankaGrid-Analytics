@@ -28,7 +28,12 @@ def test_five_year_sales_yoy_calculations_q09(populated_analytics_db: DatabaseCo
             assert rows is not None and len(rows) > 0, "Query Q09 must return result rows"
             for r in rows:
                 _yr, _sec, current_sales, prior_sales, yoy_diff, yoy_pct = (
-                    r[0], r[1], float(r[4]), r[5], r[6], r[7]
+                    r[0],
+                    r[1],
+                    float(r[4]),
+                    r[5],
+                    r[6],
+                    r[7],
                 )
                 if prior_sales is not None:
                     prior = float(prior_sales)
@@ -47,7 +52,9 @@ def test_materialized_views_reconciliation(populated_analytics_db: DatabaseConfi
             cur.execute("CALL mart.sp_refresh_analytical_marts();")
 
             # Compare total energy between MV and base fact table
-            cur.execute("SELECT ROUND(SUM(daily_generation_mwh), 2) FROM mart.mv_daily_dispatch_by_source;")
+            cur.execute(
+                "SELECT ROUND(SUM(daily_generation_mwh), 2) FROM mart.mv_daily_dispatch_by_source;"
+            )
             row_mv = cur.fetchone()
             assert row_mv is not None, "Query on mart.mv_daily_dispatch_by_source must return a row"
             mv_total = row_mv[0]

@@ -29,7 +29,9 @@ def test_dispatch_energy_integration_consistency(populated_analytics_db: Databas
             row = cur.fetchone()
             assert row is not None, "Query must return count of inconsistent facts"
             inconsistent_count = int(row[0])
-            assert inconsistent_count == 0, f"Found {inconsistent_count} facts where MWh != MW * 0.25h"
+            assert inconsistent_count == 0, (
+                f"Found {inconsistent_count} facts where MWh != MW * 0.25h"
+            )
 
 
 @pytest.mark.integration
@@ -51,7 +53,9 @@ def test_no_double_counting_in_sales_queries(populated_analytics_db: DatabaseCon
                     f"Year {yr}: CEB {ceb_gwh} + LECO {leco_gwh} != Total {total_gwh}"
                 )
                 # National total in Sri Lanka is typically between 13,000 and 16,000 GWh
-                assert 13000.0 <= total_gwh <= 16500.0, f"Year {yr}: Unexpected sales total {total_gwh}"
+                assert 13000.0 <= total_gwh <= 16500.0, (
+                    f"Year {yr}: Unexpected sales total {total_gwh}"
+                )
 
 
 @pytest.mark.integration

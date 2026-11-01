@@ -59,4 +59,3 @@ def populated_analytics_db(migrated_and_seeded_test_db: DatabaseConfig) -> Datab
             cur.execute("CALL mart.sp_refresh_analytical_marts();")
 
     return migrated_and_seeded_test_db
-

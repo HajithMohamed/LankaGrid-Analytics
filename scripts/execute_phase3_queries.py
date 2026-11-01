@@ -32,35 +32,131 @@ def run_phase3_pipeline() -> None:
 
     query_mapping = [
         # Member 1
-        ("Q01", "database/queries/phase3/member_01_generation/Q01.sql", "Generation Mix by Energy Source"),
-        ("Q02", "database/queries/phase3/member_01_generation/Q02.sql", "Renewable vs Non-Renewable Daily Share"),
-        ("Q03", "database/queries/phase3/member_01_generation/Q03.sql", "Plant Capacity Factor Analysis"),
-        ("Q04", "database/queries/phase3/member_01_generation/Q04.sql", "Peak Daytime Off-Peak Contribution"),
+        (
+            "Q01",
+            "database/queries/phase3/member_01_generation/Q01.sql",
+            "Generation Mix by Energy Source",
+        ),
+        (
+            "Q02",
+            "database/queries/phase3/member_01_generation/Q02.sql",
+            "Renewable vs Non-Renewable Daily Share",
+        ),
+        (
+            "Q03",
+            "database/queries/phase3/member_01_generation/Q03.sql",
+            "Plant Capacity Factor Analysis",
+        ),
+        (
+            "Q04",
+            "database/queries/phase3/member_01_generation/Q04.sql",
+            "Peak Daytime Off-Peak Contribution",
+        ),
         # Member 2
-        ("Q05", "database/queries/phase3/member_02_dispatch/Q05.sql", "Daily Dispatch Curves Weekday vs Weekend"),
-        ("Q06", "database/queries/phase3/member_02_dispatch/Q06.sql", "Dispatch Ramp Rate Analysis"),
-        ("Q07", "database/queries/phase3/member_02_dispatch/Q07.sql", "Baseload vs Peaking Plant Behavior"),
-        ("Q08", "database/queries/phase3/member_02_dispatch/Q08.sql", "Telemetry to Published Energy Reconciliation"),
+        (
+            "Q05",
+            "database/queries/phase3/member_02_dispatch/Q05.sql",
+            "Daily Dispatch Curves Weekday vs Weekend",
+        ),
+        (
+            "Q06",
+            "database/queries/phase3/member_02_dispatch/Q06.sql",
+            "Dispatch Ramp Rate Analysis",
+        ),
+        (
+            "Q07",
+            "database/queries/phase3/member_02_dispatch/Q07.sql",
+            "Baseload vs Peaking Plant Behavior",
+        ),
+        (
+            "Q08",
+            "database/queries/phase3/member_02_dispatch/Q08.sql",
+            "Telemetry to Published Energy Reconciliation",
+        ),
         # Member 3
-        ("Q09", "database/queries/phase3/member_03_sales/Q09.sql", "Five-Year Sectoral Electricity Sales Trends"),
-        ("Q10", "database/queries/phase3/member_03_sales/Q10.sql", "Sectoral Consumption Shifts Across Historical Periods"),
-        ("Q11", "database/queries/phase3/member_03_sales/Q11.sql", "Average Consumption per Customer Account"),
-        ("Q12", "database/queries/phase3/member_03_sales/Q12.sql", "LECO Bulk Supply vs Direct CEB Sales"),
+        (
+            "Q09",
+            "database/queries/phase3/member_03_sales/Q09.sql",
+            "Five-Year Sectoral Electricity Sales Trends",
+        ),
+        (
+            "Q10",
+            "database/queries/phase3/member_03_sales/Q10.sql",
+            "Sectoral Consumption Shifts Across Historical Periods",
+        ),
+        (
+            "Q11",
+            "database/queries/phase3/member_03_sales/Q11.sql",
+            "Average Consumption per Customer Account",
+        ),
+        (
+            "Q12",
+            "database/queries/phase3/member_03_sales/Q12.sql",
+            "LECO Bulk Supply vs Direct CEB Sales",
+        ),
         # Member 4
-        ("Q13", "database/queries/phase3/member_04_weather/Q13.sql", "Five-Year Solar Irradiance Profiles"),
-        ("Q14", "database/queries/phase3/member_04_weather/Q14.sql", "Temperature and Grid Demand Correlation"),
-        ("Q15", "database/queries/phase3/member_04_weather/Q15.sql", "Rainfall and Solar Monsoon Seasonality"),
-        ("Q16", "database/queries/phase3/member_04_weather/Q16.sql", "Wind Resource Distribution and Generation Relationship"),
+        (
+            "Q13",
+            "database/queries/phase3/member_04_weather/Q13.sql",
+            "Five-Year Solar Irradiance Profiles",
+        ),
+        (
+            "Q14",
+            "database/queries/phase3/member_04_weather/Q14.sql",
+            "Temperature and Grid Demand Correlation",
+        ),
+        (
+            "Q15",
+            "database/queries/phase3/member_04_weather/Q15.sql",
+            "Rainfall and Solar Monsoon Seasonality",
+        ),
+        (
+            "Q16",
+            "database/queries/phase3/member_04_weather/Q16.sql",
+            "Wind Resource Distribution and Generation Relationship",
+        ),
         # Member 5
-        ("Q17", "database/queries/phase3/member_05_plant_operations/Q17.sql", "Zero-Generation Interval Analysis"),
-        ("Q18", "database/queries/phase3/member_05_plant_operations/Q18.sql", "Installed Capacity Utilization Ratio"),
-        ("Q19", "database/queries/phase3/member_05_plant_operations/Q19.sql", "Lakvijaya Coal Unit Dispatch Continuity"),
-        ("Q20", "database/queries/phase3/member_05_plant_operations/Q20.sql", "Evening Peak Generation Contribution"),
+        (
+            "Q17",
+            "database/queries/phase3/member_05_plant_operations/Q17.sql",
+            "Zero-Generation Interval Analysis",
+        ),
+        (
+            "Q18",
+            "database/queries/phase3/member_05_plant_operations/Q18.sql",
+            "Installed Capacity Utilization Ratio",
+        ),
+        (
+            "Q19",
+            "database/queries/phase3/member_05_plant_operations/Q19.sql",
+            "Lakvijaya Coal Unit Dispatch Continuity",
+        ),
+        (
+            "Q20",
+            "database/queries/phase3/member_05_plant_operations/Q20.sql",
+            "Evening Peak Generation Contribution",
+        ),
         # Member 6
-        ("Q21", "database/queries/phase3/member_06_grid_efficiency/Q21.sql", "Five-Year Grid Sales Efficiency Trends"),
-        ("Q22", "database/queries/phase3/member_06_grid_efficiency/Q22.sql", "Cross-Source Multi-Tier Reconciliation"),
-        ("Q23", "database/queries/phase3/member_06_grid_efficiency/Q23.sql", "Data Quality Quarantine Audit Trail"),
-        ("Q24", "database/queries/phase3/member_06_grid_efficiency/Q24.sql", "ETL Execution Performance and Lineage"),
+        (
+            "Q21",
+            "database/queries/phase3/member_06_grid_efficiency/Q21.sql",
+            "Five-Year Grid Sales Efficiency Trends",
+        ),
+        (
+            "Q22",
+            "database/queries/phase3/member_06_grid_efficiency/Q22.sql",
+            "Cross-Source Multi-Tier Reconciliation",
+        ),
+        (
+            "Q23",
+            "database/queries/phase3/member_06_grid_efficiency/Q23.sql",
+            "Data Quality Quarantine Audit Trail",
+        ),
+        (
+            "Q24",
+            "database/queries/phase3/member_06_grid_efficiency/Q24.sql",
+            "ETL Execution Performance and Lineage",
+        ),
     ]
 
     cfg = DatabaseConfig.from_env(use_test_db=False)
@@ -92,16 +188,20 @@ def run_phase3_pipeline() -> None:
                     json.dump(dict_rows, f_json, default=default_serializer, indent=2)
 
                 print(f"[{q_id}] {q_desc}: {len(rows)} rows, {elapsed_ms} ms -> {csv_path.name}")
-                summary_records.append({
-                    "query_id": q_id,
-                    "title": q_desc,
-                    "row_count": len(rows),
-                    "execution_time_ms": elapsed_ms,
-                })
+                summary_records.append(
+                    {
+                        "query_id": q_id,
+                        "title": q_desc,
+                        "row_count": len(rows),
+                        "execution_time_ms": elapsed_ms,
+                    }
+                )
 
                 # Capture EXPLAIN (ANALYZE, BUFFERS) for representative queries
                 if q_id in ("Q01", "Q05", "Q09", "Q15", "Q17", "Q24"):
-                    explain_sql = cast(LiteralString, f"EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) {sql_text}")
+                    explain_sql = cast(
+                        LiteralString, f"EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) {sql_text}"
+                    )
                     cur.execute(explain_sql)
                     row_plan = cur.fetchone()
                     assert row_plan is not None, f"Explain plan row is None for {q_id}"
@@ -119,4 +219,3 @@ def run_phase3_pipeline() -> None:
 
 if __name__ == "__main__":
     run_phase3_pipeline()
-

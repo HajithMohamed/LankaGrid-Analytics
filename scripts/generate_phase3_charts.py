@@ -20,14 +20,16 @@ def generate_all_charts() -> None:
     charts_dir.mkdir(parents=True, exist_ok=True)
 
     # Style configuration
-    plt.rcParams.update({
-        "font.sans-serif": "DejaVu Sans",
-        "axes.edgecolor": "#cccccc",
-        "axes.linewidth": 0.8,
-        "grid.color": "#eeeeee",
-        "grid.linestyle": "--",
-        "grid.linewidth": 0.5,
-    })
+    plt.rcParams.update(
+        {
+            "font.sans-serif": "DejaVu Sans",
+            "axes.edgecolor": "#cccccc",
+            "axes.linewidth": 0.8,
+            "grid.color": "#eeeeee",
+            "grid.linestyle": "--",
+            "grid.linewidth": 0.5,
+        }
+    )
 
     # =========================================================================
     # Chart 1: Generation Mix by Technology (Q01)
@@ -55,14 +57,27 @@ def generate_all_charts() -> None:
                     colors.append(color_map.get(src, "#a0aec0"))
 
         fig, ax = plt.subplots(figsize=(9, 5.5), dpi=300)
-        bars = ax.barh(labels, [v / 1000.0 for v in values], color=colors, edgecolor="#2d3748", height=0.6)
+        bars = ax.barh(
+            labels, [v / 1000.0 for v in values], color=colors, edgecolor="#2d3748", height=0.6
+        )
         ax.set_xlabel("Total Generation in March 2024 (GWh)", fontsize=11, fontweight="bold")
-        ax.set_title("GridLens — National Generation Mix by Technology (March 2024)\nSource: PUCSL 15-Minute Operational Dispatch Telemetry (107,115 Facts)", fontsize=12, pad=15)
+        ax.set_title(
+            "GridLens — National Generation Mix by Technology (March 2024)\nSource: PUCSL 15-Minute Operational Dispatch Telemetry (107,115 Facts)",
+            fontsize=12,
+            pad=15,
+        )
         ax.grid(True, axis="x")
         for bar in bars:
             w = bar.get_width()
             pct = (w / (sum(values) / 1000.0)) * 100.0
-            ax.text(w + 10, bar.get_y() + bar.get_height() / 2, f"{w:.1f} GWh ({pct:.1f}%)", va="center", fontsize=9, fontweight="bold")
+            ax.text(
+                w + 10,
+                bar.get_y() + bar.get_height() / 2,
+                f"{w:.1f} GWh ({pct:.1f}%)",
+                va="center",
+                fontsize=9,
+                fontweight="bold",
+            )
         ax.set_xlim(0, max([v / 1000.0 for v in values]) * 1.25)
         plt.tight_layout()
         chart1_path = charts_dir / "chart_01_generation_mix_march_2024.png"
@@ -85,12 +100,32 @@ def generate_all_charts() -> None:
                 ren_7d.append(float(row["renewable_share_7d_ma_pct"]))
 
         fig, ax = plt.subplots(figsize=(10, 5), dpi=300)
-        ax.bar(days, ren_shares, color="#68d391", alpha=0.6, label="Daily Renewable Share (%)", edgecolor="#38a169", width=0.7)
-        ax.plot(days, ren_7d, color="#22543d", linewidth=2.5, label="7-Day Centered Moving Average (%)")
-        ax.axhline(70.0, color="#e53e3e", linestyle="--", linewidth=1.5, label="Statutory 2030 Renewable Target (70%)")
+        ax.bar(
+            days,
+            ren_shares,
+            color="#68d391",
+            alpha=0.6,
+            label="Daily Renewable Share (%)",
+            edgecolor="#38a169",
+            width=0.7,
+        )
+        ax.plot(
+            days, ren_7d, color="#22543d", linewidth=2.5, label="7-Day Centered Moving Average (%)"
+        )
+        ax.axhline(
+            70.0,
+            color="#e53e3e",
+            linestyle="--",
+            linewidth=1.5,
+            label="Statutory 2030 Renewable Target (70%)",
+        )
         ax.set_xlabel("Day of Month (March 2024)", fontsize=11, fontweight="bold")
         ax.set_ylabel("Renewable Generation Share (%)", fontsize=11, fontweight="bold")
-        ax.set_title("GridLens — Daily Renewable Penetration Share (March 2024)\nTracking Pre-Monsoon Dry Season Generation Dynamics", fontsize=12, pad=15)
+        ax.set_title(
+            "GridLens — Daily Renewable Penetration Share (March 2024)\nTracking Pre-Monsoon Dry Season Generation Dynamics",
+            fontsize=12,
+            pad=15,
+        )
         ax.set_ylim(0, 100)
         ax.set_xticks(range(1, 32, 2))
         ax.legend(loc="upper right", framealpha=0.9)
@@ -116,12 +151,36 @@ def generate_all_charts() -> None:
 
         fig, ax = plt.subplots(figsize=(11, 5.5), dpi=300)
         time_hours = [s * 0.25 for s in slots]
-        ax.plot(time_hours, weekday_mw, color="#2b6cb0", linewidth=2.5, label="Weekday Average (21 Days)")
-        ax.plot(time_hours, weekend_mw, color="#dd6b20", linewidth=2.2, linestyle="--", label="Weekend Average (10 Days)")
-        ax.fill_between(time_hours, weekday_mw, weekend_mw, color="#bee3f8", alpha=0.5, label="Industrial / Commercial Demand Drop")
+        ax.plot(
+            time_hours,
+            weekday_mw,
+            color="#2b6cb0",
+            linewidth=2.5,
+            label="Weekday Average (21 Days)",
+        )
+        ax.plot(
+            time_hours,
+            weekend_mw,
+            color="#dd6b20",
+            linewidth=2.2,
+            linestyle="--",
+            label="Weekend Average (10 Days)",
+        )
+        ax.fill_between(
+            time_hours,
+            weekday_mw,
+            weekend_mw,
+            color="#bee3f8",
+            alpha=0.5,
+            label="Industrial / Commercial Demand Drop",
+        )
         ax.set_xlabel("Time of Day (SLST, Hours)", fontsize=11, fontweight="bold")
         ax.set_ylabel("Dispatched Active Power (MW)", fontsize=11, fontweight="bold")
-        ax.set_title("GridLens — 15-Minute Daily Dispatch Curves (March 2024)\nWeekday vs Weekend Load Profile Comparison (107,115 Facts)", fontsize=12, pad=15)
+        ax.set_title(
+            "GridLens — 15-Minute Daily Dispatch Curves (March 2024)\nWeekday vs Weekend Load Profile Comparison (107,115 Facts)",
+            fontsize=12,
+            pad=15,
+        )
         ax.set_xticks(range(0, 25, 2))
         ax.set_xlim(0, 24)
         ax.legend(loc="lower right", framealpha=0.9)
@@ -160,11 +219,23 @@ def generate_all_charts() -> None:
         for sec_code, label, color, style in display_sectors:
             if sec_code in sector_series:
                 y_vals = [sector_series[sec_code].get(yr, 0) for yr in years]
-                ax.plot(years, y_vals, marker="o", label=label, color=color, linestyle=style, linewidth=2)
+                ax.plot(
+                    years,
+                    y_vals,
+                    marker="o",
+                    label=label,
+                    color=color,
+                    linestyle=style,
+                    linewidth=2,
+                )
 
         ax.set_xlabel("Calendar Year", fontsize=11, fontweight="bold")
         ax.set_ylabel("Billed Electricity Sales (GWh)", fontsize=11, fontweight="bold")
-        ax.set_title("GridLens — Five-Year Sectoral Electricity Sales Trajectories (2020-2024)\nSource: CEB Audited Statistical Digests (Audited Billing Records)", fontsize=12, pad=15)
+        ax.set_title(
+            "GridLens — Five-Year Sectoral Electricity Sales Trajectories (2020-2024)\nSource: CEB Audited Statistical Digests (Audited Billing Records)",
+            fontsize=12,
+            pad=15,
+        )
         ax.set_xticks(years)
         ax.legend(loc="upper left", framealpha=0.9)
         ax.grid(True)
@@ -193,13 +264,32 @@ def generate_all_charts() -> None:
 
         fig, ax = plt.subplots(figsize=(9, 5), dpi=300)
         import numpy as np
+
         x = np.arange(len(years))
         width = 0.35
-        ax.bar(x - width / 2, mannar_psh, width, label="Mannar Island (Northern Dry Zone)", color="#ecc94b", edgecolor="#b7791f")
-        ax.bar(x + width / 2, victoria_psh, width, label="Victoria Hydro Basin (Central Highlands)", color="#4299e1", edgecolor="#2b6cb0")
+        ax.bar(
+            x - width / 2,
+            mannar_psh,
+            width,
+            label="Mannar Island (Northern Dry Zone)",
+            color="#ecc94b",
+            edgecolor="#b7791f",
+        )
+        ax.bar(
+            x + width / 2,
+            victoria_psh,
+            width,
+            label="Victoria Hydro Basin (Central Highlands)",
+            color="#4299e1",
+            edgecolor="#2b6cb0",
+        )
         ax.set_xlabel("Calendar Year", fontsize=11, fontweight="bold")
         ax.set_ylabel("Peak Sun Hours (PSH = kWh/m2/day)", fontsize=11, fontweight="bold")
-        ax.set_title("GridLens — Annual Solar Resource Comparison: Victoria vs Mannar (2020-2024)\nNASA POWER Meteorological Database (1,827 Days, LST Standard)", fontsize=12, pad=15)
+        ax.set_title(
+            "GridLens — Annual Solar Resource Comparison: Victoria vs Mannar (2020-2024)\nNASA POWER Meteorological Database (1,827 Days, LST Standard)",
+            fontsize=12,
+            pad=15,
+        )
         ax.set_xticks(x)
         ax.set_xticklabels([str(y) for y in years])
         ax.set_ylim(0, 7.0)
@@ -226,13 +316,32 @@ def generate_all_charts() -> None:
 
         fig, ax = plt.subplots(figsize=(10, 5), dpi=300)
         import numpy as np
+
         x = np.arange(len(technologies))
         width = 0.35
-        ax.bar(x - width / 2, day_shares, width, label="Daytime Share (05:30 - 18:30)", color="#f6ad55", edgecolor="#c05621")
-        ax.bar(x + width / 2, peak_shares, width, label="Evening Peak Share (18:30 - 22:30)", color="#4a5568", edgecolor="#1a202c")
+        ax.bar(
+            x - width / 2,
+            day_shares,
+            width,
+            label="Daytime Share (05:30 - 18:30)",
+            color="#f6ad55",
+            edgecolor="#c05621",
+        )
+        ax.bar(
+            x + width / 2,
+            peak_shares,
+            width,
+            label="Evening Peak Share (18:30 - 22:30)",
+            color="#4a5568",
+            edgecolor="#1a202c",
+        )
         ax.set_xlabel("Energy Technology Category", fontsize=11, fontweight="bold")
         ax.set_ylabel("Contribution Share (%)", fontsize=11, fontweight="bold")
-        ax.set_title("GridLens — Technology Contribution: Daytime vs Evening Peak (March 2024)\nDemonstrates Peaking Hydro Ramping and Solar Curtailment at Night", fontsize=12, pad=15)
+        ax.set_title(
+            "GridLens — Technology Contribution: Daytime vs Evening Peak (March 2024)\nDemonstrates Peaking Hydro Ramping and Solar Curtailment at Night",
+            fontsize=12,
+            pad=15,
+        )
         ax.set_xticks(x)
         ax.set_xticklabels(technologies, rotation=15, ha="right")
         ax.set_ylim(0, 55)
@@ -249,4 +358,3 @@ def generate_all_charts() -> None:
 
 if __name__ == "__main__":
     generate_all_charts()
-
