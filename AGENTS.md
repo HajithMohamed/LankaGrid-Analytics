@@ -5,8 +5,8 @@ This project is an academic group data warehouse engineering project for the **N
 
 ## Fundamental Principles
 1. **Never Proceed to New Phases Without Explicit User Approval**:
-   - Current phase is **Phase 2 (Real Data Acquisition, Data Preprocessing and PostgreSQL ETL)** (explicitly authorized by user).
-   - Do NOT implement visualization frontend applications or the full 24-query reporting layer until Phase 2 is approved.
+   - Current phase is **Phase 3 (Business Intelligence, Advanced OLAP and Historical Data Analysis)** (explicitly authorized by user).
+   - Do NOT implement visualization frontend applications or machine-learning forecasting until Phase 3 is approved.
 2. **Read Architecture & Docs Before Writing Code**:
    - Always consult [system-overview.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/architecture/system-overview.md), [implementation-plan.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/implementation-plan.md), and [test-strategy.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/testing/test-strategy.md).
 3. **Plan Changes First**:

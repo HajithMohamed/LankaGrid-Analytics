@@ -1,0 +1,122 @@
+[
+  {
+    "calendar_year": 2020,
+    "location_code": "LOC_MANNAR_WIND",
+    "location_name": "Mannar Island Wind Corridor",
+    "valid_days_measured": 366,
+    "min_daily_irradiance_mj": 2.66,
+    "mean_daily_irradiance_mj": 19.72,
+    "max_daily_irradiance_mj": 25.9,
+    "stddev_irradiance_mj": 4.51,
+    "mean_daily_kwh_per_m2": 5.478,
+    "approx_peak_sun_hours_psh": 5.48
+  },
+  {
+    "calendar_year": 2020,
+    "location_code": "LOC_VICTORIA_CATCHMENT",
+    "location_name": "Victoria / Mahaweli Hydro Catchment",
+    "valid_days_measured": 366,
+    "min_daily_irradiance_mj": 4.89,
+    "mean_daily_irradiance_mj": 19.25,
+    "max_daily_irradiance_mj": 27.29,
+    "stddev_irradiance_mj": 4.14,
+    "mean_daily_kwh_per_m2": 5.348,
+    "approx_peak_sun_hours_psh": 5.35
+  },
+  {
+    "calendar_year": 2021,
+    "location_code": "LOC_MANNAR_WIND",
+    "location_name": "Mannar Island Wind Corridor",
+    "valid_days_measured": 365,
+    "min_daily_irradiance_mj": 2.43,
+    "mean_daily_irradiance_mj": 19.42,
+    "max_daily_irradiance_mj": 26.01,
+    "stddev_irradiance_mj": 4.55,
+    "mean_daily_kwh_per_m2": 5.394,
+    "approx_peak_sun_hours_psh": 5.39
+  },
+  {
+    "calendar_year": 2021,
+    "location_code": "LOC_VICTORIA_CATCHMENT",
+    "location_name": "Victoria / Mahaweli Hydro Catchment",
+    "valid_days_measured": 365,
+    "min_daily_irradiance_mj": 3.84,
+    "mean_daily_irradiance_mj": 18.84,
+    "max_daily_irradiance_mj": 26.31,
+    "stddev_irradiance_mj": 4.09,
+    "mean_daily_kwh_per_m2": 5.232,
+    "approx_peak_sun_hours_psh": 5.23
+  },
+  {
+    "calendar_year": 2022,
+    "location_code": "LOC_MANNAR_WIND",
+    "location_name": "Mannar Island Wind Corridor",
+    "valid_days_measured": 365,
+    "min_daily_irradiance_mj": 3.67,
+    "mean_daily_irradiance_mj": 19.17,
+    "max_daily_irradiance_mj": 25.83,
+    "stddev_irradiance_mj": 4.19,
+    "mean_daily_kwh_per_m2": 5.324,
+    "approx_peak_sun_hours_psh": 5.32
+  },
+  {
+    "calendar_year": 2022,
+    "location_code": "LOC_VICTORIA_CATCHMENT",
+    "location_name": "Victoria / Mahaweli Hydro Catchment",
+    "valid_days_measured": 365,
+    "min_daily_irradiance_mj": 1.55,
+    "mean_daily_irradiance_mj": 18.39,
+    "max_daily_irradiance_mj": 25.97,
+    "stddev_irradiance_mj": 4.03,
+    "mean_daily_kwh_per_m2": 5.108,
+    "approx_peak_sun_hours_psh": 5.11
+  },
+  {
+    "calendar_year": 2023,
+    "location_code": "LOC_MANNAR_WIND",
+    "location_name": "Mannar Island Wind Corridor",
+    "valid_days_measured": 365,
+    "min_daily_irradiance_mj": 3.7,
+    "mean_daily_irradiance_mj": 19.48,
+    "max_daily_irradiance_mj": 26.11,
+    "stddev_irradiance_mj": 4.65,
+    "mean_daily_kwh_per_m2": 5.412,
+    "approx_peak_sun_hours_psh": 5.41
+  },
+  {
+    "calendar_year": 2023,
+    "location_code": "LOC_VICTORIA_CATCHMENT",
+    "location_name": "Victoria / Mahaweli Hydro Catchment",
+    "valid_days_measured": 365,
+    "min_daily_irradiance_mj": 7.8,
+    "mean_daily_irradiance_mj": 18.69,
+    "max_daily_irradiance_mj": 26.92,
+    "stddev_irradiance_mj": 3.86,
+    "mean_daily_kwh_per_m2": 5.192,
+    "approx_peak_sun_hours_psh": 5.19
+  },
+  {
+    "calendar_year": 2024,
+    "location_code": "LOC_MANNAR_WIND",
+    "location_name": "Mannar Island Wind Corridor",
+    "valid_days_measured": 366,
+    "min_daily_irradiance_mj": 2.24,
+    "mean_daily_irradiance_mj": 19.16,
+    "max_daily_irradiance_mj": 26.16,
+    "stddev_irradiance_mj": 4.83,
+    "mean_daily_kwh_per_m2": 5.323,
+    "approx_peak_sun_hours_psh": 5.32
+  },
+  {
+    "calendar_year": 2024,
+    "location_code": "LOC_VICTORIA_CATCHMENT",
+    "location_name": "Victoria / Mahaweli Hydro Catchment",
+    "valid_days_measured": 366,
+    "min_daily_irradiance_mj": 1.59,
+    "mean_daily_irradiance_mj": 18.67,
+    "max_daily_irradiance_mj": 27.31,
+    "stddev_irradiance_mj": 4.23,
+    "mean_daily_kwh_per_m2": 5.185,
+    "approx_peak_sun_hours_psh": 5.19
+  }
+]

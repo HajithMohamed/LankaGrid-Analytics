@@ -1,0 +1,392 @@
+[
+  {
+    "calendar_year": 2024,
+    "sector_code": "HOTEL",
+    "sector_name": "Hotel (H-1, H-2, H-3)",
+    "energy_sold_gwh": 355.0,
+    "active_customer_accounts": 2150,
+    "avg_annual_mwh_per_account": 165.116,
+    "avg_monthly_kwh_per_account": 13759.7,
+    "intensity_rank_within_year": 1
+  },
+  {
+    "calendar_year": 2024,
+    "sector_code": "INDUSTRIAL",
+    "sector_name": "Industrial (I-1, I-2, I-3)",
+    "energy_sold_gwh": 4622.0,
+    "active_customer_accounts": 69100,
+    "avg_annual_mwh_per_account": 66.889,
+    "avg_monthly_kwh_per_account": 5574.0,
+    "intensity_rank_within_year": 2
+  },
+  {
+    "calendar_year": 2024,
+    "sector_code": "STREET_LIGHTING",
+    "sector_name": "Street Lighting",
+    "energy_sold_gwh": 96.0,
+    "active_customer_accounts": 4250,
+    "avg_annual_mwh_per_account": 22.588,
+    "avg_monthly_kwh_per_account": 1882.4,
+    "intensity_rank_within_year": 3
+  },
+  {
+    "calendar_year": 2024,
+    "sector_code": "GOVERNMENT",
+    "sector_name": "Government Institutions (GV-1, GV-2, GV-3)",
+    "energy_sold_gwh": 241.0,
+    "active_customer_accounts": 15100,
+    "avg_annual_mwh_per_account": 15.96,
+    "avg_monthly_kwh_per_account": 1330.0,
+    "intensity_rank_within_year": 4
+  },
+  {
+    "calendar_year": 2024,
+    "sector_code": "GENERAL_PURPOSE",
+    "sector_name": "General Purpose (GP-1, GP-2, GP-3)",
+    "energy_sold_gwh": 3472.0,
+    "active_customer_accounts": 1155000,
+    "avg_annual_mwh_per_account": 3.006,
+    "avg_monthly_kwh_per_account": 250.5,
+    "intensity_rank_within_year": 5
+  },
+  {
+    "calendar_year": 2024,
+    "sector_code": "AGRICULTURE",
+    "sector_name": "Agriculture Tariff",
+    "energy_sold_gwh": 3.5,
+    "active_customer_accounts": 1450,
+    "avg_annual_mwh_per_account": 2.414,
+    "avg_monthly_kwh_per_account": 201.1,
+    "intensity_rank_within_year": 6
+  },
+  {
+    "calendar_year": 2024,
+    "sector_code": "RELIGIOUS",
+    "sector_name": "Religious & Charitable",
+    "energy_sold_gwh": 75.0,
+    "active_customer_accounts": 47100,
+    "avg_annual_mwh_per_account": 1.592,
+    "avg_monthly_kwh_per_account": 132.7,
+    "intensity_rank_within_year": 7
+  },
+  {
+    "calendar_year": 2024,
+    "sector_code": "DOMESTIC",
+    "sector_name": "Domestic",
+    "energy_sold_gwh": 4701.0,
+    "active_customer_accounts": 6150000,
+    "avg_annual_mwh_per_account": 0.764,
+    "avg_monthly_kwh_per_account": 63.7,
+    "intensity_rank_within_year": 8
+  },
+  {
+    "calendar_year": 2023,
+    "sector_code": "HOTEL",
+    "sector_name": "Hotel (H-1, H-2, H-3)",
+    "energy_sold_gwh": 293.0,
+    "active_customer_accounts": 2100,
+    "avg_annual_mwh_per_account": 139.524,
+    "avg_monthly_kwh_per_account": 11627.0,
+    "intensity_rank_within_year": 1
+  },
+  {
+    "calendar_year": 2023,
+    "sector_code": "INDUSTRIAL",
+    "sector_name": "Industrial (I-1, I-2, I-3)",
+    "energy_sold_gwh": 4278.0,
+    "active_customer_accounts": 68000,
+    "avg_annual_mwh_per_account": 62.912,
+    "avg_monthly_kwh_per_account": 5242.6,
+    "intensity_rank_within_year": 2
+  },
+  {
+    "calendar_year": 2023,
+    "sector_code": "STREET_LIGHTING",
+    "sector_name": "Street Lighting",
+    "energy_sold_gwh": 96.0,
+    "active_customer_accounts": 4220,
+    "avg_annual_mwh_per_account": 22.749,
+    "avg_monthly_kwh_per_account": 1895.7,
+    "intensity_rank_within_year": 3
+  },
+  {
+    "calendar_year": 2023,
+    "sector_code": "GOVERNMENT",
+    "sector_name": "Government Institutions (GV-1, GV-2, GV-3)",
+    "energy_sold_gwh": 220.0,
+    "active_customer_accounts": 14900,
+    "avg_annual_mwh_per_account": 14.765,
+    "avg_monthly_kwh_per_account": 1230.4,
+    "intensity_rank_within_year": 4
+  },
+  {
+    "calendar_year": 2023,
+    "sector_code": "GENERAL_PURPOSE",
+    "sector_name": "General Purpose (GP-1, GP-2, GP-3)",
+    "energy_sold_gwh": 3158.0,
+    "active_customer_accounts": 1135000,
+    "avg_annual_mwh_per_account": 2.782,
+    "avg_monthly_kwh_per_account": 231.9,
+    "intensity_rank_within_year": 5
+  },
+  {
+    "calendar_year": 2023,
+    "sector_code": "AGRICULTURE",
+    "sector_name": "Agriculture Tariff",
+    "energy_sold_gwh": 2.5,
+    "active_customer_accounts": 1350,
+    "avg_annual_mwh_per_account": 1.852,
+    "avg_monthly_kwh_per_account": 154.3,
+    "intensity_rank_within_year": 6
+  },
+  {
+    "calendar_year": 2023,
+    "sector_code": "RELIGIOUS",
+    "sector_name": "Religious & Charitable",
+    "energy_sold_gwh": 72.0,
+    "active_customer_accounts": 46400,
+    "avg_annual_mwh_per_account": 1.552,
+    "avg_monthly_kwh_per_account": 129.3,
+    "intensity_rank_within_year": 7
+  },
+  {
+    "calendar_year": 2023,
+    "sector_code": "DOMESTIC",
+    "sector_name": "Domestic",
+    "energy_sold_gwh": 4495.0,
+    "active_customer_accounts": 6080000,
+    "avg_annual_mwh_per_account": 0.739,
+    "avg_monthly_kwh_per_account": 61.6,
+    "intensity_rank_within_year": 8
+  },
+  {
+    "calendar_year": 2022,
+    "sector_code": "HOTEL",
+    "sector_name": "Hotel (H-1, H-2, H-3)",
+    "energy_sold_gwh": 245.0,
+    "active_customer_accounts": 2050,
+    "avg_annual_mwh_per_account": 119.512,
+    "avg_monthly_kwh_per_account": 9959.3,
+    "intensity_rank_within_year": 1
+  },
+  {
+    "calendar_year": 2022,
+    "sector_code": "INDUSTRIAL",
+    "sector_name": "Industrial (I-1, I-2, I-3)",
+    "energy_sold_gwh": 4332.0,
+    "active_customer_accounts": 67200,
+    "avg_annual_mwh_per_account": 64.464,
+    "avg_monthly_kwh_per_account": 5372.0,
+    "intensity_rank_within_year": 2
+  },
+  {
+    "calendar_year": 2022,
+    "sector_code": "STREET_LIGHTING",
+    "sector_name": "Street Lighting",
+    "energy_sold_gwh": 97.0,
+    "active_customer_accounts": 4200,
+    "avg_annual_mwh_per_account": 23.095,
+    "avg_monthly_kwh_per_account": 1924.6,
+    "intensity_rank_within_year": 3
+  },
+  {
+    "calendar_year": 2022,
+    "sector_code": "GOVERNMENT",
+    "sector_name": "Government Institutions (GV-1, GV-2, GV-3)",
+    "energy_sold_gwh": 207.0,
+    "active_customer_accounts": 14700,
+    "avg_annual_mwh_per_account": 14.082,
+    "avg_monthly_kwh_per_account": 1173.5,
+    "intensity_rank_within_year": 4
+  },
+  {
+    "calendar_year": 2022,
+    "sector_code": "GENERAL_PURPOSE",
+    "sector_name": "General Purpose (GP-1, GP-2, GP-3)",
+    "energy_sold_gwh": 2962.0,
+    "active_customer_accounts": 1120000,
+    "avg_annual_mwh_per_account": 2.645,
+    "avg_monthly_kwh_per_account": 220.4,
+    "intensity_rank_within_year": 5
+  },
+  {
+    "calendar_year": 2022,
+    "sector_code": "RELIGIOUS",
+    "sector_name": "Religious & Charitable",
+    "energy_sold_gwh": 81.0,
+    "active_customer_accounts": 45800,
+    "avg_annual_mwh_per_account": 1.769,
+    "avg_monthly_kwh_per_account": 147.4,
+    "intensity_rank_within_year": 6
+  },
+  {
+    "calendar_year": 2022,
+    "sector_code": "AGRICULTURE",
+    "sector_name": "Agriculture Tariff",
+    "energy_sold_gwh": 2.0,
+    "active_customer_accounts": 1250,
+    "avg_annual_mwh_per_account": 1.6,
+    "avg_monthly_kwh_per_account": 133.3,
+    "intensity_rank_within_year": 7
+  },
+  {
+    "calendar_year": 2022,
+    "sector_code": "DOMESTIC",
+    "sector_name": "Domestic",
+    "energy_sold_gwh": 5044.0,
+    "active_customer_accounts": 6025000,
+    "avg_annual_mwh_per_account": 0.837,
+    "avg_monthly_kwh_per_account": 69.8,
+    "intensity_rank_within_year": 8
+  },
+  {
+    "calendar_year": 2021,
+    "sector_code": "HOTEL",
+    "sector_name": "Hotel (H-1, H-2, H-3)",
+    "energy_sold_gwh": 220.0,
+    "active_customer_accounts": 2010,
+    "avg_annual_mwh_per_account": 109.453,
+    "avg_monthly_kwh_per_account": 9121.1,
+    "intensity_rank_within_year": 1
+  },
+  {
+    "calendar_year": 2021,
+    "sector_code": "INDUSTRIAL",
+    "sector_name": "Industrial (I-1, I-2, I-3)",
+    "energy_sold_gwh": 4820.0,
+    "active_customer_accounts": 66000,
+    "avg_annual_mwh_per_account": 73.03,
+    "avg_monthly_kwh_per_account": 6085.9,
+    "intensity_rank_within_year": 2
+  },
+  {
+    "calendar_year": 2021,
+    "sector_code": "STREET_LIGHTING",
+    "sector_name": "Street Lighting",
+    "energy_sold_gwh": 97.0,
+    "active_customer_accounts": 4150,
+    "avg_annual_mwh_per_account": 23.373,
+    "avg_monthly_kwh_per_account": 1947.8,
+    "intensity_rank_within_year": 3
+  },
+  {
+    "calendar_year": 2021,
+    "sector_code": "GOVERNMENT",
+    "sector_name": "Government Institutions (GV-1, GV-2, GV-3)",
+    "energy_sold_gwh": 226.0,
+    "active_customer_accounts": 14500,
+    "avg_annual_mwh_per_account": 15.586,
+    "avg_monthly_kwh_per_account": 1298.9,
+    "intensity_rank_within_year": 4
+  },
+  {
+    "calendar_year": 2021,
+    "sector_code": "GENERAL_PURPOSE",
+    "sector_name": "General Purpose (GP-1, GP-2, GP-3)",
+    "energy_sold_gwh": 2897.0,
+    "active_customer_accounts": 1105000,
+    "avg_annual_mwh_per_account": 2.622,
+    "avg_monthly_kwh_per_account": 218.5,
+    "intensity_rank_within_year": 5
+  },
+  {
+    "calendar_year": 2021,
+    "sector_code": "RELIGIOUS",
+    "sector_name": "Religious & Charitable",
+    "energy_sold_gwh": 81.0,
+    "active_customer_accounts": 45100,
+    "avg_annual_mwh_per_account": 1.796,
+    "avg_monthly_kwh_per_account": 149.7,
+    "intensity_rank_within_year": 6
+  },
+  {
+    "calendar_year": 2021,
+    "sector_code": "AGRICULTURE",
+    "sector_name": "Agriculture Tariff",
+    "energy_sold_gwh": 2.0,
+    "active_customer_accounts": 1200,
+    "avg_annual_mwh_per_account": 1.667,
+    "avg_monthly_kwh_per_account": 138.9,
+    "intensity_rank_within_year": 7
+  },
+  {
+    "calendar_year": 2021,
+    "sector_code": "DOMESTIC",
+    "sector_name": "Domestic",
+    "energy_sold_gwh": 5238.0,
+    "active_customer_accounts": 5940000,
+    "avg_annual_mwh_per_account": 0.882,
+    "avg_monthly_kwh_per_account": 73.5,
+    "intensity_rank_within_year": 8
+  },
+  {
+    "calendar_year": 2020,
+    "sector_code": "HOTEL",
+    "sector_name": "Hotel (H-1, H-2, H-3)",
+    "energy_sold_gwh": 193.0,
+    "active_customer_accounts": 1950,
+    "avg_annual_mwh_per_account": 98.974,
+    "avg_monthly_kwh_per_account": 8247.9,
+    "intensity_rank_within_year": 1
+  },
+  {
+    "calendar_year": 2020,
+    "sector_code": "INDUSTRIAL",
+    "sector_name": "Industrial (I-1, I-2, I-3)",
+    "energy_sold_gwh": 4164.0,
+    "active_customer_accounts": 64500,
+    "avg_annual_mwh_per_account": 64.558,
+    "avg_monthly_kwh_per_account": 5379.8,
+    "intensity_rank_within_year": 2
+  },
+  {
+    "calendar_year": 2020,
+    "sector_code": "STREET_LIGHTING",
+    "sector_name": "Street Lighting",
+    "energy_sold_gwh": 108.0,
+    "active_customer_accounts": 4100,
+    "avg_annual_mwh_per_account": 26.341,
+    "avg_monthly_kwh_per_account": 2195.1,
+    "intensity_rank_within_year": 3
+  },
+  {
+    "calendar_year": 2020,
+    "sector_code": "GOVERNMENT",
+    "sector_name": "Government Institutions (GV-1, GV-2, GV-3)",
+    "energy_sold_gwh": 208.0,
+    "active_customer_accounts": 14200,
+    "avg_annual_mwh_per_account": 14.648,
+    "avg_monthly_kwh_per_account": 1220.7,
+    "intensity_rank_within_year": 4
+  },
+  {
+    "calendar_year": 2020,
+    "sector_code": "GENERAL_PURPOSE",
+    "sector_name": "General Purpose (GP-1, GP-2, GP-3)",
+    "energy_sold_gwh": 2837.0,
+    "active_customer_accounts": 1080000,
+    "avg_annual_mwh_per_account": 2.627,
+    "avg_monthly_kwh_per_account": 218.9,
+    "intensity_rank_within_year": 5
+  },
+  {
+    "calendar_year": 2020,
+    "sector_code": "RELIGIOUS",
+    "sector_name": "Religious & Charitable",
+    "energy_sold_gwh": 82.0,
+    "active_customer_accounts": 44200,
+    "avg_annual_mwh_per_account": 1.855,
+    "avg_monthly_kwh_per_account": 154.6,
+    "intensity_rank_within_year": 6
+  },
+  {
+    "calendar_year": 2020,
+    "sector_code": "DOMESTIC",
+    "sector_name": "Domestic",
+    "energy_sold_gwh": 5090.0,
+    "active_customer_accounts": 5845000,
+    "avg_annual_mwh_per_account": 0.871,
+    "avg_monthly_kwh_per_account": 72.6,
+    "intensity_rank_within_year": 7
+  }
+]

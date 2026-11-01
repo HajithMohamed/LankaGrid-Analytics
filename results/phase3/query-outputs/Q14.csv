@@ -1,0 +1,2 @@
+paired_operating_days,min_observed_temp_c,mean_observed_temp_c,max_observed_temp_c,min_peak_demand_mw,mean_peak_demand_mw,max_peak_demand_mw,corr_temp_vs_peak_demand,corr_temp_vs_daily_energy,corr_mannar_temp_vs_peak_demand,corr_victoria_temp_vs_peak_demand,analytical_finding
+31,24.59,25.84,27.56,2051.00,2448.19,2609.00,0.0083,0.1248,-0.0689,0.0921,Mild positive correlation (r = +0.125) with daily grid energy consumption during hot March pre-monsoon

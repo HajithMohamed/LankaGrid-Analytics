@@ -1,0 +1,15 @@
+[
+  {
+    "analysis_scope": "March 2024 Paired Empirical Correlation",
+    "sample_days": 31,
+    "min_daily_wind_ms": 2.9,
+    "mean_daily_wind_ms": 5.37,
+    "max_daily_wind_ms": 7.73,
+    "min_daily_gen_mwh": 215.25,
+    "mean_daily_gen_mwh": 640.26,
+    "max_daily_gen_mwh": 1472.5,
+    "corr_wind_speed_vs_energy": 0.7143,
+    "corr_v_cubed_vs_energy": 0.7132,
+    "physical_interpretation": "Strong positive correlation (r = +0.714) confirms physical aerodynamic coupling between NASA 50m wind speed and grid dispatch"
+  }
+]

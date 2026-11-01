@@ -6,6 +6,7 @@ Loads into the primary development warehouse (sl_grid_warehouse):
 3. PUCSL March 2024 Dispatch Curves
 """
 
+import argparse
 import time
 from pathlib import Path
 
@@ -14,8 +15,12 @@ from src.etl.real_data_loader import RealDataWarehouseLoader
 
 
 def main() -> None:
-    config = DatabaseConfig.from_env()
-    print(f"Connecting to primary warehouse '{config.dbname}' on port {config.port}...")
+    parser = argparse.ArgumentParser(description="Load historical data into warehouse")
+    parser.add_argument("--test-db", action="store_true", help="Target test database")
+    args = parser.parse_args()
+
+    config = DatabaseConfig.from_env(use_test_db=args.test_db)
+    print(f"Connecting to warehouse '{config.dbname}' on port {config.port}...")
     loader = RealDataWarehouseLoader(config=config)
 
     # 1. Load CEB 5-Year Billed Electricity Sales

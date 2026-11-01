@@ -1,0 +1,6 @@
+dq_rule_code,issue_classification,severity_level,total_issues_logged,percentage_of_all_issues,affected_staging_tables,primary_affected_pipeline,grp_rule,grp_class
+DQ_DIM_UNMATCHED_ENTITY,UNMATCHED_DIMENSION,ERROR,879,31.64,3,pucsl_dispatch_loader,0,0
+DQ_DIM_UNMATCHED_ENTITY,--- Rule Subtotal ---,ALL SEVERITIES,879,31.64,3,pucsl_dispatch_loader,0,1
+DQ_GEN_NEGATIVE_OUTPUT,INVALID_MEASUREMENT,ERROR,47,1.69,1,pucsl_dispatch_loader,0,0
+DQ_GEN_NEGATIVE_OUTPUT,--- Rule Subtotal ---,ALL SEVERITIES,47,1.69,1,pucsl_dispatch_loader,0,1
+>>> TOTAL WAREHOUSE QUALITY ISSUES <<<,ALL CLASSIFICATIONS,ALL SEVERITIES,926,33.33,3,pucsl_dispatch_loader,1,1

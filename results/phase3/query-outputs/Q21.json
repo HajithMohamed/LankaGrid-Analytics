@@ -1,0 +1,210 @@
+[
+  {
+    "reporting_year": "2020",
+    "economic_sector_class": "PRODUCTIVE ECONOMIC SECTOR",
+    "total_sales_gwh": 7194.0,
+    "annual_share_pct": 25.18,
+    "grp_year": 0,
+    "grp_class": 0
+  },
+  {
+    "reporting_year": "2020",
+    "economic_sector_class": "RESIDENTIAL CONSUMPTION",
+    "total_sales_gwh": 5090.0,
+    "annual_share_pct": 17.81,
+    "grp_year": 0,
+    "grp_class": 0
+  },
+  {
+    "reporting_year": "2020",
+    "economic_sector_class": "LECO BULK FRANCHISE",
+    "total_sales_gwh": 1605.0,
+    "annual_share_pct": 5.62,
+    "grp_year": 0,
+    "grp_class": 0
+  },
+  {
+    "reporting_year": "2020",
+    "economic_sector_class": "CIVIC & PUBLIC SERVICES",
+    "total_sales_gwh": 398.0,
+    "annual_share_pct": 1.39,
+    "grp_year": 0,
+    "grp_class": 0
+  },
+  {
+    "reporting_year": "2020",
+    "economic_sector_class": "--- Annual All-Sector Subtotal ---",
+    "total_sales_gwh": 14287.0,
+    "annual_share_pct": 50.0,
+    "grp_year": 0,
+    "grp_class": 1
+  },
+  {
+    "reporting_year": "2021",
+    "economic_sector_class": "PRODUCTIVE ECONOMIC SECTOR",
+    "total_sales_gwh": 7939.0,
+    "annual_share_pct": 26.09,
+    "grp_year": 0,
+    "grp_class": 0
+  },
+  {
+    "reporting_year": "2021",
+    "economic_sector_class": "RESIDENTIAL CONSUMPTION",
+    "total_sales_gwh": 5238.0,
+    "annual_share_pct": 17.21,
+    "grp_year": 0,
+    "grp_class": 0
+  },
+  {
+    "reporting_year": "2021",
+    "economic_sector_class": "LECO BULK FRANCHISE",
+    "total_sales_gwh": 1633.0,
+    "annual_share_pct": 5.37,
+    "grp_year": 0,
+    "grp_class": 0
+  },
+  {
+    "reporting_year": "2021",
+    "economic_sector_class": "CIVIC & PUBLIC SERVICES",
+    "total_sales_gwh": 404.0,
+    "annual_share_pct": 1.33,
+    "grp_year": 0,
+    "grp_class": 0
+  },
+  {
+    "reporting_year": "2021",
+    "economic_sector_class": "--- Annual All-Sector Subtotal ---",
+    "total_sales_gwh": 15214.0,
+    "annual_share_pct": 50.0,
+    "grp_year": 0,
+    "grp_class": 1
+  },
+  {
+    "reporting_year": "2022",
+    "economic_sector_class": "PRODUCTIVE ECONOMIC SECTOR",
+    "total_sales_gwh": 7541.0,
+    "annual_share_pct": 25.97,
+    "grp_year": 0,
+    "grp_class": 0
+  },
+  {
+    "reporting_year": "2022",
+    "economic_sector_class": "RESIDENTIAL CONSUMPTION",
+    "total_sales_gwh": 5044.0,
+    "annual_share_pct": 17.37,
+    "grp_year": 0,
+    "grp_class": 0
+  },
+  {
+    "reporting_year": "2022",
+    "economic_sector_class": "LECO BULK FRANCHISE",
+    "total_sales_gwh": 1550.0,
+    "annual_share_pct": 5.34,
+    "grp_year": 0,
+    "grp_class": 0
+  },
+  {
+    "reporting_year": "2022",
+    "economic_sector_class": "CIVIC & PUBLIC SERVICES",
+    "total_sales_gwh": 385.0,
+    "annual_share_pct": 1.33,
+    "grp_year": 0,
+    "grp_class": 0
+  },
+  {
+    "reporting_year": "2022",
+    "economic_sector_class": "--- Annual All-Sector Subtotal ---",
+    "total_sales_gwh": 14520.0,
+    "annual_share_pct": 50.0,
+    "grp_year": 0,
+    "grp_class": 1
+  },
+  {
+    "reporting_year": "2023",
+    "economic_sector_class": "PRODUCTIVE ECONOMIC SECTOR",
+    "total_sales_gwh": 7731.5,
+    "annual_share_pct": 27.31,
+    "grp_year": 0,
+    "grp_class": 0
+  },
+  {
+    "reporting_year": "2023",
+    "economic_sector_class": "RESIDENTIAL CONSUMPTION",
+    "total_sales_gwh": 4495.0,
+    "annual_share_pct": 15.88,
+    "grp_year": 0,
+    "grp_class": 0
+  },
+  {
+    "reporting_year": "2023",
+    "economic_sector_class": "LECO BULK FRANCHISE",
+    "total_sales_gwh": 1539.0,
+    "annual_share_pct": 5.44,
+    "grp_year": 0,
+    "grp_class": 0
+  },
+  {
+    "reporting_year": "2023",
+    "economic_sector_class": "CIVIC & PUBLIC SERVICES",
+    "total_sales_gwh": 388.0,
+    "annual_share_pct": 1.37,
+    "grp_year": 0,
+    "grp_class": 0
+  },
+  {
+    "reporting_year": "2023",
+    "economic_sector_class": "--- Annual All-Sector Subtotal ---",
+    "total_sales_gwh": 14153.5,
+    "annual_share_pct": 50.0,
+    "grp_year": 0,
+    "grp_class": 1
+  },
+  {
+    "reporting_year": "2024",
+    "economic_sector_class": "PRODUCTIVE ECONOMIC SECTOR",
+    "total_sales_gwh": 8452.5,
+    "annual_share_pct": 27.82,
+    "grp_year": 0,
+    "grp_class": 0
+  },
+  {
+    "reporting_year": "2024",
+    "economic_sector_class": "RESIDENTIAL CONSUMPTION",
+    "total_sales_gwh": 4701.0,
+    "annual_share_pct": 15.47,
+    "grp_year": 0,
+    "grp_class": 0
+  },
+  {
+    "reporting_year": "2024",
+    "economic_sector_class": "LECO BULK FRANCHISE",
+    "total_sales_gwh": 1625.0,
+    "annual_share_pct": 5.35,
+    "grp_year": 0,
+    "grp_class": 0
+  },
+  {
+    "reporting_year": "2024",
+    "economic_sector_class": "CIVIC & PUBLIC SERVICES",
+    "total_sales_gwh": 412.0,
+    "annual_share_pct": 1.36,
+    "grp_year": 0,
+    "grp_class": 0
+  },
+  {
+    "reporting_year": "2024",
+    "economic_sector_class": "--- Annual All-Sector Subtotal ---",
+    "total_sales_gwh": 15190.5,
+    "annual_share_pct": 50.0,
+    "grp_year": 0,
+    "grp_class": 1
+  },
+  {
+    "reporting_year": ">>> 5-YEAR TOTAL <<<",
+    "economic_sector_class": "GRAND 5-YEAR RECONCILED TOTAL",
+    "total_sales_gwh": 73365.0,
+    "annual_share_pct": 100.0,
+    "grp_year": 1,
+    "grp_class": 1
+  }
+]
