@@ -1,0 +1,36 @@
+flowchart TD
+    %% ==============================================================================
+    %% GridLens Idempotent ETL Pipeline Architecture
+    %% Lecture 4 (Data Staging & ETL), Lecture 6 (Quality Engineering)
+    %% ==============================================================================
+
+    subgraph PHASE1["Phase 1: Ingestion & Provenance"]
+        SRC["Raw Source Files<br/>(PUCSL Excel, CEB CSV, NASA JSON)"] --> DOWNLOAD["Ingestion Script<br/>(download_*.py)"]
+        DOWNLOAD --> RAW_STORAGE["Immutable Storage<br/>(data/raw/*)"]
+        RAW_STORAGE --> HASH["Compute SHA-256<br/>Digest"]
+        HASH --> MANIFEST["Update manifest.json<br/>(Hash, Timestamp, Size, URL)"]
+    end
+
+    subgraph PHASE2["Phase 2: Preprocessing & Data Quality Gate"]
+        RAW_STORAGE --> PARSER["Domain Parser<br/>(pandas / openpyxl / csv)"]
+        PARSER --> NORM["Normalization<br/>- Power: MW, Energy: MWh/GWh<br/>- Timestamps: ISO-8601 UTC+05:30<br/>- Names: Canonical Aliases"]
+        NORM --> GATE{"Quality Gate<br/>Assertions"}
+        
+        GATE -->|Outlier / Negative / Bad Format| QUARANTINE["Isolate in audit.quarantine_records<br/>(Preserve Raw Value + Error Code)"]
+        GATE -->|Passed All Physical Rules| STG_INSERT["Insert into Staging Schema<br/>(stg.*_raw)"]
+    end
+
+    subgraph PHASE3["Phase 3: Dimensional Transformation & Loading"]
+        STG_INSERT --> DIM_LOOKUP["Dimension Surrogate Key Lookup<br/>- Date Key: YYYYMMDD<br/>- Time Key: Slot (1-96)<br/>- Plant / Source / Sector Keys"]
+        DIM_LOOKUP --> COMPUTE_DERIVED["Compute Derived Analytical Measures<br/>- derived_energy_mwh = active_power_mw * 0.25<br/>- ramp_rate_mw = MW[t] - MW[t-1]"]
+        COMPUTE_DERIVED --> UPSERT{"Target Fact Insert<br/>ON CONFLICT (Natural Keys)<br/>DO UPDATE / NOTHING"}
+        
+        UPSERT --> WAREHOUSE_FACTS["dw.fact_* Tables<br/>(Partitioned & Indexed)"]
+    end
+
+    subgraph PHASE4["Phase 4: Audit Lineage & Batch Accounting"]
+        UPSERT --> LINEAGE["audit.record_lineage<br/>(Target PK <-> Source Row Mapping)"]
+        LINEAGE --> BATCH_LOG["audit.etl_batch_log<br/>(Status: SUCCESS, Rows Loaded, Quarantined)"]
+        BATCH_LOG --> REFRESH_MARTS["Execute mart.sp_refresh_analytical_marts()<br/>(Atomic Concurrent MV Refresh)"]
+    end
+

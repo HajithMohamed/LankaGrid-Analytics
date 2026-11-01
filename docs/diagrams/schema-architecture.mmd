@@ -1,0 +1,55 @@
+flowchart TD
+    %% ==============================================================================
+    %% GridLens PostgreSQL 18 Multi-Schema Architecture
+    %% Logical & Physical Database Separation
+    %% ==============================================================================
+
+    subgraph PUBLIC_SCHEMA["Schema: public (System & Migrations)"]
+        PUB_MIG["schema_migrations<br/>(version [PK], checksum, applied_at, execution_ms)"]
+    end
+
+    subgraph STG_SCHEMA["Schema: stg (Staging - Truncate & Load)"]
+        STG_DISP["stg_dispatch_intervals_raw<br/>(file_name, line_num, station_raw, date_str, slot_idx, mw)"]
+        STG_CEB["stg_ceb_sales_raw<br/>(year, sector, province, billed_gwh, accounts)"]
+        STG_WEATH["stg_nasa_weather_raw<br/>(date, location_code, metric_code, raw_val)"]
+    end
+
+    subgraph DW_SCHEMA["Schema: dw (Dimensional Warehouse Core)"]
+        subgraph DW_DIMENSIONS["Dimensions (Surrogate PKs, Conformed)"]
+            D_DATE["dim_date (date_key INT [PK])"]
+            D_TIME["dim_time_of_day (time_key INT [PK])"]
+            D_PLANT["dim_power_plant (plant_key INT [PK])"]
+            D_ENERGY["dim_energy_source (energy_source_key INT [PK])"]
+            D_SECTOR["dim_tariff_sector (sector_key INT [PK])"]
+            D_CLASS["dim_customer_class (class_key INT [PK])"]
+            D_LOC["dim_weather_location (weather_location_key INT [PK])"]
+            D_METRIC["dim_metric (metric_key INT [PK])"]
+        end
+
+        subgraph DW_FACTS["Fact Tables"]
+            F_DISPATCH["fact_dispatch_interval (dispatch_fact_id BIGINT)<br/>[Declarative Monthly Range Partitioning by date_key]"]
+            F_GEN["fact_daily_generation (daily_gen_fact_id BIGINT)"]
+            F_SALES["fact_electricity_sales (sales_fact_id BIGINT)"]
+            F_WEATHER["fact_weather_daily (weather_fact_id BIGINT)"]
+        end
+    end
+
+    subgraph MART_SCHEMA["Schema: mart (Analytical Data Marts & OLAP Views)"]
+        MV_DISP["mv_daily_dispatch_by_source<br/>[Materialized View + Unique Index]"]
+        MV_WEATH["mv_monthly_weather_summary<br/>[Materialized View + Unique Index]"]
+        SP_REFRESH["sp_refresh_analytical_marts()<br/>[PL/pgSQL Concurrent Refresh]"]
+    end
+
+    subgraph AUDIT_SCHEMA["Schema: audit (Data Governance & Provenance)"]
+        AUD_LINEAGE["record_lineage<br/>(lineage_id [PK], batch_id, target_table, target_id, source_file, source_row)"]
+        AUD_QUARANTINE["quarantine_records<br/>(quarantine_id [PK], batch_id, table_name, rule_code, severity, error_details)"]
+        AUD_BATCH["etl_batch_log<br/>(batch_id [PK], pipeline_name, status, start_time, end_time, rows_processed)"]
+    end
+
+    %% Schema Interactions
+    STG_SCHEMA -->|Transformed into| DW_SCHEMA
+    STG_SCHEMA -->|Rejections routed to| AUD_QUARANTINE
+    DW_SCHEMA -->|Row lineage tracked in| AUD_LINEAGE
+    DW_SCHEMA -->|Aggregated into| MART_SCHEMA
+    MART_SCHEMA -.->|Refreshed by| SP_REFRESH
+

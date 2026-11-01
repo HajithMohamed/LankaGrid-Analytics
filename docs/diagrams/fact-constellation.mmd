@@ -1,0 +1,45 @@
+flowchart LR
+    %% ==============================================================================
+    %% GridLens Fact Constellation Schema (Kimball Bus Matrix)
+    %% Conformed Dimensions & Intersecting Facts
+    %% ==============================================================================
+
+    subgraph DIMS["Conformed Dimensions"]
+        DD["dim_date<br/>(date_key [PK])<br/>calendar_date, year, month, season"]
+        DT["dim_time_of_day<br/>(time_key [PK])<br/>time_value, interval_slot, tou_block"]
+        DP["dim_power_plant<br/>(plant_key [PK])<br/>plant_name, capacity_mw, province"]
+        DE["dim_energy_source<br/>(energy_source_key [PK])<br/>source_code, category, fuel_type"]
+        DS["dim_tariff_sector<br/>(sector_key [PK])<br/>sector_code, sector_name, tariff_group"]
+        DC["dim_customer_class<br/>(class_key [PK])<br/>class_code, class_name, voltage_level"]
+        DW["dim_weather_location<br/>(location_key [PK])<br/>location_code, lat, lon, elevation"]
+        DM["dim_metric<br/>(metric_key [PK])<br/>metric_code, metric_name, base_unit"]
+    end
+
+    subgraph FACTS["Fact Tables (Core Analytical Processes)"]
+        F1["dw.fact_dispatch_interval<br/>[Grain: Plant x 15-Minute Slot]<br/>active_power_mw<br/>derived_energy_mwh<br/>ramp_rate_mw"]
+        F2["dw.fact_daily_generation<br/>[Grain: Source x Day]<br/>total_generation_mwh<br/>peak_active_power_mw<br/>mean_active_power_mw"]
+        F3["dw.fact_electricity_sales<br/>[Grain: Sector x Province x Year]<br/>billed_units_gwh<br/>consumer_count<br/>average_kwh_per_account"]
+        F4["dw.fact_weather_daily<br/>[Grain: Location x Metric x Day]<br/>standardized_value<br/>is_missing<br/>source_flag"]
+    end
+
+    %% Fact 1: 15-Minute Dispatch Connections
+    DD -->|FK: date_key| F1
+    DT -->|FK: time_key| F1
+    DP -->|FK: plant_key| F1
+    DE -->|FK: energy_source_key| F1
+
+    %% Fact 2: Daily Generation Connections
+    DD -->|FK: date_key| F2
+    DE -->|FK: energy_source_key| F2
+    DP -->|FK: plant_key (nullable)| F2
+
+    %% Fact 3: Electricity Sales Connections
+    DD -->|FK: date_key (annual)| F3
+    DS -->|FK: sector_key| F3
+    DC -->|FK: class_key| F3
+
+    %% Fact 4: Weather Observations Connections
+    DD -->|FK: date_key| F4
+    DW -->|FK: location_key| F4
+    DM -->|FK: metric_key| F4
+
