@@ -38,7 +38,7 @@ class DailyWeatherRecord:
     is_missing: bool
     missing_value_code: str | None
     reported_unit_code: str
-    time_standard: str = "LST / UTC+05:30"
+    time_standard: str = "LST"
     source_code: str = "NASA_POWER"
 
 
@@ -91,7 +91,7 @@ class NasaPowerParser:
                             is_missing=is_missing,
                             missing_value_code=missing_code,
                             reported_unit_code=unit_code,
-                            time_standard="LST / UTC+05:30",
+                            time_standard="LST",
                             source_code="NASA_POWER",
                         )
                     )

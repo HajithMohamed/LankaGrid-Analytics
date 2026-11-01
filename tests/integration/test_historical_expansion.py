@@ -82,7 +82,7 @@ def test_etl_loads_5yr_nasa_weather_dataset(
 
     result = real_loader.load_nasa_weather_json(json_path)
     assert result.status in ("SUCCEEDED", "PARTIAL_QUARANTINE")
-    assert result.rows_inserted == 21924
+    assert (result.rows_inserted + result.rows_updated) == 21924
 
     with get_connection(migrated_and_seeded_test_db) as conn:
         with conn.cursor() as cur:
@@ -137,29 +137,44 @@ def test_etl_loads_5yr_nasa_weather_dataset(
 def test_etl_loads_pucsl_march_31_days(
     real_loader: RealDataWarehouseLoader, migrated_and_seeded_test_db: DatabaseConfig
 ):
-    """Verify loading all 31 days of March 2024 dispatch workbook."""
+    """Verify loading all 31 days of March 2024 dispatch workbook with exact coverage."""
     xlsx_path = Path("data/raw/pucsl/2024/15-Minutes-Report-31-Mar2024.xlsx")
     if not xlsx_path.exists():
         pytest.skip("PUCSL 15-minute XLSX not present")
 
-    # Load 3 representative days (01.03, 15.03, 31.03) to test multi-day sub-daily dispatch
-    test_sheets = ["01.03", "15.03", "31.03"]
-    result = real_loader.load_pucsl_dispatch_xlsx(xlsx_path, sheet_names=test_sheets)
+    # Load all 31 days of March 2024 dispatch
+    result = real_loader.load_pucsl_dispatch_xlsx(xlsx_path)
     assert result.status in ("SUCCEEDED", "PARTIAL_QUARANTINE")
-    assert result.rows_inserted > 0
+    assert result.rows_quarantined == 21
 
     with get_connection(migrated_and_seeded_test_db) as conn:
         with conn.cursor() as cur:
             # Check partition table fact_dispatch_interval_y2024
             cur.execute(
                 """
-                SELECT count(DISTINCT dd.calendar_date), count(*)
+                SELECT
+                    min(dd.calendar_date),
+                    max(dd.calendar_date),
+                    count(DISTINCT dd.calendar_date),
+                    count(*)
                 FROM dw.fact_dispatch_interval_y2024 fdi
                 JOIN dw.dim_date dd ON fdi.date_key = dd.date_key
                 WHERE fdi.source_document_id = %s;
                 """,
                 (result.source_document_id,),
             )
-            distinct_days, fact_count = cur.fetchone()
-            assert distinct_days >= 3
-            assert fact_count > 9000
+            min_date, max_date, distinct_days, fact_count = cur.fetchone()
+            assert min_date == date(2024, 3, 1)
+            assert max_date == date(2024, 3, 31)
+            assert distinct_days == 31
+            assert fact_count == 107115
+
+            # Assert zero leakage into April
+            cur.execute(
+                """
+                SELECT count(*)
+                FROM dw.fact_dispatch_interval
+                WHERE date_key = 20240401;
+                """
+            )
+            assert cur.fetchone()[0] == 0

@@ -64,7 +64,7 @@ Official Archive: `https://www.pucsl.gov.lk/daily-generation-reports-2/`
 |---|---|
 | **File Path** | `data/raw/pucsl/2024/15-Minutes-Report-31-Mar2024.xlsx` |
 | **File Size** | 917,216 bytes |
-| **SHA-256 Checksum** | `f6ffc05f778a46e16f6b7c25143a53d12d8a43f8a46cf7e48b8b9354e606a5e1` |
+| **SHA-256 Checksum** | `d40c7d9b11293e2c42c45227c4d121854e90781c3586bf204780d73fb282573b` |
 | **Temporal Coverage** | 2024-03-01 to 2024-03-31 (31 full days) |
 | **Sheet Layout** | 31 individual daily sheets named `01.03` through `31.03` |
 | **Time Granularity** | 96 intervals per day (15-minute intervals: 00:00 to 23:45 SLST) |
@@ -112,6 +112,16 @@ Official API Endpoint: `https://power.larc.nasa.gov/api/temporal/daily/point`
 | `WIND_SPEED_10M` | `WS10M` | Wind Speed at 10 Meters AGL | $\text{m/s}$ | $\text{m/s}$ | $1.0$ (Identity) |
 | `WIND_SPEED_50M` | `WS50M` | Wind Speed at 50 Meters (Turbine Hub Height) | $\text{m/s}$ | $\text{m/s}$ | $1.0$ (Identity) |
 | `PRECIPITATION_CORRECTED` | `PRECTOTCORR` | Corrected Total Precipitation | $\text{mm/day}$ | $\text{mm/day}$ | $1.0$ (Identity) |
+
+### 5.4 Time Standard Specification (`time_standard: LST`)
+
+In the NASA POWER temporal daily point API response header, the metadata explicitly declares:
+```json
+"time_standard": "LST"
+```
+- **Local Solar Time (LST)**: Calculated based on the solar transit at the specific geographic longitude of the observation node (Victoria: $80.7850^\circ\text{ E}$; Mannar: $79.8800^\circ\text{ E}$). Under LST, solar noon occurs precisely when the sun reaches its zenith.
+- **Distinction from SLST**: Sri Lanka Standard Time (SLST) is standard legal civil time pegged to UTC+05:30 (central meridian $82.5^\circ\text{ E}$). The geographic solar offset is approximately $-6.86\text{ minutes}$ at Victoria and $-10.48\text{ minutes}$ at Mannar, plus the seasonal Equation of Time ($\pm 15\text{ minutes}$).
+- **Integrity Rule**: In accordance with the zero fabrication and metadata fidelity principle, the warehouse explicitly preserves the source declared `time_standard = 'LST'` in `dw.fact_weather_daily.time_standard` and does not relabel it as `SLST` or `UTC+05:30`.
 
 ---
 

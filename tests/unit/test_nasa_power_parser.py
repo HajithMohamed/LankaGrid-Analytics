@@ -40,7 +40,7 @@ def test_nasa_power_parser_extracts_observations(sample_nasa_json_path: Path):
         "WS50M",
         "PRECTOTCORR",
     )
-    assert rec_0.time_standard == "LST / UTC+05:30"
+    assert rec_0.time_standard == "LST"
     assert rec_0.reported_unit_code != ""
 
     # NASA POWER All-Sky Surface Shortwave Irradiance unit must be kWh/m2/day
