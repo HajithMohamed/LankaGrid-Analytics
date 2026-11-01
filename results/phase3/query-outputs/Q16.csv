@@ -1,2 +1,2 @@
 analysis_scope,sample_days,min_daily_wind_ms,mean_daily_wind_ms,max_daily_wind_ms,min_daily_gen_mwh,mean_daily_gen_mwh,max_daily_gen_mwh,corr_wind_speed_vs_energy,corr_v_cubed_vs_energy,physical_interpretation
-March 2024 Paired Empirical Correlation,31,2.90,5.37,7.73,215.25,640.26,1472.50,0.7143,0.7132,Strong positive correlation (r = +0.714) confirms physical aerodynamic coupling between NASA 50m wind speed and grid dispatch
+March 2024 Paired Empirical Correlation,31,2.90,5.37,7.73,215.25,640.26,1472.50,0.7143,0.7132,Strong positive correlation (r = 0.714) demonstrates statistical alignment between NASA POWER 50m wind speed at Mannar and utility-scale grid dispatch

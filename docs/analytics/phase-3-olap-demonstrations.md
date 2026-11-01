@@ -20,33 +20,33 @@ The GridLens warehouse models grid electricity measurements as a multidimensiona
 ### A. Roll-Up (Aggregation / Climbing Hierarchy)
 - **Concept**: Moves from fine-grained data to higher levels of summary aggregation along a dimensional hierarchy.
 - **Implementation in GridLens**:
-  - In [Q01.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/queries/phase3/member_01_generation/Q01.sql), 107,115 individual 15-minute observations roll up across generating units to plant names, then to `fuel_type_name`, and finally to clean `source_category` (Renewable vs Non-Renewable).
-  - In [Q13.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/queries/phase3/member_04_weather/Q13.sql), 21,924 daily weather observations roll up along the temporal hierarchy to calendar month and calendar year.
+  - In [Q01.sql](../../database/queries/phase3/member_01_generation/Q01.sql), 107,115 individual 15-minute observations roll up across generating units to plant names, then to `fuel_type`, and finally to clean `energy_category`.
+  - In [Q13.sql](../../database/queries/phase3/member_04_weather/Q13.sql), 21,924 daily weather observations roll up along the temporal hierarchy to calendar month and calendar year.
 
 ### B. Drill-Down (De-aggregation / Descending Hierarchy)
 - **Concept**: Moves from summary metrics to detailed, fine-grained components.
 - **Implementation in GridLens**:
-  - In [Q05.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/queries/phase3/member_02_dispatch/Q05.sql), monthly total generation drills down into individual 15-minute dispatch intervals (slots 1 to 96) to reveal intraday peak and trough variations.
-  - In [Q18.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/queries/phase3/member_05_plant_operations/Q18.sql), national hydro generation drills down into specific hydro cascades (Mahaweli vs Laxapana) and individual stations (Victoria, Kothmale, Polpitiya).
+  - In [Q05.sql](../../database/queries/phase3/member_02_dispatch/Q05.sql), monthly total generation drills down into individual 15-minute dispatch intervals (slots 1 to 96) to reveal intraday peak and trough variations.
+  - In [Q18.sql](../../database/queries/phase3/member_05_plant_operations/Q18.sql), national generation drills down into individual stations (Victoria, Kotmale, Polpitiya, etc.) and individual units.
 
 ### C. Slice (Filtering on a Single Dimension)
 - **Concept**: Selects a rectangular sub-cube by fixing a single dimension at a specific attribute value.
 - **Implementation in GridLens**:
-  - In [Q17.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/queries/phase3/member_05_plant_operations/Q17.sql), the warehouse is sliced strictly where `plant_code = 'LAKVIJAYA_COAL'`, isolating coal baseload dispatch.
-  - In [Q16.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/queries/phase3/member_04_weather/Q16.sql), weather facts are sliced strictly for `location_code = 'MANNAR'`.
+  - In [Q17.sql](../../database/queries/phase3/member_05_plant_operations/Q17.sql), the warehouse is sliced strictly by individual plants, isolating base vs cycling duty.
+  - In [Q16.sql](../../database/queries/phase3/member_04_weather/Q16.sql), weather facts are sliced strictly for `location_code = 'LOC_MANNAR_WIND'`.
 
 ### D. Dice (Filtering across Multiple Dimensions Simultaneously)
 - **Concept**: Defines a sub-cube by applying selection predicates across two or more dimensions simultaneously.
 - **Implementation in GridLens**:
-  - In [Q04.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/queries/phase3/member_01_generation/Q04.sql), the cube is diced by:
+  - In [Q04.sql](../../database/queries/phase3/member_01_generation/Q04.sql), the cube is diced by:
     1. Time Dimension: `calendar_month = 3 AND calendar_year = 2024`
     2. Interval Dimension: `tou_regime = 'PEAK' (18:30–22:30)`
-    3. Source Dimension: `source_category = 'RENEWABLE'`
+    3. Source Dimension: `energy_category` (Hydro, Coal, Oil, Solar, Wind)
 
 ### E. Pivot / Crosstab (Rotating Dimensional Axes)
 - **Concept**: Rotates the viewing axes of the cube to transform vertical dimension rows into horizontal report columns.
 - **Implementation in GridLens**:
-  - In [Q19.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/queries/phase3/member_05_plant_operations/Q19.sql), the 24 hours of the day are pivoted horizontally against thermal power plants vertically to form a 24-column hourly dispatch heat map.
+  - In [Q10.sql](../../database/queries/phase3/member_03_sales/Q10.sql), annual electricity sales across 5 years (2020–2024) are pivoted horizontally by consumer category to compute CAGR and crisis recovery elasticity.
 
 ---
 
@@ -118,7 +118,7 @@ To optimize expensive repeated OLAP queries, Migration 021 deployed:
    - Pre-aggregates 107,115 15-minute dispatch rows into 217 daily-energy summaries by energy source.
    - Accelerates daily renewable mix and timeseries queries from ~180ms to <2ms (**90x speedup**).
 2. `mart.mv_monthly_weather_summary`:
-   - Pre-aggregates 21,924 daily weather observations into 120 monthly climatic summaries across 12 monitoring nodes.
+   - Pre-aggregates 21,924 daily weather observations into 120 monthly climatic summaries across 2 physical monitoring stations tracking 6 meteorological parameters (yielding 12 location-metric series).
    - Accelerates solar irradiance and wind profile queries from ~95ms to <1.5ms (**60x speedup**).
 3. Concurrent Refresh via `mart.sp_refresh_analytical_marts()`:
    - Uses `REFRESH MATERIALIZED VIEW CONCURRENTLY` enabled by unique composite indexes, ensuring zero analytical query blocking during refresh.

@@ -9,7 +9,7 @@
     "mean_power_mw": 40.67,
     "mean_capacity_utilization_pct": 54.2,
     "peak_headroom_mw": -12.0,
-    "operational_delivery_status": "FULL NAMEPLATE CAPABILITY DELIVERED",
+    "operational_delivery_status": "OVER-RATED DISPATCH (REPOWERED / HIGH-HEAD / OVERFIRE)",
     "peak_ratio_rank": 1
   },
   {
@@ -22,7 +22,7 @@
     "mean_power_mw": 221.32,
     "mean_capacity_utilization_pct": 82.0,
     "peak_headroom_mw": -19.0,
-    "operational_delivery_status": "FULL NAMEPLATE CAPABILITY DELIVERED",
+    "operational_delivery_status": "OVER-RATED DISPATCH (REPOWERED / HIGH-HEAD / OVERFIRE)",
     "peak_ratio_rank": 2
   },
   {
@@ -35,7 +35,7 @@
     "mean_power_mw": 80.11,
     "mean_capacity_utilization_pct": 38.1,
     "peak_headroom_mw": -10.0,
-    "operational_delivery_status": "FULL NAMEPLATE CAPABILITY DELIVERED",
+    "operational_delivery_status": "OVER-RATED DISPATCH (REPOWERED / HIGH-HEAD / OVERFIRE)",
     "peak_ratio_rank": 3
   },
   {
@@ -48,7 +48,7 @@
     "mean_power_mw": 67.21,
     "mean_capacity_utilization_pct": 56.0,
     "peak_headroom_mw": -2.0,
-    "operational_delivery_status": "FULL NAMEPLATE CAPABILITY DELIVERED",
+    "operational_delivery_status": "OVER-RATED DISPATCH (REPOWERED / HIGH-HEAD / OVERFIRE)",
     "peak_ratio_rank": 4
   },
   {
@@ -61,7 +61,7 @@
     "mean_power_mw": 66.25,
     "mean_capacity_utilization_pct": 66.3,
     "peak_headroom_mw": -1.0,
-    "operational_delivery_status": "FULL NAMEPLATE CAPABILITY DELIVERED",
+    "operational_delivery_status": "OVER-RATED DISPATCH (REPOWERED / HIGH-HEAD / OVERFIRE)",
     "peak_ratio_rank": 5
   },
   {
@@ -74,7 +74,7 @@
     "mean_power_mw": 35.52,
     "mean_capacity_utilization_pct": 29.1,
     "peak_headroom_mw": -1.0,
-    "operational_delivery_status": "FULL NAMEPLATE CAPABILITY DELIVERED",
+    "operational_delivery_status": "OVER-RATED DISPATCH (REPOWERED / HIGH-HEAD / OVERFIRE)",
     "peak_ratio_rank": 6
   },
   {
@@ -282,7 +282,7 @@
     "mean_power_mw": 0.0,
     "mean_capacity_utilization_pct": 0.0,
     "peak_headroom_mw": 115.0,
-    "operational_delivery_status": "ZERO GENERATION / EXTENDED OUTAGE",
+    "operational_delivery_status": "ZERO DISPATCH / STANDBY RESERVE OR OUTAGE",
     "peak_ratio_rank": 22
   }
 ]

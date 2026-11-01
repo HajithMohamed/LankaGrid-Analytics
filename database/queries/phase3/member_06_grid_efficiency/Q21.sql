@@ -32,6 +32,18 @@ WITH sector_annual_data AS (
     JOIN dw.dim_date dd ON fes.period_start_date_key = dd.date_key
     WHERE fes.is_current_revision = TRUE
       AND dcs.sector_code <> 'ALL_SECTORS' -- Strictly exclude published summary to prevent double counting
+),
+annual_totals AS (
+    SELECT
+        calendar_year,
+        SUM(sales_gwh) AS year_total_gwh
+    FROM sector_annual_data
+    GROUP BY calendar_year
+),
+grand_total AS (
+    SELECT
+        SUM(sales_gwh) AS five_year_total_gwh
+    FROM sector_annual_data
 )
 SELECT
     CASE 
@@ -44,18 +56,19 @@ SELECT
         ELSE sad.economic_classification
     END AS economic_sector_class,
     ROUND(SUM(sad.sales_gwh), 2) AS total_sales_gwh,
-    -- Percentage of annual grid sales
+    -- Percentage of annual grid sales (normalized to annual total for subtotals, grand total for 5-year total)
     ROUND(
-        100.0 * SUM(sad.sales_gwh) / NULLIF(
-            SUM(SUM(sad.sales_gwh)) OVER (PARTITION BY sad.calendar_year),
-            0
-        ),
+        100.0 * SUM(sad.sales_gwh) / CASE
+            WHEN GROUPING(sad.calendar_year) = 1 THEN (SELECT five_year_total_gwh FROM grand_total)
+            ELSE MAX(at.year_total_gwh)
+        END,
         2
     ) AS annual_share_pct,
     -- Grouping indicators
     GROUPING(sad.calendar_year) AS grp_year,
     GROUPING(sad.economic_classification) AS grp_class
 FROM sector_annual_data sad
+LEFT JOIN annual_totals at ON sad.calendar_year = at.calendar_year
 GROUP BY GROUPING SETS (
     (sad.calendar_year, sad.economic_classification),
     (sad.calendar_year),

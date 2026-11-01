@@ -67,3 +67,81 @@ def test_materialized_views_reconciliation(populated_analytics_db: DatabaseConfi
             assert mv_total == fact_total, (
                 f"Materialized view total {mv_total} does not match underlying fact total {fact_total}"
             )
+
+
+@pytest.mark.integration
+def test_hotel_tourism_sales_trajectory_q10(populated_analytics_db: DatabaseConfig) -> None:
+    """Verify authentic CEB statistical digest figures for hotel & tourism electricity sales."""
+    sql = cast(
+        LiteralString,
+        Path("database/queries/phase3/member_03_sales/Q10.sql").read_text(encoding="utf-8"),
+    )
+    with get_connection(populated_analytics_db) as conn:
+        with conn.cursor() as cur:
+            cur.execute(sql)
+            rows = cur.fetchall()
+            hotel_row = [r for r in rows if r[0] == "HOTEL"]
+            assert len(hotel_row) == 1, "Expected HOTEL sector in Q10 output"
+            hotel = hotel_row[0]
+            s_2020, s_2024, net_diff, pct_change, cagr = (
+                float(hotel[3]),
+                float(hotel[7]),
+                float(hotel[8]),
+                float(hotel[9]),
+                float(hotel[11]),
+            )
+            assert s_2020 == 193.00, f"Expected 2020 hotel sales of 193.00 GWh, got {s_2020}"
+            assert s_2024 == 355.00, f"Expected 2024 hotel sales of 355.00 GWh, got {s_2024}"
+            assert abs(net_diff - 162.00) < 0.1, f"Expected +162.00 GWh net gain, got {net_diff}"
+            assert abs(pct_change - 83.94) < 0.1, f"Expected +83.94% net change, got {pct_change}"
+            assert abs(cagr - 16.46) < 0.1, f"Expected +16.46% CAGR, got {cagr}"
+
+
+@pytest.mark.integration
+def test_temperature_demand_correlation_bounds_q14(populated_analytics_db: DatabaseConfig) -> None:
+    """Verify empirical correlation bounds between ambient temperature and March 2024 grid demand."""
+    sql = cast(
+        LiteralString,
+        Path("database/queries/phase3/member_04_weather/Q14.sql").read_text(encoding="utf-8"),
+    )
+    with get_connection(populated_analytics_db) as conn:
+        with conn.cursor() as cur:
+            cur.execute(sql)
+            rows = cur.fetchall()
+            assert len(rows) == 1
+            row = rows[0]
+            paired_days = int(row[0])
+            corr_peak = float(row[7])
+            corr_energy = float(row[8])
+
+            assert paired_days == 31, f"Expected 31 paired days in March, got {paired_days}"
+            # Correlation with peak demand is negligible (|r| < 0.05)
+            assert abs(corr_peak) < 0.05, (
+                f"Expected |r| < 0.05 for temp vs peak demand, got {corr_peak}"
+            )
+            # Correlation with total daily energy is positive and mild (0.05 <= r <= 0.20)
+            assert 0.05 <= corr_energy <= 0.20, (
+                f"Expected mild positive correlation, got {corr_energy}"
+            )
+
+
+@pytest.mark.integration
+def test_wind_speed_generation_coupling_q16(populated_analytics_db: DatabaseConfig) -> None:
+    """Verify strong empirical correlation between NASA 50m wind speed and utility wind dispatch."""
+    sql = cast(
+        LiteralString,
+        Path("database/queries/phase3/member_04_weather/Q16.sql").read_text(encoding="utf-8"),
+    )
+    with get_connection(populated_analytics_db) as conn:
+        with conn.cursor() as cur:
+            cur.execute(sql)
+            rows = cur.fetchall()
+            assert len(rows) == 1
+            row = rows[0]
+            sample_days = int(row[1])
+            corr_wind = float(row[8])
+            interp_text = str(row[10])
+
+            assert sample_days == 31
+            assert corr_wind >= 0.70, f"Expected strong wind correlation r >= 0.70, got {corr_wind}"
+            assert "0.714" in interp_text or "Strong positive correlation" in interp_text

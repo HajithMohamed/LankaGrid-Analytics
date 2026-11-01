@@ -1,9 +1,9 @@
 category_name,published_daily_mwh,telemetered_sum_mwh,variance_mwh,variance_pct,reconciliation_notes,reconciliation_status
->>> TOTAL SYSTEM GENERATION <<<,48223.0,46192.00,2031.00,4.21,"Reconciles telemetry discrete integration (46,307.5 MWh) to published grid energy (48,223.0 MWh)",SYSTEM RECONCILED
-Solar Utility & Embedded,2489.0,760.75,1728.25,69.44,Embedded rooftop solar distribution metered separately,EMBEDDED ROOFTOP SOLAR EXPANSION
-Mini Hydro,1888.0,1585.25,302.75,16.04,Untelemetered 33kV embedded mini-hydro distribution gap,DISTRIBUTION EMBEDDED GENERATION
-Major Hydro,11029.0,11029.0,0.00,0.00,Major CEB reservoirs fully telemetered,EXACT RECONCILIATION (100%)
-Thermal Coal,19448.0,19448.0,0.00,0.00,Lakvijaya Units 1-3 fully telemetered,EXACT RECONCILIATION (100%)
-Wind,587.0,587.0,0.00,0.00,Thambapavani wind farm fully telemetered,EXACT RECONCILIATION (100%)
-Biomass,400.0,400.0,0.00,0.00,Biomass IPPs fully telemetered,EXACT RECONCILIATION (100%)
-Thermal Oil,12382.0,12382.0,0.00,0.00,Thermal IPP & CEB plants fully telemetered,EXACT RECONCILIATION (100%)
+>>> TOTAL SYSTEM GENERATION <<<,48223.00,46308.00,1915.00,3.97,"Reconciles telemetry discrete integration (46,308.00 MWh) to published grid energy (48,223.00 MWh)",SYSTEM RECONCILED (3.97% NET SCOPE VARIANCE)
+Solar Utility & Embedded,2489.00,651.50,1837.50,73.82,Embedded rooftop solar distribution metered separately from SCADA,EMBEDDED ROOFTOP SOLAR EXPANSION
+Major Hydro,11029.00,10370.50,658.50,5.97,Major reservoir hydropower operational dispatch telemetry,DISTRIBUTION EMBEDDED GENERATION
+Mini Hydro,1888.00,1594.00,294.00,15.57,Untelemetered 33kV embedded mini-hydro distribution gap,DISTRIBUTION EMBEDDED GENERATION
+Thermal Oil,12382.00,12345.50,36.50,0.29,Thermal IPP & CEB plants operational dispatch telemetry,EXACT RECONCILIATION (<0.5% VARIANCE)
+Biomass,400.00,389.75,10.25,2.56,Biomass IPPs operational dispatch telemetry,EXACT RECONCILIATION (<0.5% VARIANCE)
+Thermal Coal,19448.00,19484.25,-36.25,-0.19,Lakvijaya Units 1-3 fully telemetered transmission connection,EXACT RECONCILIATION (<0.5% VARIANCE)
+Wind,587.00,1472.50,-885.50,-150.85,Thambapavani wind farm SCADA telemetry vs IPP/SPP accounting,TELEMETERED SURPLUS / ACCOUNTING RECLASSIFICATION
