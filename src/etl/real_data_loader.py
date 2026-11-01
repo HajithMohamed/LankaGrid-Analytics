@@ -223,11 +223,7 @@ class RealDataWarehouseLoader:
     ) -> BatchExecutionResult:
         """Load PUCSL 15-minute dispatch spreadsheet into dw.fact_dispatch_interval."""
         parser = PucslDispatchParser()
-        sheets_to_parse = sheet_names or parser.get_sheet_names(xlsx_path)
-
-        all_records = []
-        for s in sheets_to_parse:
-            all_records.extend(parser.parse_sheet(xlsx_path, s))
+        all_records = parser.parse_all_sheets(xlsx_path, sheet_names=sheet_names)
 
         if not all_records:
             raise ValueError(f"No dispatch records parsed from {xlsx_path}")
@@ -323,9 +319,11 @@ class RealDataWarehouseLoader:
                                     batch_id,
                                     doc_id,
                                     rec.raw_entity_name,
+                                    rec.observation_date,
+                                    rec.interval_slot_number,
                                     rec.observation_timestamp.isoformat(),
                                     rec.observation_timestamp,
-                                    str(rec.power_mw),
+                                    str(rec.power_mw) if rec.power_mw is not None else None,
                                     rec.power_mw,
                                     revision,
                                 )
@@ -345,12 +343,14 @@ class RealDataWarehouseLoader:
                             """
                             INSERT INTO staging.stg_dispatch_observation (
                                 batch_id, source_document_id, source_code,
-                                raw_entity_name, raw_timestamp_text, parsed_timestamp,
+                                raw_entity_name, reporting_date, interval_slot_number,
+                                raw_timestamp_text, parsed_timestamp,
                                 interval_duration_minutes, raw_power_text, parsed_power_mw,
                                 reported_unit_code, metric_code, dataset_revision, validation_status
                             ) VALUES (
                                 %s, %s, 'PUCSL',
                                 %s, %s, %s,
+                                %s, %s,
                                 15, %s, %s,
                                 'MW', 'PLANT_DISPATCH_MW', %s, 'pending'
                             );

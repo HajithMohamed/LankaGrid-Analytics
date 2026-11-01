@@ -74,7 +74,7 @@ def test_etl_loads_pucsl_dispatch_xlsx(
     # Load 1 sample sheet (01.03) to test sub-daily dispatch partition insertion
     result = real_loader.load_pucsl_dispatch_xlsx(xlsx_path, sheet_names=["01.03"])
     assert result.status in ("SUCCEEDED", "PARTIAL_QUARANTINE")
-    assert result.rows_inserted > 0
+    assert (result.rows_inserted + result.rows_updated) > 0
 
     with get_connection(migrated_and_seeded_test_db) as conn:
         with conn.cursor() as cur:
@@ -136,7 +136,7 @@ def test_etl_loads_ceb_statistical_digest_sales(
 
     result = real_loader.load_ceb_sales_pdf(pdf_path, reporting_year=2024)
     assert result.status in ("SUCCEEDED", "PARTIAL_QUARANTINE")
-    assert result.rows_inserted > 0
+    assert (result.rows_inserted + result.rows_updated) > 0
 
     with get_connection(migrated_and_seeded_test_db) as conn:
         with conn.cursor() as cur:

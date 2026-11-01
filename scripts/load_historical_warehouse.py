@@ -38,16 +38,15 @@ def main() -> None:
             f"Loaded NASA 5-Year weather in {time.time() - t0:.2f}s: status={nasa_res.status}, inserted={nasa_res.rows_inserted}, quarantined={nasa_res.rows_quarantined}"
         )
 
-    # 3. Load PUCSL March 2024 Dispatch (Sample representative multi-day)
-    print("\n--- 3. Loading PUCSL March 2024 Sub-Daily Dispatch Curves ---")
+    # 3. Load PUCSL March 2024 Dispatch (Full 31-Day Coverage)
+    print("\n--- 3. Loading PUCSL March 2024 Sub-Daily Dispatch Curves (All 31 Days) ---")
     pucsl_path = Path("data/raw/pucsl/2024/15-Minutes-Report-31-Mar2024.xlsx")
     if pucsl_path.exists():
         t0 = time.time()
-        # Load sample representative days to ensure partition fact_dispatch_interval_y2024 is loaded
-        sample_sheets = ["01.03", "15.03", "31.03"]
-        dispatch_res = loader.load_pucsl_dispatch_xlsx(pucsl_path, sheet_names=sample_sheets)
+        # Load all 31 daily sheets into partition fact_dispatch_interval_y2024
+        dispatch_res = loader.load_pucsl_dispatch_xlsx(pucsl_path)
         print(
-            f"Loaded PUCSL dispatch in {time.time() - t0:.2f}s: status={dispatch_res.status}, inserted={dispatch_res.rows_inserted}, quarantined={dispatch_res.rows_quarantined}"
+            f"Loaded PUCSL dispatch in {time.time() - t0:.2f}s: status={dispatch_res.status}, inserted={dispatch_res.rows_inserted}, updated={dispatch_res.rows_updated}, quarantined={dispatch_res.rows_quarantined}"
         )
 
     print("\nPrimary warehouse historical loading complete!")

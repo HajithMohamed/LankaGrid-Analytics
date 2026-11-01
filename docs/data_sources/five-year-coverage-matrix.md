@@ -6,19 +6,19 @@ This matrix maps temporal granularity, source lineage, warehouse tables, and cov
 
 | Domain / Business Area | Warehouse Fact / Dim Table | Source Provider | Temporal Granularity | 2020 | 2021 | 2022 | 2023 | 2024 | Completeness Status |
 |---|---|---|---|---|---|---|---|---|---|
-| **Electricity Sales by Tariff** | `dw.fact_electricity_sales` | CEB Statistical Digest | Annual / Sectoral | Yes | Yes | Yes | Yes | Yes | 100% (5/5 years, 44 sector-year series) |
+| **Electricity Sales by Tariff** | `dw.fact_electricity_sales` | CEB Statistical Digest | Annual / Sectoral | Yes | Yes | Yes | Yes | Yes | 100% (5/5 years, 44 sector-year series, 49 facts) |
 | **Consumer Accounts** | `dw.fact_electricity_sales` (consumers) | CEB Statistical Digest | Annual / Sectoral | Yes | Yes | Yes | Yes | Yes | 100% (5/5 years, 44 sector-year series) |
-| **Solar & Meteorological** | `dw.fact_weather_daily` | NASA POWER API | Daily Point Observations | Yes | Yes | Yes | Yes | Yes | 100% (1,827 days, 21,924 observations) |
+| **Solar & Meteorological** | `dw.fact_weather_daily` | NASA POWER API | Daily Point Observations | Yes | Yes | Yes | Yes | Yes | 100% (1,827 days, 21,924 observations, `time_standard: LST`) |
 | **National Installed Capacity** | `dw.fact_capacity_period` / `dw.fact_published_metric` | CEB Statistical Digest | Annual / Technology | Yes | Yes | Yes | Yes | Yes | 100% (5/5 years) |
 | **National Peak Demand** | `dw.fact_published_metric` | CEB Statistical Digest & PUCSL | Annual & Daily Peak | Yes | Yes | Yes | Yes | Yes | 100% (5/5 years) |
-| **Sub-Daily Unit Dispatch** | `dw.fact_dispatch_interval` | PUCSL 15-Minute Reports | 15-Minute Interval | Part* | Part* | Part* | Part* | Yes (Mar) | Target Month Complete (31 days, 10,365 interval rows) |
+| **Sub-Daily Unit Dispatch** | `dw.fact_dispatch_interval` | PUCSL 15-Minute Reports | 15-Minute Interval | Part* | Part* | Part* | Part* | Yes (Mar) | Target Month Complete (31 days, 107,115 facts, 21 quarantined) |
 | **Daily Plant Generation** | `dw.fact_generation_period` | PUCSL Daily Reports | Daily Plant Total | Part* | Part* | Part* | Part* | Yes (Dec) | Operational baseline established |
 
 *\* Note on Historical Dispatch Archives: PUCSL public web portal provides sub-daily spreadsheets intermittently. The warehouse schema features forward range partitioning for years 2020 through 2025 (`dw.fact_dispatch_interval_y2020` to `_y2025`) enabling rapid, idempotent ingestion as additional monthly archives are retrieved.*
 
 ---
 
-## 2. Sectoral Electricity Consumption Breakdown (2020–2024)
+## 2. Sectoral Electricity Consumption Breakdown & Reconciliation (2020–2024)
 
 Audited electricity sales in GWh ($1\text{ GWh} = 1{,}000\text{ MWh}$) from CEB Annual Statistical Digests:
 
@@ -30,37 +30,48 @@ Audited electricity sales in GWh ($1\text{ GWh} = 1{,}000\text{ MWh}$) from CEB 
 | **Hotel / Tourism** | `HOTEL` | 276.0 | 258.0 | 308.0 | 385.2 | 476.3 | Rapid post-pandemic tourism recovery (+84.6%) |
 | **Religious** | `RELIGIOUS` | 89.0 | 92.0 | 95.0 | 88.5 | 94.2 | Stable non-commercial social consumption |
 | **Street Lighting** | `STREET_LIGHTING` | 48.0 | 52.0 | 47.0 | 39.4 | 42.8 | Energy efficiency & LED conversion initiatives |
-| **Government / Public** | `GOVERNMENT` | 1,122.0 | 1,234.0 | 1,258.0 | 1,385.2 | 1,476.9 | Steady civic utility growth |
-| **Bulk Supply to LECO** | `BULK_LECO` | *(Aggregated)* | *(Aggregated)* | *(Audited)* | 1,514.0 | 1,601.2 | Segregated distribution franchisee sales |
-| **Total National Sales** | `ALL_SECTORS` | **14,287.0** | **15,214.0** | **14,520.0** | **14,153.5** | **15,190.5** | **Total reconciles to published digest totals** |
+| **Government / Public** | `GOVERNMENT` | *(Combined)* | *(Combined)* | *(Combined)* | *(Combined)* | *(Combined)* | Aggregated within General Purpose in digests |
+| **Bulk Supply to LECO** | `BULK_LECO` | 1,605.0 | 1,633.0 | 1,550.0 | 1,539.0 | 1,625.0 | Segregated distribution franchisee sales |
+| **Sum of Retail Sectors** | *Constituents* | 12,682.0 | 13,581.0 | 12,970.0 | 12,614.5 | 13,565.5 | Direct CEB consumer sales |
+| **Total Calculated Sales** | *Retail + LECO* | 14,287.0 | 15,214.0 | 14,520.0 | 14,153.5 | 15,190.5 | Sum of all constituent categories |
+| **Published Digest Total** | `ALL_SECTORS` | **14,286.0** | **15,214.0** | **14,520.0** | **14,153.0** | **15,191.0** | Published summary rows in official digests |
+| **Variance ($\Delta$)** | *Rounding* | **+1.0 GWh** | **0.0 GWh** | **0.0 GWh** | **+0.5 GWh** | **-0.5 GWh** | **100% within published rounding precision ($\le 1.0\text{ GWh}$)** |
 
 ---
 
 ## 3. NASA POWER Meteorological & Solar 5-Year Coverage
 
-### 3.1 Temporal Continuity
+### 3.1 Temporal Continuity & Metadata
 - **Period**: 2020-01-01 to 2024-12-31
-- **Total Calendar Days**: 1,827 days (including leap years 2020 and 2024)
-- **Missing Days**: 0 days (100% daily continuity)
+- **Total Calendar Days**: 1,827 days (including leap years 2020 and 2024: 366 + 365 + 365 + 365 + 366)
+- **Missing Days**: 0 days (100% daily temporal continuity)
 - **Total Observations**: 21,924 parameter observations ($1,827\text{ days} \times 6\text{ parameters} \times 2\text{ nodes}$)
+- **Time Standard**: Explicitly declared as `time_standard: LST` (Local Solar Time based on longitude) in source header and warehouse facts.
 
-### 3.2 Observed Annual Solar Irradiance Summary ($MJ/m^2/day$)
+### 3.2 Authenticated Solar Irradiance Summary ($MJ/m^2/day$)
 
-| Year | Victoria Hydro (Central Hills) Min / Mean / Max | Mannar Wind Corridor (North Coast) Min / Mean / Max | National Trend |
+Converted from native NASA POWER $\text{kWh/m}^2/\text{day}$ using canonical physical factor $\times 3.6$:
+
+| Year | Victoria Hydro (Central Hills: 7.24°N, 80.785°E)<br>Min / Mean / Max ($MJ/m^2/day$) | Mannar Wind Corridor (North Coast: 9.03°N, 79.88°E)<br>Min / Mean / Max ($MJ/m^2/day$) | National Meteorological & Seasonal Context |
 |---|---|---|---|
-| **2020** | 4.86 / 17.82 / 27.43 | 6.12 / 20.45 / 29.88 | Peak insolation Feb–April; monsoon suppression Jun–Aug |
-| **2021** | 3.92 / 17.45 / 26.98 | 5.84 / 20.12 / 29.41 | Active Southwest Monsoon in central highlands |
-| **2022** | 4.15 / 17.68 / 27.15 | 6.01 / 20.38 / 29.72 | Typical bimodal tropical monsoon pattern |
-| **2023** | 4.62 / 18.01 / 27.89 | 6.35 / 20.84 / 30.15 | Enhanced dry season irradiance |
-| **2024** | 4.41 / 17.94 / 27.65 | 6.20 / 20.65 / 30.02 | Consistent insolation supporting utility & rooftop solar |
+| **2020** | 4.89 / **19.25** / 27.29 | 2.66 / **19.72** / 25.90 | High insolation Feb–April; Southwest monsoon depression Jun–Aug |
+| **2021** | 3.84 / **18.84** / 26.31 | 2.43 / **19.42** / 26.01 | Active Southwest Monsoon in central highlands catchment |
+| **2022** | 1.55 / **18.39** / 25.97 | 3.67 / **19.17** / 25.83 | Heavy inter-monsoonal cloud cover and catchment rainfall |
+| **2023** | 7.80 / **18.69** / 26.92 | 3.70 / **19.48** / 26.11 | Dry season insolation elevation supporting utility & solar PV |
+| **2024** | 1.59 / **18.67** / 27.31 | 2.24 / **19.16** / 26.16 | Consistent coastal irradiance; strong wind corridor potential |
 
 ---
 
 ## 4. Operational Dispatch Granularity (PUCSL March 2024)
 
 - **Total Days**: 31 full calendar days (2024-03-01 through 2024-03-31)
-- **Intervals per Day**: 96 intervals (every 15 minutes: 00:00 to 23:45 SLST)
-- **Total Interval Records Loaded**: 10,365 records
-- **Power Stations Tracked**: 50 unique generating stations across Major Hydro, Thermal Coal, Thermal Oil, IPP, Wind, and Solar.
+- **Sheet Coverage**: 31 daily sheets (`01.03` through `31.03`)
+- **Reporting Entities**: 36 unique generation units and aggregates per sheet
+- **Intervals per Day**: 96 intervals (every 15 minutes: Slot 1 at 00:15 to Slot 96 at 24:00 SLST)
+- **Total Numeric Source Readings**: **107,136 readings** ($31\text{ sheets} \times 36\text{ entities} \times 96\text{ slots}$)
+- **Quarantined Auxiliary Load Readings**: **21 records** (all belonging to Colombo Port `'Barge'` auxiliary power import: -1.0 to -2.0 MW, quarantined under `DQ_GEN_NEGATIVE_OUTPUT`)
+- **Promoted Facts Loaded**: **107,115 facts** ($107,136 - 21 = 107,115$) in partition `dw.fact_dispatch_interval_y2024`
+- **Missing Readings**: 0 missing (100% complete telemetry matrix)
+- **Boundary Precision**: 0 records leaked into April 2024 (`date_key = 20240401` fact count = 0); Slot 96 assigned strictly to reporting calendar day.
 - **Physical Bounds Enforced**: Active power $P \ge 0\text{ MW}$, energy $E = P \times 0.25\text{ MWh} \pm 0.05$.
 - **Zero vs Missing Distinction**: Exact $0\text{ MW}$ values are preserved as genuine plant offline/curtailment states; unmeasured intervals are tracked as `NULL` with `value_status = 'MISSING'`.
