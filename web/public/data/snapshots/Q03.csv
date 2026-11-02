@@ -1,0 +1,21 @@
+plant_name,energy_category,operator_category,installed_capacity_mw,observed_peak_mw,total_generation_mwh,online_intervals,duty_cycle_pct,official_capacity_factor_pct,observed_peak_utilization_pct,generation_rank
+Lakvijaya Unit 2,Thermal Coal,CEB,300.0,274.00,198973.00,2976,100.0,89.15,97.60,1
+Lakvijaya Unit 1,Thermal Coal,CEB,300.0,278.00,198478.00,2976,100.0,88.92,95.96,2
+Lakvijaya Unit 3,Thermal Coal,CEB,300.0,281.00,198073.50,2976,100.0,88.74,94.74,3
+West Coast (Yugadanavi),Thermal Oil,IPP,270.0,289.00,164661.25,2856,96.0,81.97,76.58,4
+Kelanitissa Combined Cycle,Thermal Oil,CEB,165.0,153.00,101193.00,2976,100.0,82.43,88.90,5
+Victoria,Hydro,CEB,210.0,220.00,59601.50,2863,96.2,38.15,36.41,6
+Samanalawewa,Hydro,CEB,120.0,122.00,50006.00,2654,89.2,56.01,55.09,7
+New Laxapana,Hydro,CEB,100.0,101.00,49290.25,2936,98.7,66.25,65.59,8
+Sapugaskanda Diesel A,Thermal Oil,CEB,72.0,66.00,39411.25,2976,100.0,73.57,80.26,9
+Sapugaskanda Diesel B,Thermal Oil,CEB,72.0,64.00,35605.75,2976,100.0,66.47,74.78,10
+Colombo Harbour Barge-Mounted Plant,Thermal Oil,CEB,60.0,60.00,32777.00,2419,81.3,73.43,73.43,11
+Polpitiya,Hydro,CEB,75.0,87.00,30261.00,2976,100.0,54.23,46.75,12
+Randenigala,Hydro,CEB,122.0,123.00,26424.00,1549,52.0,29.11,28.87,13
+Kotmale,Hydro,CEB,201.0,162.00,18262.50,1304,43.8,12.21,15.15,14
+Canyon,Hydro,CEB,60.0,45.00,15998.25,2533,85.1,35.84,47.78,15
+Old Laxapana,Hydro,CEB,53.5,41.00,14171.75,2976,100.0,35.60,46.46,16
+Upper Kotmale,Hydro,CEB,150.0,140.00,9085.50,704,23.7,8.14,8.72,17
+Ukuwela,Hydro,CEB,40.0,38.00,7390.75,1189,40.0,24.83,26.14,18
+Wimalasurendra,Hydro,CEB,50.0,49.00,5765.25,1666,56.0,15.50,15.81,19
+Bowatenna,Hydro,CEB,40.0,39.00,1603.75,254,8.5,5.39,5.53,20

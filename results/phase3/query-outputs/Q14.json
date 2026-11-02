@@ -4,13 +4,13 @@
     "min_observed_temp_c": 24.59,
     "mean_observed_temp_c": 25.84,
     "max_observed_temp_c": 27.56,
-    "min_peak_demand_mw": 2051.0,
-    "mean_peak_demand_mw": 2448.19,
-    "max_peak_demand_mw": 2609.0,
-    "corr_temp_vs_peak_demand": 0.0083,
+    "min_peak_dispatch_mw": 2051.0,
+    "mean_peak_dispatch_mw": 2448.19,
+    "max_peak_dispatch_mw": 2609.0,
+    "corr_temp_vs_peak_dispatch": 0.0083,
     "corr_temp_vs_daily_energy": 0.1248,
-    "corr_mannar_temp_vs_peak_demand": -0.0689,
-    "corr_victoria_temp_vs_peak_demand": 0.0921,
-    "analytical_finding": "Mild positive correlation (r = +0.125) with daily grid energy consumption during hot March pre-monsoon"
+    "corr_mannar_temp_vs_peak_dispatch": -0.0689,
+    "corr_victoria_temp_vs_peak_dispatch": 0.0921,
+    "analytical_finding": "Mild positive correlation (r = +0.125) with daily grid generation energy across 31 paired March days; peak dispatch correlation is near-zero (r = +0.008)."
   }
 ]

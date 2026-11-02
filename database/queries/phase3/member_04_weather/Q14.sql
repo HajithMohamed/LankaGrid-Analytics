@@ -1,19 +1,18 @@
 -- ==============================================================================
--- Query Q14: Ambient Temperature Dynamics & Empirical Grid Peak Demand Correlation
+-- Query Q14: Ambient Temperature Dynamics & Empirical Grid Peak Dispatch Correlation
 -- Member: Member 4 (Weather, Solar Resource & Renewable Potential)
--- Business Question: Is there a measurable relationship between temperature and a compatible
---                    daily grid-demand indicator, and how has thermal variability evolved over 5 years?
--- Business Relevance: Rising temperatures drive air conditioning cooling load in urban centres,
---                     escalating evening peak demand and reducing transformer thermal ratings.
+-- Business Question: Is there a measurable relationship between ambient temperature and daily
+--                    grid-dispatch indicators, and how does thermal variability manifest across monitoring nodes?
+-- Business Relevance: Evaluates whether elevated pre-monsoon temperatures coincide with increased
+--                     cooling electricity demand and altered daily generation volumes.
 -- Relevant Lecture Theory: Lecture 5 (Statistical Correlation & Degree Day Proxies),
 --                          Lecture 3 (Date-Aligned Fact Constellation Joins).
--- Source Data: NASA POWER Meteorological Database (2020-2024, 21,924 facts).
+-- Source Data: NASA POWER Meteorological Database (2020-2024, Victoria Catchment & Mannar Nodes).
 --              PUCSL 15-Minute Operational Dispatch Telemetry (March 2024).
 -- Fact Grain: Daily aligned weather facts joined with daily aggregated grid dispatch facts.
--- Measurement Units: 2-Metre Air Temperature (C), Active Power (MW), Cooling Degree Days (CDD C-days).
--- Applicable Dates: March 1-31, 2024 (Empirical Correlation Window) & 2020-2024 (5-Year Thermal Trend).
--- Classification: CONDITIONAL (Executes verified empirical correlation on March 2024 dispatch baseline
---                              and 5-year thermal degree day analysis).
+-- Measurement Units: 2-Metre Air Temperature (C), Active Power (MW), Total Generation (MWh).
+-- Applicable Dates: March 1-31, 2024 (Empirical Correlation Window across 31 paired operating days).
+-- Classification: READY.
 -- ==============================================================================
 
 WITH interval_system_power AS (
@@ -32,7 +31,7 @@ march_daily_dispatch AS (
     SELECT
         date_key,
         calendar_date,
-        ROUND(MAX(interval_grid_mw), 2) AS peak_demand_mw,
+        ROUND(MAX(interval_grid_mw), 2) AS peak_dispatch_mw,
         ROUND(SUM(interval_energy_mwh), 2) AS total_generation_mwh
     FROM interval_system_power
     GROUP BY date_key, calendar_date
@@ -55,8 +54,8 @@ march_paired_data AS (
         mdd.calendar_date,
         dt_v.temp_c AS temp_victoria_c,
         dt_m.temp_c AS temp_mannar_c,
-        ROUND(((dt_v.temp_c + dt_m.temp_c) / 2.0), 2) AS avg_national_temp_c,
-        mdd.peak_demand_mw,
+        ROUND(((dt_v.temp_c + dt_m.temp_c) / 2.0), 2) AS two_station_mean_temp_c,
+        mdd.peak_dispatch_mw,
         mdd.total_generation_mwh
     FROM march_daily_dispatch mdd
     JOIN daily_temperatures dt_v ON mdd.date_key = dt_v.date_key AND dt_v.location_code = 'LOC_VICTORIA_CATCHMENT'
@@ -64,19 +63,22 @@ march_paired_data AS (
 )
 SELECT
     COUNT(*) AS paired_operating_days,
-    ROUND(MIN(avg_national_temp_c), 2) AS min_observed_temp_c,
-    ROUND(AVG(avg_national_temp_c), 2) AS mean_observed_temp_c,
-    ROUND(MAX(avg_national_temp_c), 2) AS max_observed_temp_c,
-    ROUND(MIN(peak_demand_mw), 2) AS min_peak_demand_mw,
-    ROUND(AVG(peak_demand_mw), 2) AS mean_peak_demand_mw,
-    ROUND(MAX(peak_demand_mw), 2) AS max_peak_demand_mw,
+    ROUND(MIN(two_station_mean_temp_c), 2) AS min_observed_temp_c,
+    ROUND(AVG(two_station_mean_temp_c), 2) AS mean_observed_temp_c,
+    ROUND(MAX(two_station_mean_temp_c), 2) AS max_observed_temp_c,
+    ROUND(MIN(peak_dispatch_mw), 2) AS min_peak_dispatch_mw,
+    ROUND(AVG(peak_dispatch_mw), 2) AS mean_peak_dispatch_mw,
+    ROUND(MAX(peak_dispatch_mw), 2) AS max_peak_dispatch_mw,
     -- Pearson Correlation Coefficients
-    ROUND(CORR(avg_national_temp_c, peak_demand_mw)::numeric, 4) AS corr_temp_vs_peak_demand,
-    ROUND(CORR(avg_national_temp_c, total_generation_mwh)::numeric, 4) AS corr_temp_vs_daily_energy,
-    ROUND(CORR(temp_mannar_c, peak_demand_mw)::numeric, 4) AS corr_mannar_temp_vs_peak_demand,
-    ROUND(CORR(temp_victoria_c, peak_demand_mw)::numeric, 4) AS corr_victoria_temp_vs_peak_demand,
+    ROUND(CORR(two_station_mean_temp_c, peak_dispatch_mw)::numeric, 4) AS corr_temp_vs_peak_dispatch,
+    ROUND(CORR(two_station_mean_temp_c, total_generation_mwh)::numeric, 4) AS corr_temp_vs_daily_energy,
+    ROUND(CORR(temp_mannar_c, peak_dispatch_mw)::numeric, 4) AS corr_mannar_temp_vs_peak_dispatch,
+    ROUND(CORR(temp_victoria_c, peak_dispatch_mw)::numeric, 4) AS corr_victoria_temp_vs_peak_dispatch,
     CASE 
-        WHEN CORR(avg_national_temp_c, total_generation_mwh) > 0 THEN 'Mild positive correlation (r = +0.125) with daily grid energy consumption during hot March pre-monsoon'
-        ELSE 'Neutral temperature-demand relationship'
+        WHEN CORR(two_station_mean_temp_c, total_generation_mwh) > 0 THEN 
+            'Mild positive correlation (r = ' || TO_CHAR(ROUND(CORR(two_station_mean_temp_c, total_generation_mwh)::numeric, 3), 'FM+0.000') || 
+            ') with daily grid generation energy across 31 paired March days; peak dispatch correlation is near-zero (r = ' || 
+            TO_CHAR(ROUND(CORR(two_station_mean_temp_c, peak_dispatch_mw)::numeric, 3), 'FM+0.000') || ').'
+        ELSE 'Neutral temperature-demand relationship observed across baseline days.'
     END AS analytical_finding
 FROM march_paired_data;

@@ -43,7 +43,7 @@ jobs:
         run: python -m ruff format --check .
 
       - name: Run Mypy Type Check
-        run: python -m mypy src scripts
+        run: python -m mypy src scripts tests/analytics
 
   unit-tests:
     name: Unit & Data Quality Tests
@@ -130,4 +130,7 @@ jobs:
 
       - name: Run Integration Tests
         run: python -m pytest tests/integration -v
+
+      - name: Run Phase 3 Analytics Tests
+        run: python -m pytest tests/analytics -v
 

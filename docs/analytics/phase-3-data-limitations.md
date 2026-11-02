@@ -10,7 +10,7 @@ In strict compliance with the **Antigravity Agent Governance** data integrity ru
 | Dataset | Source Provider | Historical Window | Coverage Granularity | Verified Record Count |
 |---|---|---|---|---|
 | **Electricity Sales by Sector** | Ceylon Electricity Board (CEB) Statistical Digest | 2020–2024 (5 Years) | Annual per sector | 49 Audited Rows |
-| **Meteorological Observations** | NASA POWER Agroclimatology | 2020–2024 (5 Years) | Daily per location node | 21,924 Observations |
+| **Meteorological Observations** | NASA POWER Agroclimatology | 2020–2024 (5 Years) | Daily across 2 monitoring stations (Victoria Catchment & Mannar Wind) | 21,924 Observations |
 | **System Dispatch Telemetry** | Public Utilities Commission of Sri Lanka (PUCSL) | March 1–31, 2024 | 15-Minute per station | 107,115 Facts |
 
 ---
@@ -38,7 +38,7 @@ In strict compliance with the **Antigravity Agent Governance** data integrity ru
 2. **Quarantine Accounting of Negative Power Readings (Barge Plant)**:
    - In the authentic PUCSL March 2024 dispatch workbook (`15-Minutes-Report-31-Mar2024.xlsx`), exactly **21 readings** for `Barge` thermal station report negative numbers (e.g. `-0.1 MW` to `-0.8 MW`).
    - In electricity engineering, small negative readings during shutdown reflect station auxiliary power consumption imported from the grid to keep station transformers and lubrication systems energized.
-   - Because `dw.fact_dispatch_interval` has an explicit non-negative check constraint (`ck_fdi_power_nonnegative: active_power_mw >= 0.0`), these 21 anomalous rows were automatically quarantined during ETL into `quarantine.rejected_dispatch_records`.
+   - Because `dw.fact_dispatch_interval` has an explicit non-negative check constraint (`ck_fdi_power_nonnegative: active_power_mw >= 0.0`), these 21 anomalous rows were automatically quarantined during ETL into `staging.stg_dispatch_observation` (`row_status = 'quarantined'`), with corresponding issue logs in `audit.data_quality_issue` under rule `DQ_GEN_NEGATIVE_OUTPUT`.
    - Staging Total: 107,136 readings $\rightarrow$ Quarantined: 21 rows $\rightarrow$ Loaded Facts: **107,115 clean facts**.
 
 ---

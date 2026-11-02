@@ -1,0 +1,5 @@
+reporting_section,unit_or_metric,avg_power_mw,stddev_mw,min_mw,max_mw,total_mwh,high_load_consistency_pct,operational_finding
+UNIT SUMMARY,Lakvijaya Unit 1,266.77,13.42,190.00,278.00,198478.00,97.9,"Uninterrupted 100% duty cycle across all 2,976 intervals"
+UNIT SUMMARY,Lakvijaya Unit 2,267.44,10.52,197.00,274.00,198973.00,99.2,"Uninterrupted 100% duty cycle across all 2,976 intervals"
+UNIT SUMMARY,Lakvijaya Unit 3,266.23,21.71,128.00,281.00,198073.50,95.1,"Uninterrupted 100% duty cycle across all 2,976 intervals"
+STATION TOTAL,Lakvijaya Total Station (3x300MW),800.44,40.87,582.00,822.00,595524.50,95.0,Simultaneous 3-unit operation delivered 595.5 GWh (42.6% of national grid demand)

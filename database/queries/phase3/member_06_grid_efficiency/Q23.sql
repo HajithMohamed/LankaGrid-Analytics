@@ -27,6 +27,9 @@ WITH issue_details AS (
     FROM audit.data_quality_issue dqi
     LEFT JOIN audit.etl_run aer ON dqi.etl_run_id = aer.etl_run_id
 ),
+issue_base_total AS (
+    SELECT COUNT(*) AS total_warehouse_issues FROM issue_details
+),
 pipeline_quarantine_rates AS (
     SELECT
         pipeline_name,
@@ -52,7 +55,7 @@ SELECT
     END AS severity_level,
     COUNT(issue_id) AS total_issues_logged,
     ROUND(
-        100.0 * COUNT(issue_id) / NULLIF(SUM(COUNT(issue_id)) OVER (), 0),
+        100.0 * COUNT(issue_id) / NULLIF((SELECT total_warehouse_issues FROM issue_base_total), 0),
         2
     ) AS percentage_of_all_issues,
     COUNT(DISTINCT staging_table_name) AS affected_staging_tables,

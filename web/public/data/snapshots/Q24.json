@@ -1,0 +1,62 @@
+[
+  {
+    "pipeline_name": "pucsl_dispatch_loader",
+    "target_table": "fact_dispatch_interval",
+    "total_executed_runs": 4,
+    "cumulative_rows_read": 228960,
+    "cumulative_rows_inserted": 217816,
+    "cumulative_rows_updated": 10329,
+    "cumulative_rows_quarantined": 815,
+    "avg_duration_seconds": 148.05,
+    "max_duration_seconds": 319.9,
+    "avg_throughput_rows_per_sec": 405.3,
+    "total_verified_lineage_records": 228145.0,
+    "overall_quarantine_rate_pct": 0.36,
+    "pipeline_quality_grade": "HIGH FIDELITY (< 1.0% QUARANTINE)"
+  },
+  {
+    "pipeline_name": "nasa_weather_loader",
+    "target_table": "fact_weather_daily",
+    "total_executed_runs": 3,
+    "cumulative_rows_read": 44220,
+    "cumulative_rows_inserted": 21924,
+    "cumulative_rows_updated": 22296,
+    "cumulative_rows_quarantined": 0,
+    "avg_duration_seconds": 63.0,
+    "max_duration_seconds": 169.08,
+    "avg_throughput_rows_per_sec": 532.3,
+    "total_verified_lineage_records": 44220.0,
+    "overall_quarantine_rate_pct": 0.0,
+    "pipeline_quality_grade": "CLEAN ZERO-ERROR PIPELINE"
+  },
+  {
+    "pipeline_name": "ceb_sales_loader",
+    "target_table": "fact_electricity_sales",
+    "total_executed_runs": 11,
+    "cumulative_rows_read": 167,
+    "cumulative_rows_inserted": 107,
+    "cumulative_rows_updated": 0,
+    "cumulative_rows_quarantined": 60,
+    "avg_duration_seconds": 0.14,
+    "max_duration_seconds": 0.28,
+    "avg_throughput_rows_per_sec": 123.0,
+    "total_verified_lineage_records": 107.0,
+    "overall_quarantine_rate_pct": 35.93,
+    "pipeline_quality_grade": "GOVERNED QUARANTINE PIPELINE"
+  },
+  {
+    "pipeline_name": "pucsl_daily_pdf_loader",
+    "target_table": "fact_generation_period",
+    "total_executed_runs": 3,
+    "cumulative_rows_read": 105,
+    "cumulative_rows_inserted": 18,
+    "cumulative_rows_updated": 36,
+    "cumulative_rows_quarantined": 51,
+    "avg_duration_seconds": 0.09,
+    "max_duration_seconds": 0.11,
+    "avg_throughput_rows_per_sec": 385.8,
+    "total_verified_lineage_records": 54.0,
+    "overall_quarantine_rate_pct": 48.57,
+    "pipeline_quality_grade": "GOVERNED QUARANTINE PIPELINE"
+  }
+]

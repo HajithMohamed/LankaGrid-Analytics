@@ -1,0 +1,46 @@
+[
+  {
+    "reporting_section": "UNIT SUMMARY",
+    "unit_or_metric": "Lakvijaya Unit 1",
+    "avg_power_mw": 266.77,
+    "stddev_mw": 13.42,
+    "min_mw": 190.0,
+    "max_mw": 278.0,
+    "total_mwh": 198478.0,
+    "high_load_consistency_pct": 97.9,
+    "operational_finding": "Uninterrupted 100% duty cycle across all 2,976 intervals"
+  },
+  {
+    "reporting_section": "UNIT SUMMARY",
+    "unit_or_metric": "Lakvijaya Unit 2",
+    "avg_power_mw": 267.44,
+    "stddev_mw": 10.52,
+    "min_mw": 197.0,
+    "max_mw": 274.0,
+    "total_mwh": 198973.0,
+    "high_load_consistency_pct": 99.2,
+    "operational_finding": "Uninterrupted 100% duty cycle across all 2,976 intervals"
+  },
+  {
+    "reporting_section": "UNIT SUMMARY",
+    "unit_or_metric": "Lakvijaya Unit 3",
+    "avg_power_mw": 266.23,
+    "stddev_mw": 21.71,
+    "min_mw": 128.0,
+    "max_mw": 281.0,
+    "total_mwh": 198073.5,
+    "high_load_consistency_pct": 95.1,
+    "operational_finding": "Uninterrupted 100% duty cycle across all 2,976 intervals"
+  },
+  {
+    "reporting_section": "STATION TOTAL",
+    "unit_or_metric": "Lakvijaya Total Station (3x300MW)",
+    "avg_power_mw": 800.44,
+    "stddev_mw": 40.87,
+    "min_mw": 582.0,
+    "max_mw": 822.0,
+    "total_mwh": 595524.5,
+    "high_load_consistency_pct": 95.0,
+    "operational_finding": "Simultaneous 3-unit operation delivered 595.5 GWh (42.6% of national grid demand)"
+  }
+]

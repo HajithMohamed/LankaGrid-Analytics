@@ -83,10 +83,31 @@ def test_olap_grouping_sets_q21(populated_analytics_db: DatabaseConfig) -> None:
             grand_total_rows = [r for r in rows if r[4] == 1 and r[5] == 1]
             assert len(grand_total_rows) == 1
             grand_total_gwh = float(grand_total_rows[0][2])
+            grand_total_share = float(grand_total_rows[0][3])
+            assert grand_total_share == 100.0, (
+                f"Grand total share must be 100.0%, got {grand_total_share}%"
+            )
             assert 70000.0 <= grand_total_gwh <= 75000.0, (
                 f"Expected 5-year sales around 73,365 GWh, got {grand_total_gwh}"
             )
 
             # Sum of annual subtotals (grp_year = 0, grp_class = 1)
-            annual_subtotals = sum(float(r[2]) for r in rows if r[4] == 0 and r[5] == 1)
+            annual_subtotal_rows = [r for r in rows if r[4] == 0 and r[5] == 1]
+            assert len(annual_subtotal_rows) == 5, (
+                f"Expected 5 annual subtotals, got {len(annual_subtotal_rows)}"
+            )
+            for sub in annual_subtotal_rows:
+                yr, _sub_gwh, sub_pct = sub[0], float(sub[2]), float(sub[3])
+                assert sub_pct == 100.0, f"Year {yr} subtotal pct must be 100.0%, got {sub_pct}%"
+
+            annual_subtotals = sum(float(r[2]) for r in annual_subtotal_rows)
             assert abs(annual_subtotals - grand_total_gwh) < 0.1
+
+            # Verify that detailed sector shares for each year sum to 100.0% (verifying no 50% denominator bug)
+            for yr_str in ("2020", "2021", "2022", "2023", "2024"):
+                yr_details = [r for r in rows if r[0] == yr_str and r[4] == 0 and r[5] == 0]
+                assert len(yr_details) == 4, f"Year {yr_str} must have 4 economic classes"
+                pct_sum = sum(float(r[3]) for r in yr_details)
+                assert abs(pct_sum - 100.0) < 0.05, (
+                    f"Year {yr_str} detail shares sum to {pct_sum}%, expected 100%"
+                )

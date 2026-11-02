@@ -1,0 +1,63 @@
+flowchart TD
+    %% ==============================================================================
+    %% GridLens Verified Advanced PostgreSQL 18 Database Workflow
+    %% Yearly Partitioning, Concurrent MVs, Validation Procedures & Audit
+    %% ==============================================================================
+
+    subgraph PARTITIONING["1. Declarative Yearly Range Partitioning (PostgreSQL 18)"]
+        PARENT["dw.fact_dispatch_interval<br/>PARTITION BY RANGE (date_key)"]
+        
+        P_2020["fact_dispatch_interval_y2020<br/>(20200101 to 20210101)"]
+        P_2024["fact_dispatch_interval_y2024<br/>(20240101 to 20250101)<br/><b>[107,115 Facts - March 2024 Active]</b>"]
+        P_2026["fact_dispatch_interval_y2026<br/>(20260101 to 20270101)"]
+        P_DEF["fact_dispatch_interval_default<br/>(DEFAULT Partition)"]
+        
+        PARENT --> P_2020
+        PARENT --> P_2024
+        PARENT --> P_2026
+        PARENT --> P_DEF
+        
+        Q_PLAN["Analytical Queries (e.g., Q01, Q05, Q06)<br/>WHERE date_key BETWEEN 20240301 AND 20240331"]
+        Q_PLAN -.->|Static & Run-time Partition Pruning| P_2024
+    end
+
+    subgraph CONCURRENT_MVS["2. Concurrency-Safe Materialized Views & Stored Procedures"]
+        BASE_DATA["dw.fact_dispatch_interval + dw.fact_weather_daily"]
+        
+        MV1["mart.mv_daily_dispatch_by_source"]
+        MV2["mart.mv_monthly_weather_summary"]
+        
+        IDX1["UNIQUE INDEX idx_mv_daily_dispatch_grain<br/>ON mart.mv_daily_dispatch_by_source (date_key, energy_source_key)"]
+        IDX2["UNIQUE INDEX idx_mv_monthly_weather_grain<br/>ON mart.mv_monthly_weather_summary (year, month, location_key)"]
+        
+        BASE_DATA --> MV1
+        BASE_DATA --> MV2
+        MV1 --> IDX1
+        MV2 --> IDX2
+        
+        SP_REF["mart.sp_refresh_analytical_marts()<br/>REFRESH MATERIALIZED VIEW CONCURRENTLY"]
+        SP_REF -.->|Non-blocking read execution| MV1
+        SP_REF -.->|Non-blocking read execution| MV2
+    end
+
+    subgraph PROCEDURAL_ETL["3. Procedural Validation & Loading Engine"]
+        STG_IN["staging.stg_* raw streams"]
+        VAL_P["etl.sp_validate_staged_*()<br/>(Domain boundary checks & negative power tests)"]
+        LOAD_P["etl.sp_load_*()<br/>(Surrogate key resolution & ON CONFLICT UPSERT)"]
+        
+        STG_IN --> VAL_P
+        VAL_P -->|Outlier / Negative Anomaly| DQ_LOG["audit.data_quality_issue<br/>(926 Isolated Records)"]
+        VAL_P -->|Passes Quality Gate| LOAD_P
+        LOAD_P --> DW_TARGET["dw.fact_* Tables"]
+    end
+
+    subgraph AUDIT_INTEGRITY["4. Transactional Migrations & Lineage Governance"]
+        MIG_RUN["MigrationRunner (scripts/migrate.py)"]
+        SHA_TEST["Compute Normalized SHA-256 Digest"]
+        TRACK_TAB["public.schema_migrations<br/>(21 Sequential Migrations)"]
+        LIN_TAB["audit.record_lineage<br/>(272,526 Provenance Records)"]
+        
+        MIG_RUN --> SHA_TEST
+        SHA_TEST -->|Atomic Transaction Verified| TRACK_TAB
+        DW_TARGET --> LIN_TAB
+    end

@@ -66,5 +66,12 @@ SELECT
     ROUND(CORR(wind_speed_50m_ms, wind_energy_mwh)::numeric, 4) AS corr_wind_speed_vs_energy,
     -- Pearson correlation with kinetic power proxy (v^3)
     ROUND(CORR(v_cubed_proxy, wind_energy_mwh)::numeric, 4) AS corr_v_cubed_vs_energy,
-    'Strong positive correlation (r = +0.714) confirms physical aerodynamic coupling between NASA 50m wind speed and grid dispatch' AS physical_interpretation
+    CASE
+        WHEN CORR(wind_speed_50m_ms, wind_energy_mwh) >= 0.70 THEN
+            'Strong positive correlation (r = ' || ROUND(CORR(wind_speed_50m_ms, wind_energy_mwh)::numeric, 3) || ') demonstrates statistical alignment between NASA POWER 50m wind speed at Mannar and utility-scale grid dispatch'
+        WHEN CORR(wind_speed_50m_ms, wind_energy_mwh) >= 0.40 THEN
+            'Moderate positive correlation (r = ' || ROUND(CORR(wind_speed_50m_ms, wind_energy_mwh)::numeric, 3) || ') between wind speed and grid dispatch'
+        ELSE
+            'Weak or negligible correlation (r = ' || ROUND(CORR(wind_speed_50m_ms, wind_energy_mwh)::numeric, 3) || ')'
+    END AS physical_interpretation
 FROM march_paired_wind;
