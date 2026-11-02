@@ -48,12 +48,12 @@ The dimensional core implements a **Fact Constellation Schema** consisting of **
 
 | Fact Table Name | Primary Key | Fact Grain | Core Metric Columns | Row Count | Operational Status |
 | :--- | :--- | :--- | :--- | :---: | :--- |
-| **`dw.fact_dispatch_interval`** | `(dispatch_fact_id, date_key)` | Plant $\times$ 15-Minute Slot $\times$ Energy Source | `active_power_mw`, `derived_energy_mwh`, `frequency_hz`, `declared_availability_mw` | **107,115** | **Actively Populated** (Partitioned by Year; March 2024 loaded) |
-| **`dw.fact_generation_period`** | `generation_fact_id` | Plant / Source $\times$ Aggregation Period | `gross_generation_mwh`, `net_generation_mwh`, `auxiliary_consumption_mwh`, `operational_hours` | **18** | **Actively Populated** (Verified PUCSL daily report dates) |
-| **`dw.fact_capacity_period`** | `capacity_fact_id` | Plant $\times$ Energy Source $\times$ Effective Period | `installed_capacity_mw`, `dependable_capacity_mw`, `peak_firm_capacity_mw` | **0** | **Implemented (Unpopulated)** (Schema ready for utility capacity filings) |
-| **`dw.fact_electricity_sales`** | `sales_fact_id` | Tariff Sector $\times$ Region $\times$ Year | `billed_energy_mwh`, `billed_energy_gwh`, `billed_amount_lkr`, `consumer_count`, `average_monthly_consumption_kwh` | **49** | **Actively Populated** (Audited 5-Year CEB Sales 2020–2024) |
-| **`dw.fact_weather_daily`** | `weather_fact_id` | Location $\times$ Metric $\times$ Calendar Day | `raw_value`, `standardized_value`, `is_missing`, `source_quality_flag` | **21,924** | **Actively Populated** (5 Years NASA POWER Daily Reanalysis) |
-| **`dw.fact_published_metric`** | `published_metric_fact_id` | Entity $\times$ Published Metric $\times$ Period | `published_value`, `unit_code`, `dataset_revision` | **0** | **Implemented (Unpopulated)** (Schema ready for macro digest statistics) |
+| **`dw.fact_dispatch_interval`** | `(dispatch_fact_id, date_key)` | Plant $\times$ 15-Minute Slot $\times$ Energy Source | `active_power_mw`, `derived_energy_mwh`, `is_energy_derived`, `reported_value`, `reported_unit_code`, `value_status` | **107,115** | **Actively Populated** (Partitioned by Year; March 2024 loaded) |
+| **`dw.fact_generation_period`** | `generation_fact_id` | Plant / Source $\times$ Aggregation Period | `generation_mwh`, `peak_generation_mw`, `reported_source_value`, `reported_unit_code`, `generation_boundary`, `value_nature` | **18** | **Actively Populated** (Verified PUCSL daily report dates) |
+| **`dw.fact_capacity_period`** | `capacity_fact_id` | Plant $\times$ Energy Source $\times$ Effective Period | `installed_capacity_mw`, `derated_capacity_mw`, `auxiliary_capacity_mw` | **0** | **Implemented (Unpopulated)** (Schema ready for utility capacity filings) |
+| **`dw.fact_electricity_sales`** | `sales_fact_id` | Tariff Sector $\times$ Region $\times$ Year | `energy_sold_mwh`, `consumer_account_count`, `revenue_lkr`, `reported_energy_value`, `reported_energy_unit_code`, `value_nature` | **49** | **Actively Populated** (Audited 5-Year CEB Sales 2020–2024) |
+| **`dw.fact_weather_daily`** | `weather_fact_id` | Location $\times$ Metric $\times$ Calendar Day | `standardized_value`, `standardized_unit_code`, `original_reported_value`, `original_unit_code`, `missing_value_code`, `is_missing` | **21,924** | **Actively Populated** (5 Years NASA POWER Daily Reanalysis for Victoria & Mannar) |
+| **`dw.fact_published_metric`** | `published_fact_id` | Entity $\times$ Published Metric $\times$ Period | `standardized_value`, `standardized_unit_code`, `published_value`, `published_unit_code`, `value_nature` | **0** | **Implemented (Unpopulated)** (Schema ready for macro digest statistics) |
 
 ---
 

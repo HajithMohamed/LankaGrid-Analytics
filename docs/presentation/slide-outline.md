@@ -58,7 +58,7 @@
 - **Header:** GridLens: National Electricity Grid Analytics Data Warehouse — Sri Lanka.
 - **Sub-header:** A Kimball Dimensional Warehouse Modeling Historical Generation, Sectoral Sales, SCADA Telemetry, and Satellite Meteorological Observations.
 - **Institution:** University of Ruhuna — Faculty of Technology — Department of Information and Communication Technology (ICT).
-- **Course:** CS4032 Advanced Data Warehousing (Academic Group Project).
+- **Course:** Advanced Data Warehousing — Academic Group Project (BICT (Hons)).
 - **Team:** Six Undergraduate Software Engineers.
 - **Technology Stack:** PostgreSQL 18 (Docker), Python 3.14, Pytest, SQL:1999 OLAP.
 - **Visual:** High-level system architecture badge + National Grid summary diagram.
@@ -104,13 +104,13 @@
 
 ### Member 5: Plant Operations & Capacity Performance (Slides 19–22)
 - **Slide 19:** *Operational Plant Dimensioning.* Modeling nameplate ratings, fuel types, and physical heat engines in `dim_power_plant`.
-- **Slide 20:** *Sentinel vs Zero Interval Filtering & Capacity Envelopes (Q17 & Q18).* Handling $0.0\text{ MW}$ as physical shutdowns rather than missing values. 10 plants delivered $\ge 95\%$ of nameplate rating; empirical exceedances catalogued objectively (Polpitiya 116.0%, West Coast 107.0%).
+- **Slide 20:** *Sentinel vs Zero Interval Filtering & Capacity Envelopes (Q17 & Q18).* Handling $0.0\text{ MW}$ as true zero-generation intervals (standby, maintenance, water management) rather than missing telemetry. 10 plants delivered $\ge 95\%$ of nameplate rating; empirical exceedances catalogued objectively (Polpitiya 116.0%, West Coast 107.0%).
 - **Slide 21:** *Baseload Continuity & Evening Peak Merit-Order (Q19 & Q20).* Lakvijaya Coal generated 595,524.50 MWh with 100.0% duty cycle across all 3 units (0 forced outages). Evening peak dispatch share: Coal (39.67%), Major Hydro (32.40%), Thermal Oil (23.19%).
 - **Slide 22:** *Member 5 Conclusions.* Thermal baseload reliability vs hydro peaking flexibility; transition to Member 6 on grid efficiency and warehouse engineering.
 
 ---
 
 ### Member 6: Grid Efficiency, Audit Provenance & QA (Slides 23–24)
-- **Slide 23:** *Efficiency Trends, Loss Proxies & Data Quality (Q21–Q24).* `GROUPING SETS` demonstrating productive economic share expansion (50.35% to 55.64%). Multi-tier loss proxy reconciliation confirming 8.8% to 9.6% transmission & distribution losses. Quarantine isolation: 926 records isolated and reconciled to 100.00%.
+- **Slide 23:** *Sales Efficiency, Cross-Source Reconciliation & Data Quality (Q21–Q24).* `GROUPING SETS` demonstrating productive economic share expansion (50.35% to 55.64%). Cross-source published-total reconciliation comparing gross generation with billed sales (8.8% to 9.6% macro residual representing system losses and auxiliary use). Quarantine isolation: 926 records isolated and reconciled to 100.00%.
 - **Slide 24:** *PostgreSQL 18 Performance, Architecture Highlights & Conclusion.* 24 queries executing in mean 93.8 ms (100% under 500 ms). 101 automated tests passing. Declarative partitioning, concurrency-safe materialized views, complete lineage audit trail. Final project summary and Q&A open.
 

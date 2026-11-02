@@ -151,13 +151,13 @@
 > ```
 > This calculates consumption by Economic Class $\times$ Year and National Total $\times$ Year in a single query pass without computing unnecessary intermediate cross-tabulations, executing in only 2.4 ms."*
 
-### Q6.2: How does Query Q22 estimate national transmission and distribution losses across 5 years?
+### Q6.2: How does Query Q22 perform cross-source published-total reconciliation between annual generation and billed retail sales?
 **Answer (Member 6):**  
-> *"In electricity data warehousing, system energy balance dictates:
+> *"In electricity data warehousing, system energy accounting balance dictates:
 > $$\text{Gross Generation} - \text{T\&D Losses} - \text{Station Auxiliary Use} = \text{Billed Retail Sales}$$
-> By performing an aligned join between gross system generation facts (`dw.fact_generation_period`) and audited retail billed sales facts (`dw.fact_electricity_sales`), Q22 calculates:
-> $$\text{Loss Proxy (\%)} = \frac{\text{Gross Generation (GWh)} - \text{Billed Sales (GWh)}}{\text{Gross Generation (GWh)}} \times 100$$
-> Across 2020 to 2024, our warehouse computes an annual loss proxy of **8.8% to 9.6%**, which matches audited CEB regulatory filings within $\pm 0.3\%$."*
+> By comparing gross system generation facts (`dw.fact_generation_period`) with audited retail billed sales facts (`dw.fact_electricity_sales`), Q22 calculates:
+> $$\text{Macro Residual (\%)} = \frac{\text{Gross Generation (GWh)} - \text{Billed Sales (GWh)}}{\text{Gross Generation (GWh)}} \times 100$$
+> Across 2020 to 2024, our warehouse computes an annual residual difference of **8.8% to 9.6%**, which accurately reflects the macro gap between gross generation and retail billing encompassing transmission losses, distribution losses, and station auxiliary consumption as reported in CEB annual balance sheets."*
 
 ### Q6.3: What is the purpose of the `audit.data_quality_issue` table, and how does it fulfill Lecture 6 data quality standards?
 **Answer (Member 6):**  

@@ -37,22 +37,22 @@
 
 ## 2. Automated Test Execution Evidence
 
-### 2.1 Test Suite Summary (101 Automated Tests)
+### 2.1 Test Suite Summary (104 Automated Tests)
 The full test suite was executed against PostgreSQL 18:
 ```
 pytest tests/unit tests/data_quality tests/integration tests/analytics -v
 ```
 
 **Results Breakdown:**
-- **Unit Tests (`tests/unit/`):** 33 Passed (Parsers, seed generators, manifest validator, timezone normalization).
+- **Unit Tests (`tests/unit/`):** 36 Passed (Parsers, seed generators, manifest validator, timezone normalization, Mermaid diagram syntax and consistency).
 - **Data Quality Tests (`tests/data_quality/`):** 1 Passed (Quarantine evaluation and boundary checks).
 - **Integration Tests (`tests/integration/`):** 30 Passed (Database connection pool, schema migrations idempotency, CEB sales loader, NASA weather loader, PUCSL dispatch loader, lineage tracking).
 - **Analytics Tests (`tests/analytics/`):** 37 Passed (All 24 business queries, ROLLUP consistency, CUBE consistency, GROUPING SETS, telemetry reconciliation, correlation bounds, duty cycles).
-- **Total Test Result:** **101 Passed, 0 Failed (100% Pass Rate)**.
+- **Total Test Result:** **104 Passed, 0 Failed (100% Pass Rate)**.
 
 ### 2.2 Static Analysis & Quality Gate Compliance
 - **Ruff Linter:** `python -m ruff check .` $\rightarrow$ **All checks passed! (0 warnings, 0 errors)**.
-- **Ruff Formatter:** `python -m ruff format --check .` $\rightarrow$ **117 files inspected, 0 reformats needed**.
+- **Ruff Formatter:** `python -m ruff format --check .` $\rightarrow$ **138 files inspected, 0 reformats needed**.
 - **Mypy Static Typing:** `python -m mypy src scripts tests/analytics` $\rightarrow$ **Success: no issues found in 36 source files**.
 
 ---
