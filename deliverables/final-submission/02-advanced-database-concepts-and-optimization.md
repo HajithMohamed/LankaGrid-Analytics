@@ -5,7 +5,7 @@
 **Target Engine:** PostgreSQL 18.x (Docker containerized on port `5433`)  
 **Institution:** University of Ruhuna — Faculty of Technology — Department of Information and Communication Technology (ICT)  
 **Authors:** Six Undergraduate Software Engineers (Members 1 to 6)  
-**Academic Alignment:** CS4032 Data Warehousing & Mining (Lectures 1–8)  
+**Academic Alignment:** Advanced Data Warehousing & Mining (Lectures 1–8)  
 **Status:** FULLY IMPLEMENTED & VERIFIED  
 
 ---
@@ -236,7 +236,7 @@ $$;
   SELECT
       COALESCE(dcs.tariff_group, '>>> NATIONAL TOTAL BILLED SALES <<<') AS customer_class_name,
       dd.calendar_year,
-      ROUND(SUM(fes.billed_energy_gwh), 2) AS total_sales_gwh,
+      ROUND(SUM(fes.energy_sold_mwh) / 1000.0, 2) AS total_sales_gwh,
       GROUPING(dcs.tariff_group) AS grp_class
   FROM dw.fact_electricity_sales fes
   JOIN dw.dim_consumption_sector dcs ON fes.sector_key = dcs.sector_key

@@ -195,13 +195,13 @@ This catalogue documents all 24 analytical queries designed and implemented acro
 - **Tables Consulted**: `dw.fact_electricity_sales`, `dw.dim_consumption_sector`, `dw.dim_date`.
 - **Formulas**: $\text{Annual Share \%} = \frac{\text{Sales}_{\text{class, year}}}{\text{Sales}_{\text{year, total}}} \times 100\%$.
 
-### [Q22: Estimated Transmission & Distribution Loss Proxy Analysis (2020–2024)](../../database/queries/phase3/member_06_grid_efficiency/Q22.sql)
-- **Business Question**: What was the annual gap between total gross generated electricity and billed final consumption from 2020 to 2024?
-- **Relevance**: Evaluates national transmission and distribution (T&D) loss trends and system efficiency improvements.
-- **Academic Lecture Mapping**: Lecture 1 & 4 (Cross-Process Constellation Reconciliation between Generation and Sales).
+### [Q22: Cross-Source Published-Total Reconciliation & Macro Energy Balance (2020–2024)](../../database/queries/phase3/member_06_grid_efficiency/Q22.sql)
+- **Business Question**: What was the annual reconciliation gap between audited gross utility generation and final billed retail sales from 2020 to 2024?
+- **Relevance**: Compares gross generated energy with billed retail consumption to evaluate the macro residual difference (8.8% to 9.6%), which encompasses transmission losses, distribution losses, and station auxiliary use, confirming mass balance across independent reporting processes.
+- **Academic Lecture Mapping**: Lecture 1 & 4 (Cross-Process Constellation Reconciliation between Generation and Sales), Lecture 6 (Source Conflict and Residual Analysis).
 - **Fact Grain**: Annual gross generation ($GWh$) vs. billed retail sales ($GWh$).
 - **Tables Consulted**: `dw.fact_electricity_sales`, `dw.fact_generation_period`, `dw.dim_date`.
-- **Formulas**: $\text{Loss Proxy (GWh)} = \text{Gross Generation} - \text{Billed Sales}$, $\text{Loss \%} = \frac{\text{Loss}}{\text{Gross Generation}} \times 100\%$.
+- **Formulas**: $\text{Macro Residual (GWh)} = \text{Gross Generation} - \text{Billed Sales}$, $\text{Residual \%} = \frac{\text{Macro Residual}}{\text{Gross Generation}} \times 100\%$.
 
 ### [Q23: Data Quality Anomaly Categorization & Quarantine Audit Trail](../../database/queries/phase3/member_06_grid_efficiency/Q23.sql)
 - **Business Question**: What types of data-quality problems were detected during the historical data integration process, and what were the quarantine rates?

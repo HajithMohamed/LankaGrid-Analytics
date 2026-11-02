@@ -1,0 +1,39 @@
+flowchart TD
+    %% ==============================================================================
+    %% GridLens Authentic Idempotent ETL Architecture
+    %% Real Implementation: Staging, Validation, Quarantine, Loading & Lineage
+    %% ==============================================================================
+
+    subgraph INGESTION["1. Acquisition & Raw Registration"]
+        RAW_SOURCE["Primary Data Sources<br/>(PUCSL Excel, CEB Digests, NASA API)"] --> DOWNLOAD["Ingestion Scripts (src/ingestion/)"]
+        DOWNLOAD --> RAW_FS["Immutable Storage (data/raw/)<br/>(SHA-256 Manifest: manifest.json)"]
+        DOWNLOAD --> RAW_DB["Schema: raw<br/>- raw.source_document<br/>- raw.ingestion_batch<br/>- raw.extracted_record"]
+    end
+
+    subgraph STAGING_PARSE["2. Staging & Lexical Normalization"]
+        RAW_DB --> PARSERS["Parsers (src/preprocessing/)<br/>- PUCSL Excel Parser<br/>- CEB Digest Parser<br/>- NASA Weather Parser"]
+        PARSERS --> STG_TABLES["Schema: staging<br/>- staging.stg_dispatch_observation<br/>- staging.stg_electricity_sales<br/>- staging.stg_weather_observation<br/>- staging.stg_generation_report"]
+        
+        REF_DATA["Schema: ref (Standards)<br/>- ref.plant_alias<br/>- ref.energy_source_mapping<br/>- ref.metric_mapping<br/>- ref.unit_conversion"] -.-> PARSERS
+    end
+
+    subgraph VALIDATION_GATE["3. Quality Gate & Procedural Validation"]
+        STG_TABLES --> VAL_PROCS["Validation Procedures (Schema: etl)<br/>- etl.sp_validate_staged_dispatch()<br/>- etl.sp_validate_staged_sales()<br/>- etl.sp_validate_staged_weather()"]
+        
+        VAL_PROCS -->|Violates Physical Bounds / Negative Power| QUARANTINE["audit.data_quality_issue<br/>(Isolated 926 Records with Error Codes)"]
+        VAL_PROCS -->|Passes All Quality Assertions| VALIDATED["Validated Staging Fact Streams"]
+    end
+
+    subgraph FACT_LOADING["4. Idempotent Dimensional Loading"]
+        VALIDATED --> LOAD_PROCS["ETL Load Procedures (Schema: etl)<br/>- etl.sp_load_dispatch_interval()<br/>- etl.sp_load_electricity_sales()<br/>- etl.sp_load_weather_daily()"]
+        
+        LOAD_PROCS --> UPSERT{"Target Fact Insert<br/>ON CONFLICT DO UPDATE"}
+        UPSERT --> CORE_FACTS["Schema: dw (Core Facts)<br/>- dw.fact_dispatch_interval (Partitions)<br/>- dw.fact_electricity_sales<br/>- dw.fact_weather_daily"]
+    end
+
+    subgraph AUDIT_MART["5. Lineage Accounting & Mart Refresh"]
+        UPSERT --> LINEAGE["audit.record_lineage<br/>(272,526 Target-to-Source Links)"]
+        UPSERT --> ETL_RUN["audit.etl_run<br/>(Status: SUCCESS, Duration, Counts)"]
+        ETL_RUN --> REFRESH_MARTS["mart.sp_refresh_analytical_marts()<br/>(Atomic Concurrent MV Refresh)"]
+        REFRESH_MARTS --> MARTS["Schema: mart<br/>- mart.mv_daily_dispatch_by_source<br/>- mart.mv_monthly_weather_summary"]
+    end
