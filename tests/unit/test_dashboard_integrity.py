@@ -5,7 +5,6 @@ Verifies all 24 query snapshots, query registry coverage, and unit integrity rul
 
 import json
 from pathlib import Path
-import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 SNAPSHOT_DIR = REPO_ROOT / "web" / "public" / "data" / "snapshots"
@@ -24,7 +23,7 @@ def test_all_24_query_snapshots_exist_and_are_valid():
         assert json_path.exists(), f"Snapshot JSON missing for {query_id}"
         assert csv_path.exists(), f"Snapshot CSV missing for {query_id}"
 
-        with open(json_path, "r", encoding="utf-8") as f:
+        with open(json_path, encoding="utf-8") as f:
             data = json.load(f)
             assert isinstance(data, list), f"{query_id}.json should contain a JSON array"
             assert len(data) > 0, f"{query_id}.json should not be empty"
@@ -48,10 +47,12 @@ def test_all_24_sql_files_exist():
         sql_path = SQL_DIR / member_dir / f"{query_id}.sql"
 
         assert sql_path.exists(), f"SQL file missing for {query_id} at {sql_path}"
-        with open(sql_path, "r", encoding="utf-8") as f:
+        with open(sql_path, encoding="utf-8") as f:
             sql_content = f.read().strip()
             assert len(sql_content) > 20, f"SQL file for {query_id} appears empty or trivial"
-            assert "SELECT" in sql_content.upper(), f"SQL file for {query_id} must contain SELECT statement"
+            assert "SELECT" in sql_content.upper(), (
+                f"SQL file for {query_id} must contain SELECT statement"
+            )
 
 
 def test_snapshot_loader_covers_provenance():
@@ -59,9 +60,11 @@ def test_snapshot_loader_covers_provenance():
     summary_path = SNAPSHOT_DIR / "execution_summary.json"
     assert summary_path.exists(), "execution_summary.json snapshot missing"
 
-    with open(summary_path, "r", encoding="utf-8") as f:
+    with open(summary_path, encoding="utf-8") as f:
         summary = json.load(f)
-        assert isinstance(summary, list), "execution_summary.json must contain a list of query execution records"
+        assert isinstance(summary, list), (
+            "execution_summary.json must contain a list of query execution records"
+        )
         assert len(summary) == 24, "execution_summary.json must contain exactly 24 query records"
         for record in summary:
             assert "query_id" in record
