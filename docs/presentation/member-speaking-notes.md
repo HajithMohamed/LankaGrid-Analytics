@@ -62,7 +62,7 @@
 ### 1. Opening & Conformed Sales Dimensionality (45 Seconds)
 > *"Thank you, [Member 2 Name]. Good morning, panel. My name is [Member 3 Name], and I am responsible for **Electricity Demand Dynamics, Sectoral Shifts, and Tariff Restructuring Impacts**.
 >
-> *While Members 1 and 2 analyzed the supply side of the grid, Member 3 models the retail demand side. In our warehouse, `dw.fact_electricity_sales` captures five years of audited CEB Statistical Digest sales (2020–2024). We modeled two conformed dimensions: `dim_tariff_sector` (covering Domestic, Industrial, General Purpose, Hotel, Street Lighting, and Agriculture) and `dim_customer_class` (grouping consumers by economic function). A paramount architectural rule from Lecture 3 was **preventing double-counting**: LECO bulk purchases are explicitly partitioned to avoid adding LECO retail consumers on top of bulk grid sales."*
+> *While Members 1 and 2 analyzed the supply side of the grid, Member 3 models the retail demand side. In our warehouse, `dw.fact_electricity_sales` captures five years of audited CEB Statistical Digest sales (2020–2024). We modeled the conformed dimension `dw.dim_consumption_sector` (covering Domestic, Industrial, General Purpose, Hotel, Street Lighting, and Agriculture, alongside customer groupings by economic function). A paramount architectural rule from Lecture 3 was **preventing double-counting**: LECO bulk purchases are explicitly partitioned to avoid adding LECO retail consumers on top of bulk grid sales."*
 
 ### 2. Analytical Findings: Q09 & Q10 (75 Seconds)
 > *"In **Query Q09**, we traced the five-year trajectory of national electricity consumption. Total billed electricity sales grew from **14,287.00 GWh in 2020** to **15,190.50 GWh in 2024** (**+6.32% net gain**, **CAGR of +1.54%**).
@@ -131,7 +131,7 @@
 ### 1. Opening & Warehouse Governance Architecture (45 Seconds)
 > *"Thank you, [Member 5 Name]. Good morning, professors and colleagues. My name is [Member 6 Name], and I am responsible for **Grid Efficiency, Cross-Source Reconciliation, Data Quality Governance, and Database Performance Benchmarking**.
 >
-> *In a production data warehouse, analytical credibility depends entirely on data quality and lineage. In GridLens, we designed dedicated `audit` and `mart` schemas. Our pipeline enforces strict automated validation gates, isolating invalid records into `audit.quarantine_records` and maintaining row-level provenance in `audit.record_lineage`."*
+> *In a production data warehouse, analytical credibility depends entirely on data quality and lineage. In GridLens, we designed dedicated `audit` and `mart` schemas. Our pipeline enforces strict automated validation gates, isolating invalid records into `audit.data_quality_issue` and maintaining row-level provenance in `audit.record_lineage`."*
 
 ### 2. Analytical Findings: Q21 & Q22 (75 Seconds)
 > *"In **Query Q21**, we utilized the SQL:1999 `GROUPING SETS` operator to evaluate the five-year efficiency trend of national electricity sales. Between 2020 and 2024, the share of billed electricity consumed by **productive economic sectors (Industrial, Commercial, Hotels, and Agriculture) expanded from 50.35% (7,194.00 GWh) to 55.64% (8,452.50 GWh)**. Concurrently, residential consumption contracted from **35.63% to 30.95%**. This proves a healthy structural rebalancing toward wealth-generating economic activities.

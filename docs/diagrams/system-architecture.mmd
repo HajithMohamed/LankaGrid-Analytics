@@ -1,109 +1,92 @@
 flowchart TD
     %% ==============================================================================
-    %% GridLens System Architecture Diagram
-    %% Academic Data Warehouse Architecture for Sri Lanka National Electricity Grid
+    %% GridLens Verified System Architecture Diagram
+    %% Authentic Multi-Tier Pipeline & Physical PostgreSQL 18 Architecture
     %% ==============================================================================
 
-    subgraph SOURCES["1. Authentic Data Sources"]
-        SRC_PUCSL["PUCSL Operational Telemetry<br/>(15-Minute SCADA Generation)"]
-        SRC_CEB["CEB Statistical Digests<br/>(2020-2024 Audited Sales & Tariffs)"]
+    subgraph SOURCES["1. Authentic Primary Data Sources"]
+        SRC_PUCSL["PUCSL Operational Telemetry<br/>(15-Minute SCADA Interval Generation)"]
+        SRC_CEB["CEB Statistical Digests<br/>(2020-2024 Audited Billed Sales & Tariffs)"]
         SRC_NASA["NASA POWER Satellite API<br/>(Daily Meteorological Reanalysis)"]
     end
 
-    subgraph RAW_ZONE["2. Immutable Raw Zone & Provenance"]
-        RAW_FILES["Raw Storage (data/raw/)<br/>(Immutable XLSX, CSV, JSON)"]
-        MANIFEST["Audit Manifest (manifest.json)<br/>(SHA-256 Checksums, Timestamps)"]
+    subgraph RAW_ZONE["2. Immutable Raw Zone & Provenance Tracking"]
+        RAW_FILES["Immutable File Storage (data/raw/)<br/>(XLSX, CSV, JSON)"]
+        RAW_MANIFEST["Audit Manifest (manifest.json)<br/>(SHA-256 Checksums, Retrieval URLs)"]
+        RAW_SCHEMA["Schema: raw<br/>- raw.source_document<br/>- raw.ingestion_batch<br/>- raw.extracted_record"]
     end
 
-    subgraph PREPROCESSING["3. Preprocessing & Quality Engineering"]
-        CLEAN_DISPATCH["Dispatch Cleaner<br/>(IQR Outlier Detection, Range Bounds)"]
-        CLEAN_SALES["Sales Parser<br/>(Sector Pivot, Double-Counting Prevention)"]
-        CLEAN_WEATHER["Weather Normalizer<br/>(Standardized Units, SL Timezone UTC+05:30)"]
-        QUALITY_GATE["Automated Quality Gate<br/>(Schema Checks, Physical Validation)"]
+    subgraph STAGING_ZONE["3. Staging & Reference Mapping Schema"]
+        REF_SCHEMA["Schema: ref (Conforming Standards)<br/>- ref.plant_alias<br/>- ref.energy_source_mapping<br/>- ref.metric_mapping<br/>- ref.unit_conversion"]
+        STG_SCHEMA["Schema: staging (Type Coercion & Cleaning)<br/>- staging.stg_dispatch_observation<br/>- staging.stg_electricity_sales<br/>- staging.stg_weather_observation<br/>- staging.stg_generation_report"]
+        VAL_PROC["Validation Procedures<br/>- etl.sp_validate_staged_dispatch()<br/>- etl.sp_validate_staged_sales()<br/>- etl.sp_validate_staged_weather()"]
     end
 
-    subgraph STAGING["4. PostgreSQL Staging Schema (stg)"]
-        STG_DISPATCH["stg.dispatch_intervals_raw"]
-        STG_SALES["stg.ceb_sales_raw"]
-        STG_WEATHER["stg.nasa_weather_raw"]
-        QUARANTINE["audit.quarantine_records<br/>(Isolated Anomalies with Reason Codes)"]
+    subgraph QUALITY_AUDIT["4. Quality Governance & Lineage (Schema: audit)"]
+        AUD_DQ["audit.data_quality_issue<br/>(926 Isolated Anomalies Reconciled to 100%)"]
+        AUD_LINEAGE["audit.record_lineage<br/>(272,526 Row-Level Provenance Links)"]
+        AUD_RUN["audit.etl_run<br/>(21 Batch Execution Logs)"]
     end
 
-    subgraph ETL_CORE["5. Idempotent Dimensional ETL"]
-        LOADER["Warehouse Loader Engine<br/>(Surrogate Key Resolution, UPSERT)"]
-        LINEAGE["audit.record_lineage<br/>(Source-to-Target Row Audit Trail)"]
-        BATCH_LOG["audit.etl_batch_log<br/>(Execution Times, Row Counts, Errors)"]
-    end
-
-    subgraph WAREHOUSE["6. Dimensional Warehouse Core (dw)"]
-        subgraph CONFORMED_DIMS["Conformed Dimensions"]
-            DIM_DATE["dw.dim_date"]
-            DIM_TIME["dw.dim_time_of_day"]
-            DIM_PLANT["dw.dim_power_plant"]
-            DIM_ENERGY["dw.dim_energy_source"]
-            DIM_SECTOR["dw.dim_tariff_sector"]
-            DIM_CLASS["dw.dim_customer_class"]
-            DIM_LOC["dw.dim_weather_location"]
-            DIM_METRIC["dw.dim_metric"]
+    subgraph WAREHOUSE["5. Kimball Dimensional Warehouse Core (Schema: dw)"]
+        subgraph CONFORMED_DIMS["9 Conformed Dimensions"]
+            D_DATE["dw.dim_date (2,922 rows)"]
+            D_INT["dw.dim_interval (120 rows)"]
+            D_SRC["dw.dim_source_system (3 rows)"]
+            D_ENG["dw.dim_energy_source (9 rows)"]
+            D_REG["dw.dim_region (14 rows)"]
+            D_SEC["dw.dim_consumption_sector (10 rows)"]
+            D_PLANT["dw.dim_power_plant (41 rows)"]
+            D_LOC["dw.dim_weather_location (6 rows)"]
+            D_METRIC["dw.dim_metric (15 rows)"]
         end
-        subgraph FACTS["Fact Constellation"]
-            FACT_DISPATCH["dw.fact_dispatch_interval<br/>(Partitioned by date_key)"]
-            FACT_GEN["dw.fact_daily_generation"]
-            FACT_SALES["dw.fact_electricity_sales"]
-            FACT_WEATHER["dw.fact_weather_daily"]
+        subgraph FACTS["6 Fact Constellation Tables"]
+            F_DISP["dw.fact_dispatch_interval<br/>(Yearly Range Partitions: y2020-y2026, 107,115 facts)"]
+            F_GEN["dw.fact_generation_period (18 facts)"]
+            F_SALES["dw.fact_electricity_sales (49 facts)"]
+            F_WEATH["dw.fact_weather_daily (21,924 facts)"]
+            F_CAP["dw.fact_capacity_period (0 facts, schema ready)"]
+            F_PUB["dw.fact_published_metric (0 facts, schema ready)"]
         end
     end
 
-    subgraph MARTS["7. Analytical Marts Schema (mart)"]
-        MV_DISPATCH["mart.mv_daily_dispatch_by_source<br/>(Indexed Materialized View)"]
-        MV_WEATHER["mart.mv_monthly_weather_summary<br/>(Indexed Materialized View)"]
-        SP_REFRESH["mart.sp_refresh_analytical_marts()<br/>(Concurrent Atomic Refresh)"]
+    subgraph MARTS["6. Analytical Data Marts (Schema: mart)"]
+        MV_DISP["mart.mv_daily_dispatch_by_source<br/>(Materialized View + Unique Index)"]
+        MV_WEATH["mart.mv_monthly_weather_summary<br/>(Materialized View + Unique Index)"]
+        MV_MIX["mart.mv_annual_energy_mix"]
+        MV_SALES["mart.mv_monthly_sales_summary"]
+        SP_REFRESH["mart.sp_refresh_analytical_marts()<br/>(Concurrent Non-Blocking Refresh)"]
     end
 
-    subgraph ANALYTICS["8. Business Intelligence & OLAP (24 Queries)"]
-        M1["Member 1: Generation Mix & Renewables<br/>(Q01-Q04: ROLLUP, Moving Avg, TOU)"]
-        M2["Member 2: Dispatch Dynamics & Ramping<br/>(Q05-Q08: Diurnal Curves, LAG, Reconciliation)"]
-        M3["Member 3: Demand & Sector Trajectories<br/>(Q09-Q12: YoY Growth, CAGR, LECO Split)"]
-        M4["Member 4: Weather & Solar Coupling<br/>(Q13-Q16: PSH, CUBE, Wind Correlation)"]
-        M5["Member 5: Plant Operations & Capacity<br/>(Q17-Q20: Duty Cycles, Peak Ratios, Baseload)"]
-        M6["Member 6: Efficiency & Data Quality<br/>(Q21-Q24: GROUPING SETS, Losses, Lineage)"]
+    subgraph BI_ANALYTICS["7. Business Intelligence & Advanced OLAP (24 Queries)"]
+        M1["Member 1: Generation Mix & Renewables (Q01-Q04)"]
+        M2["Member 2: Dispatch Dynamics & Ramping (Q05-Q08)"]
+        M3["Member 3: Demand & Sector Trajectories (Q09-Q12)"]
+        M4["Member 4: Weather & Renewable Coupling (Q13-Q16)"]
+        M5["Member 5: Plant Operations & Capacity (Q17-Q20)"]
+        M6["Member 6: Efficiency & Data Quality (Q21-Q24)"]
     end
 
-    %% Data Flow Connections
+    %% Flow Connections
     SRC_PUCSL --> RAW_FILES
     SRC_CEB --> RAW_FILES
     SRC_NASA --> RAW_FILES
-    RAW_FILES --> MANIFEST
+    RAW_FILES --> RAW_MANIFEST
+    RAW_FILES --> RAW_SCHEMA
 
-    RAW_FILES --> CLEAN_DISPATCH
-    RAW_FILES --> CLEAN_SALES
-    RAW_FILES --> CLEAN_WEATHER
+    RAW_SCHEMA --> STG_SCHEMA
+    STG_SCHEMA --> VAL_PROC
+    REF_SCHEMA -.-> VAL_PROC
 
-    CLEAN_DISPATCH --> QUALITY_GATE
-    CLEAN_SALES --> QUALITY_GATE
-    CLEAN_WEATHER --> QUALITY_GATE
+    VAL_PROC -->|Fails Physical Rules| AUD_DQ
+    VAL_PROC -->|Valid Records| FACTS
 
-    QUALITY_GATE -->|Valid Records| STG_DISPATCH
-    QUALITY_GATE -->|Valid Records| STG_SALES
-    QUALITY_GATE -->|Valid Records| STG_WEATHER
-    QUALITY_GATE -->|Anomalies| QUARANTINE
-
-    STG_DISPATCH --> LOADER
-    STG_SALES --> LOADER
-    STG_WEATHER --> LOADER
-    LOADER --> LINEAGE
-    LOADER --> BATCH_LOG
-
-    LOADER --> CONFORMED_DIMS
-    LOADER --> FACTS
+    FACTS --> AUD_LINEAGE
+    FACTS --> AUD_RUN
 
     CONFORMED_DIMS -.-> FACTS
-    FACTS --> MV_DISPATCH
-    FACTS --> MV_WEATHER
-    SP_REFRESH -.-> MV_DISPATCH
-    SP_REFRESH -.-> MV_WEATHER
+    FACTS --> MARTS
+    SP_REFRESH -.-> MARTS
 
-    FACTS --> ANALYTICS
-    MV_DISPATCH --> ANALYTICS
-    MV_WEATHER --> ANALYTICS
-
+    FACTS --> BI_ANALYTICS
+    MARTS --> BI_ANALYTICS

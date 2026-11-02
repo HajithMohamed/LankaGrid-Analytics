@@ -35,7 +35,7 @@
 
 ### Q2.1: Why did you partition `dw.fact_dispatch_interval` by range on `date_key`, and how does PostgreSQL 18 optimize queries on it?
 **Answer (Member 2):**  
-> *"Our 15-minute dispatch fact table contains 107,115 rows per month. As historical coverage expands, row count grows into millions. By partitioning declaratively via `PARTITION BY RANGE (date_key)`, monthly data resides in isolated physical relations (e.g., `fact_dispatch_interval_y2024m03`). When queries filter on `WHERE date_key BETWEEN 20240301 AND 20240331`, PostgreSQL's query planner applies **static and run-time partition pruning**, completely excluding all other partition heaps and index trees from the execution plan. This prevents memory bloat and maintains sub-second query times."*
+> *"Our 15-minute dispatch fact table contains 107,115 rows per month. As historical coverage expands, row count grows into millions. By partitioning declaratively via `PARTITION BY RANGE (date_key)` into yearly partitions (such as `fact_dispatch_interval_y2024` for dates `20240101` to `20250101`, plus a default partition), data resides in isolated physical relations. When queries filter on `WHERE date_key BETWEEN 20240301 AND 20240331`, PostgreSQL's query planner applies **static and run-time partition pruning**, completely excluding all other partition heaps and index trees from the execution plan. This prevents memory bloat and maintains sub-second query times."*
 
 ### Q2.2: How did you calculate the first derivative ramp rate in Query Q06 using SQL window functions?
 **Answer (Member 2):**  
@@ -155,13 +155,13 @@
 **Answer (Member 6):**  
 > *"In electricity data warehousing, system energy balance dictates:
 > $$\text{Gross Generation} - \text{T\&D Losses} - \text{Station Auxiliary Use} = \text{Billed Retail Sales}$$
-> By performing an aligned join between gross system generation facts (`dw.fact_daily_generation`) and audited retail billed sales facts (`dw.fact_electricity_sales`), Q22 calculates:
+> By performing an aligned join between gross system generation facts (`dw.fact_generation_period`) and audited retail billed sales facts (`dw.fact_electricity_sales`), Q22 calculates:
 > $$\text{Loss Proxy (\%)} = \frac{\text{Gross Generation (GWh)} - \text{Billed Sales (GWh)}}{\text{Gross Generation (GWh)}} \times 100$$
 > Across 2020 to 2024, our warehouse computes an annual loss proxy of **8.8% to 9.6%**, which matches audited CEB regulatory filings within $\pm 0.3\%$."*
 
-### Q6.3: What is the purpose of the `audit.quarantine_records` table, and how does it fulfill Lecture 6 data quality standards?
+### Q6.3: What is the purpose of the `audit.data_quality_issue` table, and how does it fulfill Lecture 6 data quality standards?
 **Answer (Member 6):**  
-> *"Naive ETL pipelines either crash upon encountering malformed data or silently discard corrupted rows, destroying provenance. Lecture 6 demands that data cleansing operations be reproducible and traceable. In GridLens, our **Automated Quality Gate** evaluates every incoming record against physical boundary rules. Records violating rules—such as negative power measurements from the Barge plant (`DQ_GEN_NEGATIVE_OUTPUT`)—are redirected to `audit.quarantine_records` with their original payload, source line number, error rule, and timestamp. Valid records continue into the warehouse. Query Q23 reconciles all 926 quarantined records to exactly 100.00%."*
+> *"Naive ETL pipelines either crash upon encountering malformed data or silently discard corrupted rows, destroying provenance. Lecture 6 demands that data cleansing operations be reproducible and traceable. In GridLens, our **Automated Quality Gate** evaluates every incoming record against physical boundary rules. Records violating rules—such as negative power measurements from the Barge plant (`DQ_GEN_NEGATIVE_OUTPUT`)—are recorded in `audit.data_quality_issue` with their original payload, source line number, error rule, severity, and timestamp. Valid records continue into the warehouse. Query Q23 reconciles all 926 quarantined records to exactly 100.00%."*
 
 ### Q6.4: How does `MigrationRunner` enforce schema immutability and prevent schema drift?
 **Answer (Member 6):**  

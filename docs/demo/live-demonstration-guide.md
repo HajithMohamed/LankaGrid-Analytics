@@ -13,7 +13,7 @@
 This guide provides an end-to-end walkthrough for conducting a live, reproducible demonstration of the **GridLens** data warehouse. 
 
 By following this guide, you will demonstrate:
-1. **Containerized Database Health:** Verifying PostgreSQL 18 running in Docker with schemas `dw`, `stg`, `mart`, and `audit`.
+1. **Containerized Database Health:** Verifying PostgreSQL 18 running in Docker with schemas `raw`, `staging`, `ref`, `dw`, `audit`, `etl`, `mart`, and `public`.
 2. **Schema & Migration Governance:** Showing the strict, sequential forward migration runner and SHA-256 tracking.
 3. **ETL Pipeline Execution & Lineage:** Running the automated loaders and verifying quarantine isolation.
 4. **Analytical Marts & Stored Procedures:** Demonstrating concurrent materialized view refresh.
@@ -28,7 +28,7 @@ By following this guide, you will demonstrate:
 Verify Docker Desktop is running and launch the warehouse container:
 
 ```bash
-docker compose up -d db
+docker compose up -d postgres
 ```
 
 Verify that the container is healthy and listening on port 5433:
@@ -77,10 +77,13 @@ docker exec -it sl_grid_warehouse_db psql -U grid_admin -d sl_grid_warehouse -c 
 
 **Expected Schemas Displayed:**
 - `public` (System tables, migration tracking)
-- `stg` (Staging schema for raw incoming files)
-- `dw` (Kimball dimensional warehouse core: 8 conformed dimensions + 4 fact tables)
+- `staging` (Staging schema for raw incoming files)
+- `raw` (Raw source documents and extracted records)
+- `ref` (Reference domain entities, units, and data quality rules)
+- `dw` (Kimball dimensional warehouse core: 9 conformed dimensions + 6 fact tables)
+- `etl` (Stored procedures for idempotent pipeline loading)
 - `mart` (Pre-aggregated materialized views for high-speed executive dashboards)
-- `audit` (ETL batch logs, record-level lineage, quarantined records)
+- `audit` (ETL run logs, record-level lineage, data quality issues)
 
 ---
 
@@ -99,23 +102,23 @@ pytest tests/unit tests/data_quality tests/integration/test_migrations.py tests/
 ```
 
 ### Step 4.2: Inspect Data Quality Quarantine Isolation (Lecture 6)
-Demonstrate that anomalies (such as negative active power readings from the Colombo Harbour Barge plant) were not discarded or fabricated, but isolated into `audit.quarantine_records`:
+Demonstrate that anomalies (such as negative active power readings from the Colombo Harbour Barge plant) were not discarded or fabricated, but isolated into `audit.data_quality_issue`:
 
 ```bash
 docker exec -it sl_grid_warehouse_db psql -U grid_analyst -d sl_grid_warehouse -c "
 SELECT rule_code, severity, COUNT(*) AS issue_count, 
        ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 2) AS pct_share
-FROM audit.quarantine_records
+FROM audit.data_quality_issue
 GROUP BY rule_code, severity;
 "
 ```
 
 **Expected Output:**
 ```
-       rule_code        | severity | issue_count | pct_share 
-------------------------+----------+-------------+-----------
- DQ_DIM_UNMATCHED_ENTITY| WARNING  |         879 |     94.92
- DQ_GEN_NEGATIVE_OUTPUT | ERROR    |          47 |      5.08
+        rule_code        | severity | issue_count | pct_share 
+-------------------------+----------+-------------+-----------
+ DQ_DIM_UNMATCHED_ENTITY | ERROR    |         879 |     94.92
+ DQ_GEN_NEGATIVE_OUTPUT  | ERROR    |          47 |      5.08
 ```
 
 ---

@@ -1,14 +1,14 @@
 flowchart LR
     %% ==============================================================================
-    %% GridLens Analytical Query Architecture (24 Queries Across 6 Members)
-    %% Advanced OLAP, Aggregation Operators & Analytical Algorithms
+    %% GridLens Verified Analytical Query Architecture (24 Queries Across 6 Members)
+    %% Real Data Warehousing Links: Fact Tables, Conformed Dims & Analytical Methods
     %% ==============================================================================
 
     subgraph M1["Member 1: Generation Mix & Renewables"]
         Q01["Q01: Generation Mix by Source<br/>[ROLLUP (category, source)]"]
         Q02["Q02: Daily Renewable Share<br/>[Centered 7-Day Moving Average]"]
         Q03["Q03: Plant Capacity Factor<br/>[Non-Additive Ratio & Boundary Screening]"]
-        Q04["Q04: Peak/Day/Off-Peak Dispatch<br/>[TOU Dimensional Slicing & CTEs]"]
+        Q04["Q04: Peak/Day/Off-Peak Dispatch<br/>[TOU Dimensional Slicing & Slots]"]
     end
 
     subgraph M2["Member 2: Dispatch Dynamics & Ramping"]
@@ -22,19 +22,19 @@ flowchart LR
         Q09["Q09: 5-Year Sectoral Trends<br/>[YoY Growth & Window Partitions]"]
         Q10["Q10: Structural Sector Consumption Shifts<br/>[Multi-Year Pivot & 5-Year CAGR]"]
         Q11["Q11: Consumption per Customer Account<br/>[Semi-Additive Average Intensity Metrics]"]
-        Q12["Q12: LECO Bulk Supply vs CEB Retail<br/>[Avoiding Double-Counting in Sales Aggregates]"]
+        Q12["Q12: LECO Bulk Supply vs CEB Retail<br/>[Avoiding Double-Counting in Sales]"]
     end
 
-    subgraph M4["Member 4: Weather & Solar Coupling"]
+    subgraph M4["Member 4: Weather & Renewable Coupling"]
         Q13["Q13: 5-Year Solar Irradiance Profiles<br/>[Peak Sun Hours & Solar Resource Conversion]"]
         Q14["Q14: Temperature vs Peak Dispatch<br/>[Pearson Correlation CORR & Aligned Facts]"]
         Q15["Q15: Rainfall Monsoon Seasonality<br/>[CUBE Operator: Multi-Way Monsoon Aggregates]"]
-        Q16["Q16: Wind Resource & Generation Coupling<br/>[Pearson Correlation CORR(v, MW) & v3 Cubic]"]
+        Q16["Q16: Wind Resource & Generation Coupling<br/>[In-Database Pearson CORR(v, MW) & v3]"]
     end
 
     subgraph M5["Member 5: Plant Operations & Capacity Performance"]
         Q17["Q17: Zero-Generation Interval Analysis<br/>[Filtering True Zeros vs Missing Sentinels]"]
-        Q18["Q18: Installed Capacity Utilization Ratio<br/>[Peak Dispatch vs Reference Nameplate Ratings]"]
+        Q18["Q18: Installed Capacity Utilization Ratio<br/>[Peak Dispatch vs Reference Nameplates]"]
         Q19["Q19: Lakvijaya Coal Baseload Continuity<br/>[Unit-Level Availability Factor & Outage Audit]"]
         Q20["Q20: Evening Peak Generation Contribution<br/>[Peak Window Slicing & Merit-Order Ranking]"]
     end
@@ -46,19 +46,23 @@ flowchart LR
         Q24["Q24: ETL Execution Performance<br/>[Pipeline Execution Throughput & Audit Logs]"]
     end
 
-    subgraph OUTCOMES["Analytical Business Insights"]
-        OUT_RE["Renewable Target Tracking<br/>(29.75% Mean Renewable Penetration)"]
-        OUT_ST["Grid Stability & Ramping<br/>(+141.00 MW Max Surge at 18:30)"]
-        OUT_ECO["Economic Shift Tracking<br/>(Hotel Sector +83.94% Growth, CAGR +16.46%)"]
-        OUT_RES["Resource Potential Modeling<br/>(Mannar 5.16 PSH/day, Wind r = +0.7143)"]
-        OUT_CAP["Capacity Bottleneck Detection<br/>(10 Plants Delivered >=95% Nameplate)"]
-        OUT_GOV["Data Governance & Quality<br/>(926 Quarantined Records, Reconciled to 100%)"]
+    subgraph UNDERLYING_OBJECTS["Underlying Fact & Audit Tables"]
+        F_DISP["dw.fact_dispatch_interval (y2024 partition)"]
+        F_SALES["dw.fact_electricity_sales (2020-2024)"]
+        F_WEATH["dw.fact_weather_daily (2020-2024)"]
+        F_GEN["dw.fact_generation_period"]
+        A_DQ["audit.data_quality_issue"]
+        A_RUN["audit.etl_run & audit.record_lineage"]
     end
 
-    M1 --> OUT_RE
-    M2 --> OUT_ST
-    M3 --> OUT_ECO
-    M4 --> OUT_RES
-    M5 --> OUT_CAP
-    M6 --> OUT_GOV
-
+    %% Relationships
+    F_DISP --> M1
+    F_DISP --> M2
+    F_SALES --> M3
+    F_WEATH --> M4
+    F_DISP -.-> M4
+    F_DISP --> M5
+    F_SALES --> M6
+    F_GEN --> M6
+    A_DQ --> M6
+    A_RUN --> M6

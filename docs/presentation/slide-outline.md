@@ -56,7 +56,9 @@
 
 ### Slide 1: Title Slide & Project Overview
 - **Header:** GridLens: National Electricity Grid Analytics Data Warehouse — Sri Lanka.
-- **Sub-header:** A Kimball Dimensional Warehouse Modeling 5 Years of Power Generation, Sectoral Demand, SCADA Telemetry, and Satellite Meteorological Observations.
+- **Sub-header:** A Kimball Dimensional Warehouse Modeling Historical Generation, Sectoral Sales, SCADA Telemetry, and Satellite Meteorological Observations.
+- **Institution:** University of Ruhuna — Faculty of Technology — Department of Information and Communication Technology (ICT).
+- **Course:** CS4032 Advanced Data Warehousing (Academic Group Project).
 - **Team:** Six Undergraduate Software Engineers.
 - **Technology Stack:** PostgreSQL 18 (Docker), Python 3.14, Pytest, SQL:1999 OLAP.
 - **Visual:** High-level system architecture badge + National Grid summary diagram.
@@ -64,7 +66,7 @@
 ### Slide 2: Academic Motivation & Domain Context
 - **Problem Statement:** Sri Lanka's electricity sector faces unprecedented trilemma pressures: high fossil fuel import costs, severe economic crisis tariff shocks (2022–2023), and an aggressive national mandate for 70% renewable electricity by 2030.
 - **Academic Purpose:** Bridging the gap between raw, fragmented operational data (PUCSL SCADA Excel files, CEB statistical PDFs, NASA POWER APIs) and unified dimensional intelligence using Kimball methodology.
-- **Key Deliverables:** 8 conformed dimensions, 4 fact tables, 2 analytical marts, 24 business queries, 101 automated tests.
+- **Key Deliverables:** 9 conformed dimensions, 6 fact tables, 2 analytical marts, 24 business queries, and comprehensive automated test coverage.
 
 ---
 
@@ -85,7 +87,7 @@
 ---
 
 ### Member 3: Electricity Demand & Customer Dynamics (Slides 11–14)
-- **Slide 11:** *Five-Year Billed Sales Modeling.* Conformed modeling of `dim_tariff_sector` and `dim_customer_class` across 2020–2024. Preventing double-counting between CEB retail and LECO bulk sales.
+- **Slide 11:** *Five-Year Billed Sales Modeling.* Conformed modeling of `dw.dim_consumption_sector` (incorporating economic customer classes and tariff groups) across 2020–2024. Preventing double-counting between CEB retail and LECO bulk sales.
 - **Slide 12:** *Five-Year Trajectories & Tourism Rebound (Q09 & Q10).* Audited sales data: National billed sales grew from 14,287 GWh (2020) to 15,190.5 GWh (2024). Tourism rebound: Hotel sales expanded from 193.00 GWh to 355.00 GWh (**+83.94% growth, +16.46% CAGR**).
 - **Slide 13:** *Residential Demand Contraction & Bulk Supply Decoupling (Q11 & Q12).* Domestic consumption contracted by -7.64% (5,090 GWh to 4,701 GWh) due to tariff hikes, with monthly household intensity dropping from 71.3 to 62.4 kWh. LECO bulk supply remaining steady at 10.67%–11.23% share.
 - **Slide 14:** *Member 3 Conclusions.* Structural economic transition toward productive sectors and transition to Member 4 on weather impacts.

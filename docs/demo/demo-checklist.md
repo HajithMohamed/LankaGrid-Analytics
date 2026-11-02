@@ -55,7 +55,7 @@ with get_connection(DatabaseConfig.from_env()) as conn:
 # Expected:
 # Dispatch Interval Facts: 107,115
 # Weather Facts: 21,924
-# Electricity Sales Facts: 44
+# Electricity Sales Facts: 49
 
 # 4. Verify fast test suite execution
 .venv\Scripts\pytest.exe tests/integration/test_migrations.py tests/analytics/test_phase3_olap.py -q
@@ -87,8 +87,8 @@ with get_connection(DatabaseConfig.from_env()) as conn:
 **Symptom:** `psycopg.OperationalError: connection to server at "localhost", port 5433 failed`.  
 **Corrective Action:**
 ```bash
-docker compose restart db
-docker compose logs --tail=20 db
+docker compose restart postgres
+docker compose logs --tail=20 postgres
 ```
 
 ### Scenario B: Query Execution Delay During Presentation

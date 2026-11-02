@@ -59,9 +59,9 @@ pytest tests/unit tests/data_quality tests/integration tests/analytics -v
 
 ## 3. Physical Database & Schema Integrity Audit
 
-1. **Declarative Range Partitioning:** `dw.fact_dispatch_interval` is verified partitioned by range on `date_key`, with child partition `fact_dispatch_interval_y2024m03` holding 107,115 facts.
+1. **Declarative Range Partitioning:** `dw.fact_dispatch_interval` is verified partitioned by yearly range on `date_key`, with child partition `fact_dispatch_interval_y2024` holding 107,115 facts.
 2. **Materialized Views:** `mart.mv_daily_dispatch_by_source` and `mart.mv_monthly_weather_summary` are verified populated and refreshed concurrently via unique indexes.
-3. **Audit Provenance:** `audit.record_lineage` holds 228,145 row-level audit entries; `audit.quarantine_records` isolates 926 records with 100.00% category reconciliation.
+3. **Audit Provenance:** `audit.record_lineage` holds 272,526 row-level audit entries; `audit.data_quality_issue` isolates 926 records with 100.00% category reconciliation.
 4. **Migration Immutability:** All 21 forward migrations recorded in `public.schema_migrations` with matching SHA-256 digests.
 
 ---
