@@ -1,0 +1,73 @@
+flowchart LR
+    %% ==============================================================================
+    %% GridLens Kimball Fact Constellation Schema Diagram
+    %% Verified 9 Conformed Dimensions & 6 Core Fact Tables
+    %% ==============================================================================
+
+    subgraph DIMS["9 Conformed Dimensions (dw Schema)"]
+        D_DATE["dim_date<br/><b>date_key [PK]</b><br/>calendar_date, year, month, season"]
+        D_INT["dim_interval<br/><b>interval_key [PK]</b><br/>interval_index (1-96), tou_block"]
+        D_SRC["dim_source_system<br/><b>source_system_key [PK]</b><br/>source_code, organization_name"]
+        D_ENG["dim_energy_source<br/><b>energy_source_key [PK]</b><br/>energy_source_code, category, fuel_type"]
+        D_REG["dim_region<br/><b>region_key [PK]</b><br/>region_code, region_name, region_level"]
+        D_SEC["dim_consumption_sector<br/><b>sector_key [PK]</b><br/>sector_code, sector_name, tariff_group"]
+        D_PLANT["dim_power_plant<br/><b>plant_key [PK]</b><br/>plant_code, plant_name, operator_type"]
+        D_LOC["dim_weather_location<br/><b>weather_location_key [PK]</b><br/>location_code, lat, lon, elevation_m"]
+        D_METRIC["dim_metric<br/><b>metric_key [PK]</b><br/>metric_code, canonical_unit_code"]
+    end
+
+    subgraph FACTS["6 Fact Constellation Tables (dw Schema)"]
+        F_DISP["dw.fact_dispatch_interval<br/><b>(dispatch_fact_id, date_key) [PK]</b><br/>Grain: Plant x 15-Min Slot x Source<br/>active_power_mw, derived_energy_mwh<br/><i>[107,115 facts - Populated]</i>"]
+        F_GEN["dw.fact_generation_period<br/><b>generation_fact_id [PK]</b><br/>Grain: Plant/Source x Period<br/>gross_generation_mwh, net_generation_mwh<br/><i>[18 facts - Populated]</i>"]
+        F_SALES["dw.fact_electricity_sales<br/><b>sales_fact_id [PK]</b><br/>Grain: Sector x Region x Year<br/>billed_energy_gwh, consumer_count<br/><i>[49 facts - Populated]</i>"]
+        F_WEATH["dw.fact_weather_daily<br/><b>weather_fact_id [PK]</b><br/>Grain: Location x Metric x Day<br/>raw_value, standardized_value<br/><i>[21,924 facts - Populated]</i>"]
+        F_CAP["dw.fact_capacity_period<br/><b>capacity_fact_id [PK]</b><br/>Grain: Plant x Source x Period<br/>installed_capacity_mw<br/><i>[0 facts - Implemented/Unpopulated]</i>"]
+        F_PUB["dw.fact_published_metric<br/><b>published_metric_fact_id [PK]</b><br/>Grain: Entity x Metric x Period<br/>published_value, unit_code<br/><i>[0 facts - Implemented/Unpopulated]</i>"]
+    end
+
+    %% Dimension-to-Dimension Relationships
+    D_REG -.->|region_key| D_PLANT
+    D_ENG -.->|energy_source_key| D_PLANT
+    D_REG -.->|region_key| D_LOC
+
+    %% Fact 1: fact_dispatch_interval FKs
+    D_DATE -->|date_key| F_DISP
+    D_INT -->|interval_key| F_DISP
+    D_PLANT -->|plant_key| F_DISP
+    D_ENG -->|energy_source_key| F_DISP
+    D_SRC -->|source_system_key| F_DISP
+    D_METRIC -->|metric_key| F_DISP
+
+    %% Fact 2: fact_generation_period FKs
+    D_DATE -->|period_start/end_date_key| F_GEN
+    D_PLANT -->|plant_key| F_GEN
+    D_ENG -->|energy_source_key| F_GEN
+    D_SRC -->|source_system_key| F_GEN
+    D_METRIC -->|metric_key| F_GEN
+
+    %% Fact 3: fact_electricity_sales FKs
+    D_DATE -->|period_start/end_date_key| F_SALES
+    D_SEC -->|sector_key| F_SALES
+    D_REG -->|region_key| F_SALES
+    D_SRC -->|source_system_key| F_SALES
+    D_METRIC -->|metric_key| F_SALES
+
+    %% Fact 4: fact_weather_daily FKs
+    D_DATE -->|date_key| F_WEATH
+    D_LOC -->|weather_location_key| F_WEATH
+    D_SRC -->|source_system_key| F_WEATH
+    D_METRIC -->|metric_key| F_WEATH
+
+    %% Fact 5: fact_capacity_period FKs
+    D_DATE -.->|effective_start/end_date_key| F_CAP
+    D_PLANT -.->|plant_key| F_CAP
+    D_ENG -.->|energy_source_key| F_CAP
+    D_SRC -.->|source_system_key| F_CAP
+    D_METRIC -.->|metric_key| F_CAP
+
+    %% Fact 6: fact_published_metric FKs
+    D_DATE -.->|period_start/end_date_key| F_PUB
+    D_SEC -.->|sector_key| F_PUB
+    D_REG -.->|region_key| F_PUB
+    D_SRC -.->|source_system_key| F_PUB
+    D_METRIC -.->|metric_key| F_PUB

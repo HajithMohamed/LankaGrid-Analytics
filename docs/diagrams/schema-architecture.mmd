@@ -1,0 +1,91 @@
+flowchart TD
+    %% ==============================================================================
+    %% GridLens Verified PostgreSQL 18 Multi-Schema Architecture
+    %% Authentic Physical Database Separation across 8 Schemas
+    %% ==============================================================================
+
+    subgraph RAW_S["Schema: raw (Raw Ingestion Metadata)"]
+        RAW_DOC["source_document"]
+        RAW_BAT["ingestion_batch"]
+        RAW_REC["extracted_record (130,404 rows)"]
+        RAW_SYS["source_system"]
+    end
+
+    subgraph STG_S["Schema: staging (Transient Staging Store)"]
+        STG_DISP["stg_dispatch_observation (107,136 rows)"]
+        STG_SALE["stg_electricity_sales (167 rows)"]
+        STG_GEN["stg_generation_report (105 rows)"]
+        STG_WEAT["stg_weather_observation (44,220 rows)"]
+        STG_CAP["stg_plant_capacity (0 rows)"]
+        STG_PUB["stg_published_statistic (0 rows)"]
+    end
+
+    subgraph REF_S["Schema: ref (Reference Standards & Mappings)"]
+        REF_PLANT["plant_alias (39 aliases)"]
+        REF_ENG["energy_source_mapping"]
+        REF_MET["metric_mapping"]
+        REF_RULE["data_quality_rule (13 rules)"]
+        REF_UNIT["unit & unit_conversion"]
+        REF_PREC["source_precedence"]
+    end
+
+    subgraph DW_S["Schema: dw (Kimball Dimensional Core)"]
+        subgraph DW_DIMS["9 Conformed Dimensions"]
+            D1["dim_date (2,922 rows)"]
+            D2["dim_interval (120 rows)"]
+            D3["dim_source_system (3 rows)"]
+            D4["dim_energy_source (9 rows)"]
+            D5["dim_region (14 rows)"]
+            D6["dim_consumption_sector (10 rows)"]
+            D7["dim_power_plant (41 rows)"]
+            D8["dim_weather_location (6 rows)"]
+            D9["dim_metric (15 rows)"]
+        end
+        subgraph DW_FACTS["6 Fact Tables"]
+            F1["fact_dispatch_interval<br/>[Yearly Partitions: y2020-y2026 + default]<br/>(107,115 facts in y2024)"]
+            F2["fact_generation_period (18 facts)"]
+            F3["fact_electricity_sales (49 facts)"]
+            F4["fact_weather_daily (21,924 facts)"]
+            F5["fact_capacity_period (0 facts)"]
+            F6["fact_published_metric (0 facts)"]
+        end
+    end
+
+    subgraph AUD_S["Schema: audit (Quality & Provenance Governance)"]
+        AUD_DQ["data_quality_issue (926 quarantined rows)"]
+        AUD_LIN["record_lineage (272,526 audit links)"]
+        AUD_RUN["etl_run (21 batch logs)"]
+        AUD_REC["reconciliation_case (0 rows)"]
+        AUD_VW["data_quality_summary (VIEW)"]
+    end
+
+    subgraph ETL_S["Schema: etl (Orchestration & Routines)"]
+        ETL_PROC["Load & Validate Procedures<br/>sp_validate_staged_*<br/>sp_load_*"]
+        ETL_FUNC["Utility Functions<br/>fn_normalize_interval_15min<br/>fn_convert_unit"]
+        ETL_REG["scheduled_job_registry"]
+    end
+
+    subgraph MART_S["Schema: mart (Analytical Marts & OLAP)"]
+        M1["mv_daily_dispatch_by_source (MV)"]
+        M2["mv_monthly_weather_summary (MV)"]
+        M3["mv_annual_energy_mix (MV)"]
+        M4["mv_monthly_sales_summary (MV)"]
+        M5["sp_refresh_analytical_marts() (PROC)"]
+        M6["Analytical Views (4 VIEWS)"]
+    end
+
+    subgraph PUB_S["Schema: public (System Migration Tracking)"]
+        PUB_MIG["schema_migrations (21 applied migrations)"]
+    end
+
+    %% Data Flow Across Schemas
+    RAW_S --> STG_S
+    REF_S -.-> ETL_S
+    STG_S --> ETL_S
+    ETL_S -->|Rejections| AUD_DQ
+    ETL_S -->|Valid Loads| DW_FACTS
+    DW_FACTS --> AUD_LIN
+    ETL_S --> AUD_RUN
+    DW_S --> MART_S
+    M5 -.-> M1
+    M5 -.-> M2
