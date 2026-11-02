@@ -70,3 +70,81 @@ def test_snapshot_loader_covers_provenance():
             assert "query_id" in record
             assert "execution_time_ms" in record
             assert "row_count" in record
+
+
+def test_security_zero_hardcoded_credentials_in_web():
+    """Verify web client pool has no hardcoded database passwords."""
+    client_path = REPO_ROOT / "web" / "src" / "lib" / "db" / "client.ts"
+    assert client_path.exists(), f"client.ts not found at {client_path}"
+
+    with open(client_path, encoding="utf-8") as f:
+        content = f.read()
+
+    # Disallow fallback password assignments
+    assert "HAzi@" not in content, "Exposed credential signature detected in client.ts"
+    assert 'password: process.env.POSTGRES_PASSWORD || "' not in content, (
+        "Hardcoded fallback password string detected in client.ts"
+    )
+
+    env_example = REPO_ROOT / "web" / ".env.example"
+    assert env_example.exists(), "web/.env.example must exist"
+    with open(env_example, encoding="utf-8") as f:
+        example_content = f.read()
+    assert "HAzi@" not in example_content, "Exposed password in .env.example"
+    assert "grid_analyst" in example_content, "web/.env.example must specify grid_analyst"
+
+
+def test_q06_ramp_rate_accuracy():
+    """Verify authoritative Q06 maximum upward ramp rate is 141.00 MW on March 17, 2024 at 18:30."""
+    q06_path = SNAPSHOT_DIR / "Q06.json"
+    with open(q06_path, encoding="utf-8") as f:
+        q06_records = json.load(f)
+
+    assert len(q06_records) > 0
+    top_event = q06_records[0]
+    assert top_event["calendar_date"] == "2024-03-17"
+    assert top_event["start_time"] == "18:30:00"
+    assert top_event["ramp_rate_mw"] == 141.0, (
+        "Q06 peak ramp must be 141.00 MW (previous 142.50 MW was invalid hardcoding)"
+    )
+    assert top_event["severity_rank"] == 1
+
+
+def test_q22_multi_tier_reconciliation_accuracy():
+    """Verify Q22 reconciles CEB sales and PUCSL dispatch without unsupported claims."""
+    q22_path = SNAPSHOT_DIR / "Q22.json"
+    with open(q22_path, encoding="utf-8") as f:
+        q22_records = json.load(f)
+
+    tiers = [r["reconciliation_tier"] for r in q22_records]
+    assert "CEB_SALES_DIGEST_ANNUAL" in tiers
+    assert "PUCSL_DISPATCH_TELEMETRY_DAILY" in tiers
+
+    # Check rounding precision reconciliation for CEB sales (variance <= 0.05%)
+    ceb_recons = [r for r in q22_records if r["reconciliation_tier"] == "CEB_SALES_DIGEST_ANNUAL"]
+    assert len(ceb_recons) >= 5
+    for r in ceb_recons:
+        assert float(r["variance_pct"]) <= 0.05, f"CEB sales variance exceeded precision: {r}"
+
+
+def test_dashboard_security_migration_022_exists():
+    """Verify migration 022 applies read-only grid_analyst safeguards."""
+    migration_path = (
+        REPO_ROOT / "database" / "migrations" / "022_dashboard_readonly_role_and_security.sql"
+    )
+    rollback_path = (
+        REPO_ROOT
+        / "database"
+        / "migrations"
+        / "rollbacks"
+        / "022_dashboard_readonly_role_and_security_rollback.sql"
+    )
+    assert migration_path.exists(), "Migration 022 missing"
+    assert rollback_path.exists(), "Migration 022 rollback missing"
+
+    with open(migration_path, encoding="utf-8") as f:
+        sql_text = f.read()
+
+    assert "grid_analyst" in sql_text
+    assert "statement_timeout" in sql_text
+    assert "default_transaction_read_only" in sql_text

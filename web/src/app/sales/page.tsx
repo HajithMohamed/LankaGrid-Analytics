@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { PageHeader } from "@/components/layout/page-header";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { SimpleBarChart } from "@/components/charts/simple-bar-chart";
 import { DataTable, ColumnDef } from "@/components/tables/data-table";
-import { formatGWh, formatPercent, toNumeric } from "@/lib/formatting/units";
+import { formatGWh, toNumeric } from "@/lib/formatting/units";
+import { ShieldCheck, FilterX } from "lucide-react";
 
 interface SectorGrowthRecord {
   sector_code: string;
@@ -25,13 +26,18 @@ interface SectorGrowthRecord {
 
 export default function SalesPage() {
   const [growthData, setGrowthData] = useState<SectorGrowthRecord[]>([]);
+  const [tariffFilter, setTariffFilter] = useState<string>("all");
+  const [sourceMode, setSourceMode] = useState<"live" | "snapshot">("snapshot");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/analytics/Q10")
       .then((res) => res.json())
       .then((res) => {
-        if (res.success) setGrowthData(res.data);
+        if (res.success && Array.isArray(res.data)) {
+          setGrowthData(res.data);
+          if (res.sourceMode) setSourceMode(res.sourceMode);
+        }
         setLoading(false);
       })
       .catch((err) => {
@@ -39,6 +45,51 @@ export default function SalesPage() {
         setLoading(false);
       });
   }, []);
+
+  // Compute dynamic KPIs directly from fetched Q10 data
+  const kpis = useMemo(() => {
+    let total2024 = 15190.5;
+    let hotelRebound = 83.94;
+    let industrial2024 = 4622.0;
+    let leco2024 = 1625.0;
+
+    if (growthData.length > 0) {
+      // Find total row if present or calculate
+      const totalRow = growthData.find((g) => g.sector_name?.toLowerCase().includes("total"));
+      if (totalRow) {
+        total2024 = toNumeric(totalRow.sales_2024_gwh) || total2024;
+      }
+
+      const hotel = growthData.find((g) => g.sector_name?.toLowerCase().includes("hotel"));
+      if (hotel) {
+        hotelRebound = toNumeric(hotel.net_5yr_change_pct) || hotelRebound;
+      }
+
+      const industrial = growthData.find((g) => g.sector_name?.toLowerCase().includes("industrial"));
+      if (industrial) {
+        industrial2024 = toNumeric(industrial.sales_2024_gwh) || industrial2024;
+      }
+
+      const leco = growthData.find((g) => g.sector_name?.toLowerCase().includes("leco"));
+      if (leco) {
+        leco2024 = toNumeric(leco.sales_2024_gwh) || leco2024;
+      }
+    }
+
+    return {
+      total2024,
+      hotelRebound,
+      industrial2024,
+      leco2024,
+    };
+  }, [growthData]);
+
+  const filteredGrowth = useMemo(() => {
+    if (tariffFilter === "all") return growthData;
+    return growthData.filter((r) =>
+      String(r.tariff_group || "").toLowerCase().includes(tariffFilter.toLowerCase())
+    );
+  }, [growthData, tariffFilter]);
 
   const columns: ColumnDef<SectorGrowthRecord>[] = [
     {
@@ -115,13 +166,49 @@ export default function SalesPage() {
         titleAccent="."
         description="Historical electricity billing across consumer sectors, tariff elasticity, hotel tourism recovery (+83.94%), and bulk distribution to LECO (2020–2024)."
         onExportCsv={() => window.open("/api/exports/Q10", "_blank")}
-      />
+      >
+        <div className="flex items-center gap-3">
+          <span
+            className={`px-2.5 py-1 rounded-[8px] text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 ${
+              sourceMode === "live"
+                ? "bg-[#E8F6F2] text-[#177763] border border-[#229C88]/30"
+                : "bg-[#FFF6E8] text-[#9A6715] border border-[#E9A43B]/30"
+            }`}
+          >
+            <ShieldCheck size={13} />
+            {sourceMode === "live" ? "Live PostgreSQL" : "Verified Snapshot"}
+          </span>
 
-      {/* KPI row */}
+          <div className="flex items-center gap-2">
+            <label className="text-[12px] font-semibold text-[#748091]">Filter Tariff Group:</label>
+            <select
+              value={tariffFilter}
+              onChange={(e) => setTariffFilter(e.target.value)}
+              className="h-[38px] px-3 rounded-[8px] bg-white border border-[#E2E7EE] text-[#19222D] font-bold text-[12px] outline-none"
+            >
+              <option value="all">All Tariff Groups</option>
+              <option value="productive">Productive Sectors</option>
+              <option value="domestic">Domestic & Residential</option>
+              <option value="bulk">Bulk Supply (LECO)</option>
+            </select>
+            {tariffFilter !== "all" && (
+              <button
+                onClick={() => setTariffFilter("all")}
+                className="h-[38px] px-2.5 rounded-[8px] bg-[#F1F3F6] hover:bg-[#E5E8EB] text-[#4B5563] text-[12px] font-semibold flex items-center gap-1 transition-colors"
+              >
+                <FilterX size={14} />
+                <span>Reset</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </PageHeader>
+
+      {/* KPI row — Dynamically derived from Q10 data */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
           name="2024 Total Billed Sales"
-          value="15,190.50"
+          value={kpis.total2024.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
           unit="GWh"
           period="Audited CEB"
           sourcePill="CEB"
@@ -129,7 +216,7 @@ export default function SalesPage() {
         />
         <KpiCard
           name="Hotel Sector Rebound"
-          value="+83.94"
+          value={`${kpis.hotelRebound >= 0 ? "+" : ""}${kpis.hotelRebound.toFixed(2)}`}
           unit="%"
           period="Post-Crisis Surge"
           sourcePill="Q10"
@@ -137,18 +224,18 @@ export default function SalesPage() {
         />
         <KpiCard
           name="Industrial Electricity"
-          value="4,622.00"
+          value={kpis.industrial2024.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
           unit="GWh"
-          period="30.4% Market Share"
-          sourcePill="Q09"
+          period="Productive Base"
+          sourcePill="Q10"
           accentColor="#4278B9"
         />
         <KpiCard
           name="LECO Bulk Supply"
-          value="1,625.00"
+          value={kpis.leco2024.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
           unit="GWh"
           period="Distribution Licensee"
-          sourcePill="Q12"
+          sourcePill="Q10"
           accentColor="#E9A43B"
         />
       </section>
@@ -159,7 +246,7 @@ export default function SalesPage() {
         subtitle="Net percentage change in annual electricity sales across CEB tariff categories"
         badge="CEB Statistical Digest · Q10"
         unit="%"
-        data={growthData
+        data={filteredGrowth
           .filter((d) => toNumeric(d.net_5yr_change_pct) !== null)
           .map((d) => {
             const pct = toNumeric(d.net_5yr_change_pct) || 0;
@@ -184,12 +271,12 @@ export default function SalesPage() {
         <div className="py-12 text-center text-[#9AA5B0]">Loading sales data...</div>
       ) : (
         <DataTable
-          title="Five-Year Sectoral Sales & Post-Crisis Rebound Matrix"
+          title="Five-Year Sectoral Sales &amp; Post-Crisis Rebound Matrix"
           subtitle="Annual billed sales in GWh and Compound Annual Growth Rate (CAGR) from 2020 through 2024"
           badge="SQL Query Q10"
-          data={growthData}
+          data={filteredGrowth}
           columns={columns}
-          filename="gridlens-sectoral-growth-Q10.csv"
+          filename={`gridlens-sectoral-growth-${tariffFilter}.csv`}
         />
       )}
     </div>

@@ -9,11 +9,12 @@ export async function GET(
   const { queryId } = await params;
   const upperId = queryId.toUpperCase();
 
+  // Strict allowlist validation: Only Q01 through Q24 are permitted
   if (!QUERY_REGISTRY[upperId]) {
     return NextResponse.json(
       {
         success: false,
-        error: `Query identifier '${queryId}' is not authorized. Must be Q01 through Q24.`,
+        error: `Query identifier '${queryId}' is not authorized. Permitted queries are strictly Q01 through Q24.`,
       },
       { status: 404 }
     );
@@ -21,6 +22,39 @@ export async function GET(
 
   try {
     const result = await getAnalyticsData(upperId);
+
+    // Optional safe pagination
+    const searchParams = request.nextUrl.searchParams;
+    const pageParam = searchParams.get("page");
+    const limitParam = searchParams.get("limit");
+
+    if (pageParam && limitParam && result.success && Array.isArray(result.data)) {
+      const page = Math.max(1, parseInt(pageParam, 10) || 1);
+      const limit = Math.min(500, Math.max(1, parseInt(limitParam, 10) || 50));
+      const totalRows = result.data.length;
+      const startIndex = (page - 1) * limit;
+      const paginatedData = result.data.slice(startIndex, startIndex + limit);
+
+      return NextResponse.json(
+        {
+          ...result,
+          data: paginatedData,
+          pagination: {
+            page,
+            limit,
+            totalRows,
+            totalPages: Math.ceil(totalRows / limit),
+          },
+        },
+        {
+          status: 200,
+          headers: {
+            "Cache-Control": "public, max-age=60, stale-while-revalidate=300",
+          },
+        }
+      );
+    }
+
     return NextResponse.json(result, {
       status: result.success ? 200 : 500,
       headers: {
@@ -28,11 +62,13 @@ export async function GET(
       },
     });
   } catch (error) {
+    // Sanitize error response: never leak internal stack traces or connection strings
+    console.error(`Internal error processing analytics query ${upperId}:`, error);
     return NextResponse.json(
       {
         success: false,
         queryId: upperId,
-        error: (error as Error).message,
+        error: "An internal error occurred while processing the analytical query. Please verify warehouse connectivity.",
       },
       { status: 500 }
     );

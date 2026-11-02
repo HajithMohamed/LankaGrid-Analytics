@@ -53,7 +53,7 @@ The GridLens Analytics Dashboard provides an interactive web interface for the S
 | | Baseload Continuity | Lakvijaya Coal units reliability (595,524.50 MWh) | Q19 (`dw.fact_dispatch_interval`) |
 | | Evening Peak Merit | Hydro (32.40%) & Coal (39.67%) merit-order dispatch | Q20 (`dw.fact_dispatch_interval`) |
 | **`/data-quality`** (Quality & ETL) | Economic Demand Share | Productive sector share expansion (50.35% to 55.64%) | Q21 (`dw.fact_electricity_sales`) |
-| | Macro Reconciliation | Generation vs Billed Sales residual (8.8% to 9.6%) | Q22 (`dw.fact_generation_period` + sales) |
+| | Multi-Tier Reconciliation | CEB Sales vs Digest & PUCSL Daily Control Totals (variance <= 0.007%) | Q22 (`dw.fact_electricity_sales` + `dw.fact_dispatch_interval`) |
 | | Quarantine Audit Trail | 926 quarantined records (879 entity, 47 negative) | Q23 (`audit.data_quality_issue`) |
 | | Pipeline Lineage & SLA | 272,526 audit rows, loader throughput (rows/sec) | Q24 (`audit.record_lineage` + `etl_run`) |
 | **`/query-explorer`** | Predefined Explorer | Allowlisted execution of all 24 queries with SQL, parameters, tabular data, execution plan, and CSV export | Queries Q01 through Q24 |

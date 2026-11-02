@@ -6,12 +6,20 @@ import { QUERY_REGISTRY, QueryDefinition } from "../analytics/query-registry";
 export interface AnalyticsResult<T = Record<string, unknown>> {
   success: boolean;
   queryId: string;
-  definition?: QueryDefinition;
+  source: "live" | "snapshot";
+  sourceMode: "live" | "snapshot";
   data: T[];
   rowCount: number;
-  source: "live" | "snapshot";
-  executionTimeMs?: number;
+  period: string;
+  attribution: string;
+  executionTimeMs: number;
+  definition?: QueryDefinition;
   sqlText?: string | null;
+  dbErrorDiagnostic?: string | null;
+  snapshotMeta?: {
+    filename: string;
+    sourceDataset: string;
+  };
   error?: string;
 }
 
@@ -90,8 +98,9 @@ export async function loadSqlFile(queryId: string): Promise<string | null> {
 
 /**
  * Unified Analytics Data Fetcher:
- * 1. Attempts live SQL execution against PostgreSQL 18
- * 2. On connection error or timeout, seamlessly falls back to authentic snapshot JSON
+ * 1. Checks configured DATA_SOURCE_MODE ('live' | 'snapshot' | 'hybrid')
+ * 2. Attempts live SQL execution against PostgreSQL 18
+ * 3. On connection error or offline database in hybrid mode, gracefully falls back to authentic snapshot JSON
  */
 export async function getAnalyticsData<T = Record<string, unknown>>(
   queryId: string
@@ -99,51 +108,88 @@ export async function getAnalyticsData<T = Record<string, unknown>>(
   const def = QUERY_REGISTRY[queryId];
   const startTime = Date.now();
   const sqlText = await loadSqlFile(queryId);
+  const mode = process.env.DATA_SOURCE_MODE || "hybrid";
+  let dbDiagnostic: string | null = null;
 
-  // Try live query if SQL text is available
-  try {
-    if (sqlText) {
+  // 1. Live Query Execution (if allowed by mode)
+  if (mode !== "snapshot" && sqlText) {
+    try {
       const res = await executeQuery<Record<string, unknown>>(sqlText);
       const executionTimeMs = Date.now() - startTime;
       return {
         success: true,
         queryId,
+        source: "live",
+        sourceMode: "live",
         definition: def,
         data: res.rows as T[],
         rowCount: res.rowCount ?? res.rows.length,
-        source: "live",
+        period: def?.period || "March 2024 / 2020–2024",
+        attribution: `${def?.member || "Member"} (${def?.memberName || "Domain Specialist"})`,
         executionTimeMs,
         sqlText,
+        dbErrorDiagnostic: null,
       };
+    } catch (liveError) {
+      dbDiagnostic = (liveError as Error).message;
+      if (mode === "live") {
+        // In strict live mode, do not mask failures
+        return {
+          success: false,
+          queryId,
+          source: "live",
+          sourceMode: "live",
+          definition: def,
+          data: [],
+          rowCount: 0,
+          period: def?.period || "N/A",
+          attribution: def?.member || "GridLens",
+          executionTimeMs: Date.now() - startTime,
+          sqlText,
+          dbErrorDiagnostic: dbDiagnostic,
+          error: `Live PostgreSQL query execution failed: ${dbDiagnostic}`,
+        };
+      }
     }
-  } catch (liveError) {
-    // If live query fails, fall back to snapshot
   }
 
-  // Fallback to pre-computed authentic snapshot
+  // 2. Fallback to pre-computed authentic snapshot
   try {
     const snapshotData = await loadJsonSnapshot<T>(queryId);
     const executionTimeMs = Date.now() - startTime;
     return {
       success: true,
       queryId,
+      source: "snapshot",
+      sourceMode: "snapshot",
       definition: def,
       data: snapshotData,
       rowCount: snapshotData.length,
-      source: "snapshot",
+      period: def?.period || "Historical (2020–2024)",
+      attribution: `${def?.member || "Member"} (${def?.memberName || "Domain Specialist"}) [Verified Historical Snapshot]`,
       executionTimeMs,
       sqlText,
+      dbErrorDiagnostic: dbDiagnostic,
+      snapshotMeta: {
+        filename: `${queryId}.json`,
+        sourceDataset: def?.facts?.join(", ") || "Kimball Fact Constellation",
+      },
     };
   } catch (snapshotError) {
     return {
       success: false,
       queryId,
+      source: "snapshot",
+      sourceMode: "snapshot",
       definition: def,
       data: [],
       rowCount: 0,
-      source: "snapshot",
+      period: def?.period || "Unknown",
+      attribution: "GridLens Repository Snapshots",
+      executionTimeMs: Date.now() - startTime,
       sqlText,
-      error: (snapshotError as Error).message,
+      dbErrorDiagnostic: dbDiagnostic,
+      error: `Failed to load snapshot for ${queryId}: ${(snapshotError as Error).message}`,
     };
   }
 }
