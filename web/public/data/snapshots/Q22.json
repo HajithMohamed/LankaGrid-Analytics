@@ -1,0 +1,62 @@
+[
+  {
+    "calendar_year": 2020,
+    "reconciliation_tier": "CEB_SALES_DIGEST_ANNUAL",
+    "calculated_constituent_sum": 14287.0,
+    "published_control_total": 14286.0,
+    "measurement_unit": "GWh",
+    "variance_magnitude": -1.0,
+    "variance_pct": 0.007,
+    "audit_status": "WITHIN PUBLISHED ROUNDING PRECISION (<= 0.05%)"
+  },
+  {
+    "calendar_year": 2021,
+    "reconciliation_tier": "CEB_SALES_DIGEST_ANNUAL",
+    "calculated_constituent_sum": 15214.0,
+    "published_control_total": 15214.0,
+    "measurement_unit": "GWh",
+    "variance_magnitude": 0.0,
+    "variance_pct": 0.0,
+    "audit_status": "EXACT ZERO-VARIANCE RECONCILIATION"
+  },
+  {
+    "calendar_year": 2022,
+    "reconciliation_tier": "CEB_SALES_DIGEST_ANNUAL",
+    "calculated_constituent_sum": 14520.0,
+    "published_control_total": 14520.0,
+    "measurement_unit": "GWh",
+    "variance_magnitude": 0.0,
+    "variance_pct": 0.0,
+    "audit_status": "EXACT ZERO-VARIANCE RECONCILIATION"
+  },
+  {
+    "calendar_year": 2023,
+    "reconciliation_tier": "CEB_SALES_DIGEST_ANNUAL",
+    "calculated_constituent_sum": 14153.5,
+    "published_control_total": 14153.0,
+    "measurement_unit": "GWh",
+    "variance_magnitude": -0.5,
+    "variance_pct": 0.004,
+    "audit_status": "WITHIN PUBLISHED ROUNDING PRECISION (<= 0.05%)"
+  },
+  {
+    "calendar_year": 2024,
+    "reconciliation_tier": "CEB_SALES_DIGEST_ANNUAL",
+    "calculated_constituent_sum": 15190.5,
+    "published_control_total": 15191.0,
+    "measurement_unit": "GWh",
+    "variance_magnitude": 0.5,
+    "variance_pct": 0.003,
+    "audit_status": "WITHIN PUBLISHED ROUNDING PRECISION (<= 0.05%)"
+  },
+  {
+    "calendar_year": 2024,
+    "reconciliation_tier": "PUCSL_DISPATCH_TELEMETRY_DAILY",
+    "calculated_constituent_sum": 46308.0,
+    "published_control_total": 48223.0,
+    "measurement_unit": "MWh",
+    "variance_magnitude": 1915.0,
+    "variance_pct": 3.971,
+    "audit_status": "EXPLAINED SCOPE: UNTELEMETERED SOLAR/MINI-HYDRO (4.2%)"
+  }
+]

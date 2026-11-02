@@ -1,0 +1,31 @@
+plant_name,energy_category,fuel_type,min_dispatched_mw,peak_dispatched_mw,mean_dispatched_mw,stddev_dispatched_mw,coefficient_of_variation,operational_load_factor_pct,online_duty_cycle_pct,operational_behavior_class,baseload_stability_rank
+Lakvijaya Unit 2,Thermal Coal,Bituminous Coal,197.00,274.00,267.44,10.52,0.039,97.6,100.0,CONTINUOUS BASELOAD,1
+Lakvijaya Unit 1,Thermal Coal,Bituminous Coal,190.00,278.00,266.77,13.42,0.050,96.0,100.0,CONTINUOUS BASELOAD,2
+Lakvijaya Unit 3,Thermal Coal,Bituminous Coal,128.00,281.00,266.23,21.71,0.082,94.7,100.0,CONTINUOUS BASELOAD,3
+Kelanitissa Combined Cycle,Thermal Oil,Fuel Oil / Diesel / Naphtha,76.00,153.00,136.01,20.92,0.154,88.9,100.0,CONTINUOUS BASELOAD,4
+Sapugaskanda Diesel B,Thermal Oil,Fuel Oil / Diesel / Naphtha,27.00,64.00,47.86,8.47,0.177,74.8,100.0,CONTINUOUS BASELOAD,5
+Sapugaskanda Diesel A,Thermal Oil,Fuel Oil / Diesel / Naphtha,22.00,66.00,52.97,10.51,0.198,80.3,100.0,CONTINUOUS BASELOAD,6
+Mini Hydro (Reported Aggregate),Hydro,Small Run-of-River Hydro,23.00,96.00,54.19,11.55,0.213,56.4,100.0,CONTINUOUS BASELOAD,7
+West Coast (Yugadanavi),Thermal Oil,Fuel Oil / Diesel / Naphtha,0.00,289.00,221.32,77.24,0.349,76.6,96.0,MID-MERIT / LOAD FOLLOWING,8
+New Laxapana,Hydro,Reservoir & Pondage Hydro,0.00,101.00,66.25,24.62,0.372,65.6,98.7,MID-MERIT / LOAD FOLLOWING,9
+Polpitiya,Hydro,Reservoir & Pondage Hydro,6.00,87.00,40.67,16.79,0.413,46.7,100.0,MID-MERIT / LOAD FOLLOWING,10
+Colombo Harbour Barge-Mounted Plant,Thermal Oil,Fuel Oil / Diesel / Naphtha,0.00,60.00,44.37,23.22,0.523,74.0,81.9,MID-MERIT / LOAD FOLLOWING,11
+Old Laxapana,Hydro,Reservoir & Pondage Hydro,9.00,41.00,19.05,10.58,0.555,46.5,100.0,MID-MERIT / LOAD FOLLOWING,12
+Victoria,Hydro,Reservoir & Pondage Hydro,0.00,220.00,80.11,46.50,0.580,36.4,96.2,MID-MERIT / LOAD FOLLOWING,13
+Uthuru Janani Power Station,Thermal Oil,Fuel Oil / Diesel / Naphtha,0.00,24.00,15.04,9.17,0.610,62.7,78.1,MID-MERIT / LOAD FOLLOWING,14
+Samanalawewa,Hydro,Reservoir & Pondage Hydro,0.00,122.00,67.21,42.42,0.631,55.1,89.2,MID-MERIT / LOAD FOLLOWING,15
+Canyon,Hydro,Reservoir & Pondage Hydro,0.00,45.00,21.50,14.05,0.653,47.8,85.1,CYCLICAL PEAKING,16
+SPP Wind (Reported Aggregate),Wind,Onshore Wind,0.00,116.00,26.68,18.29,0.686,23.0,99.4,VARIABLE / INTERMITTENT,17
+Broadlands,Hydro,Reservoir & Pondage Hydro,0.00,29.00,7.30,6.03,0.826,25.2,64.7,CYCLICAL PEAKING,18
+Rantambe,Hydro,Reservoir & Pondage Hydro,0.00,51.00,15.54,14.25,0.917,30.5,67.5,CYCLICAL PEAKING,19
+Randenigala,Hydro,Reservoir & Pondage Hydro,0.00,123.00,35.52,39.33,1.107,28.9,52.0,CYCLICAL PEAKING,20
+Wimalasurendra,Hydro,Reservoir & Pondage Hydro,0.00,49.00,7.75,8.81,1.137,15.8,56.0,CYCLICAL PEAKING,21
+Solar PV (Reported Aggregate),Solar,Ground-Mounted Solar PV,0.00,118.00,30.70,39.34,1.281,26.0,49.2,CYCLICAL PEAKING,22
+Ukuwela,Hydro,Reservoir & Pondage Hydro,0.00,38.00,9.93,13.14,1.323,26.1,40.0,CYCLICAL PEAKING,23
+Kotmale,Hydro,Reservoir & Pondage Hydro,0.00,162.00,24.55,33.64,1.370,15.2,43.8,CYCLICAL PEAKING,24
+Kukule Ganga,Hydro,Reservoir & Pondage Hydro,0.00,79.00,11.16,18.77,1.682,14.1,29.6,CYCLICAL PEAKING,25
+Upper Kotmale,Hydro,Reservoir & Pondage Hydro,0.00,140.00,12.21,23.74,1.944,8.7,23.7,CYCLICAL PEAKING,26
+Uma Oya,Hydro,Reservoir & Pondage Hydro,0.00,124.00,11.35,28.92,2.548,9.2,16.0,CYCLICAL PEAKING,27
+Bowatenna,Hydro,Reservoir & Pondage Hydro,0.00,39.00,2.16,7.44,3.444,5.5,8.5,CYCLICAL PEAKING,28
+Ace Power Embilipitiya,Thermal Oil,Fuel Oil / Diesel / Naphtha,0.00,92.00,2.50,13.68,5.472,2.7,3.8,CYCLICAL PEAKING,29
+Kelanitissa Combined Cycle Stage 2,Thermal Oil,Fuel Oil / Diesel / Naphtha,0.00,151.00,0.99,10.61,10.717,0.7,1.2,CYCLICAL PEAKING,30
