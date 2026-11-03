@@ -14,6 +14,7 @@ export interface QueryDefinition {
   primaryMetric: string;
   period: string;
   chartType: "donut" | "line" | "bar" | "grouped-bar" | "scatter" | "table" | "area";
+  olapTechnique: string;
 }
 
 export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
@@ -33,6 +34,7 @@ export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
     primaryMetric: "Energy Generated (MWh) & Percentage Share (%)",
     period: "March 2024 (PUCSL Dispatch)",
     chartType: "donut",
+    olapTechnique: "Window Aggregation: SUM(dispatch_mw * 0.25) with Window Grand Total Share OVER ()",
   },
   Q02: {
     id: "Q02",
@@ -50,6 +52,7 @@ export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
     primaryMetric: "Daily Renewable Share (%) & 7-Day MA (%)",
     period: "March 2024",
     chartType: "line",
+    olapTechnique: "Window Framing: AVG(share) OVER (ORDER BY date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW)",
   },
   Q03: {
     id: "Q03",
@@ -67,6 +70,7 @@ export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
     primaryMetric: "Capacity Factor (%) & Total Generation (MWh)",
     period: "March 2024 (744 hours)",
     chartType: "bar",
+    olapTechnique: "Derived Metric: Integrated Energy (MWh) / (Nameplate MW * 744 Operating Hours)",
   },
   Q04: {
     id: "Q04",
@@ -84,6 +88,7 @@ export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
     primaryMetric: "Energy (MWh) by TOU Tariff Window",
     period: "March 2024",
     chartType: "grouped-bar",
+    olapTechnique: "Conditional Pivoting: FILTER (WHERE interval_tou = ...) across Day/Peak/Off-Peak buckets",
   },
   Q05: {
     id: "Q05",
@@ -101,6 +106,7 @@ export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
     primaryMetric: "Average Active Power Demand (MW)",
     period: "March 2024 (96 intervals / day)",
     chartType: "line",
+    olapTechnique: "Diurnal Matrix: 96-Interval Grouped Averages across Weekday vs Weekend partitions",
   },
   Q06: {
     id: "Q06",
@@ -118,6 +124,7 @@ export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
     primaryMetric: "Max Ramp Up/Down (MW/15min)",
     period: "March 2024",
     chartType: "bar",
+    olapTechnique: "Window Function: dispatch_mw - LAG(dispatch_mw, 1) OVER (PARTITION BY plant_id ORDER BY interval_timestamp)",
   },
   Q07: {
     id: "Q07",
@@ -135,6 +142,7 @@ export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
     primaryMetric: "Mean MW, StdDev MW & Coefficient of Variation (%)",
     period: "March 2024",
     chartType: "table",
+    olapTechnique: "Statistical Profiling: STDDEV(dispatch_mw) / AVG(dispatch_mw) Coefficient of Variation (CV)",
   },
   Q08: {
     id: "Q08",
@@ -152,6 +160,7 @@ export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
     primaryMetric: "Integrated MWh vs Log Sheet MWh & Delta (%)",
     period: "March 2024",
     chartType: "table",
+    olapTechnique: "Reconciliation Aggregation: SUM(dispatch_mw * 0.25) vs Published Daily Control Log",
   },
   Q09: {
     id: "Q09",
@@ -169,6 +178,7 @@ export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
     primaryMetric: "Billed Electricity Sales (GWh)",
     period: "2020–2024 (5 Years Historical CEB Sales)",
     chartType: "grouped-bar",
+    olapTechnique: "Cross-Sectoral Historical Matrix: Multi-year SUM(sales_gwh) by Consumer Sector Classification",
   },
   Q10: {
     id: "Q10",
@@ -186,6 +196,7 @@ export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
     primaryMetric: "Hotel Sales (GWh) & YoY Growth (+83.94%)",
     period: "2020–2024",
     chartType: "line",
+    olapTechnique: "Window Function: (sales - LAG(sales) OVER (ORDER BY year)) / LAG(sales) YoY Growth Rate",
   },
   Q11: {
     id: "Q11",
@@ -203,6 +214,7 @@ export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
     primaryMetric: "Average Monthly Consumption (kWh/customer/mo)",
     period: "2020–2024",
     chartType: "bar",
+    olapTechnique: "Consumer Intensity Metric: (sales_gwh * 1e6) / (customer_count * 12 months)",
   },
   Q12: {
     id: "Q12",
@@ -220,6 +232,7 @@ export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
     primaryMetric: "LECO Bulk Supply Sales (GWh) & Market Share (%)",
     period: "2020–2024",
     chartType: "line",
+    olapTechnique: "Market Share Ratio: LECO Bulk Sales / Total National Generation & Retail Demand",
   },
   Q13: {
     id: "Q13",
@@ -237,6 +250,7 @@ export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
     primaryMetric: "Peak Sun Hours (PSH / day) & Insolation (kWh/m²/day)",
     period: "2020–2024 (NASA POWER)",
     chartType: "grouped-bar",
+    olapTechnique: "Insolation Integration: Surface Solar Irradiance (MJ/m²/day) converted to Peak Sun Hours (PSH)",
   },
   Q14: {
     id: "Q14",
@@ -254,6 +268,7 @@ export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
     primaryMetric: "Max Temperature (°C) vs Daily Dispatch (GWh)",
     period: "March 2024",
     chartType: "scatter",
+    olapTechnique: "Cross-Fact Statistical Correlation: CORR(max_temperature_c, daily_dispatch_gwh)",
   },
   Q15: {
     id: "Q15",
@@ -271,6 +286,7 @@ export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
     primaryMetric: "Total Monthly Rainfall (mm) & CUBE Aggregations",
     period: "2020–2024",
     chartType: "table",
+    olapTechnique: "Advanced Multi-Dimensional OLAP: GROUP BY CUBE (calendar_year, monsoon_season, location_name)",
   },
   Q16: {
     id: "Q16",
@@ -288,6 +304,7 @@ export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
     primaryMetric: "50m Wind Speed (m/s) vs Dispatched Power (MW)",
     period: "March 2024",
     chartType: "line",
+    olapTechnique: "Cross-Domain Telemetry Join: 50m Wind Speed joined with Dispatched Wind Park Active MW",
   },
   Q17: {
     id: "Q17",
@@ -305,6 +322,7 @@ export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
     primaryMetric: "Zero-Dispatch Interval Count & Availability Rate (%)",
     period: "March 2024 (2,976 intervals total)",
     chartType: "bar",
+    olapTechnique: "Availability Accounting: COUNT(CASE WHEN dispatch_mw = 0 THEN 1 END) Outage Tracking",
   },
   Q18: {
     id: "Q18",
@@ -322,6 +340,7 @@ export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
     primaryMetric: "Peak Observed Dispatch (MW) vs Nameplate (MW) & Ratio (%)",
     period: "March 2024",
     chartType: "table",
+    olapTechnique: "Capacity Utilization Ratio: MAX(dispatch_mw) / nameplate_capacity_mw Operating Headroom",
   },
   Q19: {
     id: "Q19",
@@ -339,6 +358,7 @@ export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
     primaryMetric: "Lakvijaya Daily Energy (MWh) & Total Generation Share",
     period: "March 2024 (595,524.5 MWh total)",
     chartType: "area",
+    olapTechnique: "Baseload Integrity Tracking: Station-level 24-Hour Continuous Dispatch Profile & Minimum Basal MW",
   },
   Q20: {
     id: "Q20",
@@ -356,6 +376,7 @@ export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
     primaryMetric: "Evening Peak Dispatched Power (MW)",
     period: "March 2024",
     chartType: "grouped-bar",
+    olapTechnique: "Merit-Order Window Analysis: Time-Series Aggregation filtered to Evening Peak (18:30–22:30)",
   },
   Q21: {
     id: "Q21",
@@ -373,6 +394,7 @@ export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
     primaryMetric: "Productive vs Non-Productive Sales (GWh) & Share (%)",
     period: "2020–2024 (GROUPING SETS)",
     chartType: "grouped-bar",
+    olapTechnique: "Advanced OLAP: GROUP BY GROUPING SETS ((reporting_year, economic_sector_class), (reporting_year), ())",
   },
   Q22: {
     id: "Q22",
@@ -390,6 +412,7 @@ export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
     primaryMetric: "Variance Magnitude & Variance Share (%)",
     period: "2020–2024 Sales & March 1, 2024 Dispatch",
     chartType: "table",
+    olapTechnique: "Multi-Tier Audit Ledger: Cross-Source Reconciliations with Variance Magnitude & Tolerances",
   },
   Q23: {
     id: "Q23",
@@ -407,6 +430,7 @@ export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
     primaryMetric: "Quarantined Rows Count (879 entity, 47 negative power)",
     period: "Ingestion Quarantine Audit",
     chartType: "donut",
+    olapTechnique: "Advanced OLAP: GROUP BY GROUPING SETS ((dq_rule_code, issue_classification), (dq_rule_code), ())",
   },
   Q24: {
     id: "Q24",
@@ -424,6 +448,7 @@ export const QUERY_REGISTRY: Record<string, QueryDefinition> = {
     primaryMetric: "Records Inserted, Duration (sec) & Success Status",
     period: "Warehouse Ingestion History",
     chartType: "table",
+    olapTechnique: "Audit Provenance Traceability: ETL Log Verification with Duration, Rows Promoted, and Success Flags",
   },
 };
 

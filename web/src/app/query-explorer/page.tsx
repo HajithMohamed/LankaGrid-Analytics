@@ -122,84 +122,74 @@ export default function QueryExplorerPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Interactive SQL & Semantic Layer"
-        title="Warehouse Query Explorer"
+        eyebrow="Academic OLAP & Semantic Intelligence"
+        title="Query & Analytics Explorer"
         titleAccent="."
-        description="Execute and inspect all 24 authoritative business analytical SQL queries or explore governed measures and dimensions."
-        onExportCsv={() => window.open(`/api/exports/${selectedId}`, "_blank")}
+        description="Inspect all 24 team SQL queries across six analytical domains, verify Kimball fact/dimension grains, and query controlled semantic metrics."
       >
+        {/* Tab switcher: SQL Registry vs Semantic Query */}
         <div className="inline-flex rounded-lg border border-[#E2E7EE] p-0.5 bg-[#F8F9FB]">
           <button
             type="button"
             onClick={() => setExplorerTab("sql")}
-            className={`px-3.5 py-1.5 rounded-md text-[12px] font-bold transition-all ${
+            className={`px-3 py-1.5 rounded-md text-[12px] font-semibold transition-colors flex items-center gap-1.5 ${
               explorerTab === "sql"
                 ? "bg-white text-[#19222D] shadow-sm"
                 : "text-[#748091] hover:text-[#19222D]"
             }`}
           >
-            Predefined SQL (Q01–Q24)
+            <Database size={13} />
+            <span>24 SQL Queries</span>
           </button>
           <button
             type="button"
             onClick={() => setExplorerTab("semantic")}
-            className={`px-3.5 py-1.5 rounded-md text-[12px] font-bold transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-md text-[12px] font-semibold transition-colors flex items-center gap-1.5 ${
               explorerTab === "semantic"
                 ? "bg-white text-[#19222D] shadow-sm"
                 : "text-[#748091] hover:text-[#19222D]"
             }`}
           >
             <Sparkles size={13} className="text-[#E9A43B]" />
-            <span>Measures &amp; Dimensions</span>
+            <span>Semantic Layer (Governed)</span>
           </button>
         </div>
       </PageHeader>
 
       {explorerTab === "sql" ? (
-        <>
-          {/* Query Selector Tabs by Member */}
-          <div className="space-y-3">
-            <div className="text-[11px] font-extrabold uppercase tracking-wider text-[#9AA5B0]">
-              Select Query by Research Domain:
+        <div className="space-y-6">
+          {/* Domain Query Selector Bar */}
+          <div className="card-glass p-5">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-[#9AA5B0] mb-3">
+              Select Analytical Query by Research Domain
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {MEMBER_DOMAINS.map((domain) => (
                 <div
                   key={domain.member}
-                  className="card-glass p-3.5 flex flex-col justify-between"
+                  className="p-3 rounded-lg bg-[#F8F9FB] border border-[#E7EBF0]"
                 >
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span
-                        className="text-[11px] font-bold px-2 py-0.5 rounded"
-                        style={{
-                          backgroundColor: `${domain.color}15`,
-                          color: domain.color,
-                        }}
-                      >
-                        {domain.member}
-                      </span>
-                      <span className="text-[11px] font-semibold text-[#86919E]">
-                        {domain.name}
-                      </span>
-                    </div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[11px] font-bold text-[#19222D]">
+                      {domain.member}: {domain.name}
+                    </span>
+                    <span
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: domain.color }}
+                    />
                   </div>
-
-                  <div className="flex flex-wrap gap-1.5 mt-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {domain.queries.map((qId) => {
                       const isSelected = selectedId === qId;
                       return (
                         <button
                           key={qId}
                           type="button"
-                          onClick={() => {
-                            setSelectedId(qId);
-                            setViewMode("table");
-                          }}
-                          className={`px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all duration-150 ${
+                          onClick={() => setSelectedId(qId)}
+                          className={`px-2.5 py-1 rounded text-[11px] font-bold font-mono transition-colors ${
                             isSelected
                               ? "bg-[#19222D] text-white shadow-sm"
-                              : "bg-[#F8F9FB] border border-[#E7EBF0] text-[#465469] hover:bg-[#F0F3F7] hover:text-[#19222D]"
+                              : "bg-white border border-[#E7EBF0] text-[#465469] hover:bg-[#F0F3F7] hover:text-[#19222D]"
                           }`}
                         >
                           {qId}
@@ -296,7 +286,7 @@ export default function QueryExplorerPage() {
               </div>
               <div>
                 <div className="text-[10px] font-bold uppercase tracking-wider text-[#9AA5B0]">
-                  Data Source
+                  Execution Mode
                 </div>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span
@@ -318,8 +308,24 @@ export default function QueryExplorerPage() {
               </div>
             </div>
 
+            {/* Academic OLAP Technique Banner */}
+            <div className="py-3 px-4 my-4 rounded-[10px] bg-[#F8F9FB] border border-[#E7EBF0] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[12px]">
+              <div className="flex items-start sm:items-center gap-2">
+                <span className="px-2 py-0.5 rounded-[5px] bg-[#19222D] text-white text-[10px] font-bold tracking-wider uppercase shrink-0">
+                  OLAP Technique
+                </span>
+                <span className="font-semibold text-[#19222D]">
+                  {activeDef.olapTechnique}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 text-[11px] text-[#748091] shrink-0">
+                <Layers size={13} className="text-[#4278B9]" />
+                <span>Dimensions: {activeDef.dimensions.join(", ")}</span>
+              </div>
+            </div>
+
             {/* Content Body: Table or SQL Text */}
-            <div className="pt-4">
+            <div>
               {viewMode === "sql" ? (
                 <div className="relative">
                   <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#E7EBF0]">
@@ -349,117 +355,215 @@ export default function QueryExplorerPage() {
                   subtitle={`Showing ${queryResult.rowCount} rows returned`}
                   badge={activeDef.period}
                   data={queryResult.data}
-                  filename={`gridlens-${selectedId}.csv`}
+                  filename={`gridlens-${selectedId}-dataset.csv`}
                 />
               ) : (
                 <div className="py-16 text-center text-[#9AA5B0]">
-                  No rows returned for {selectedId}.
+                  No records returned for query {selectedId}.
                 </div>
               )}
             </div>
           </div>
-        </>
+        </div>
       ) : (
-        /* Controlled Semantic Layer Explorer */
-        <div className="card-glass p-6 space-y-6">
-          <div>
-            <div className="flex items-center gap-2">
-              <Sparkles size={20} className="text-[#E9A43B]" />
-              <h2 className="text-[20px] font-bold text-[#19222D] tracking-[-0.5px] m-0">
-                Controlled Semantic Layer &amp; Ad-Hoc Explorer
-              </h2>
-            </div>
-            <p className="text-[13px] text-[#637185] mt-1 m-0">
-              Select an approved analytical measure and dimension. The semantic engine validates fact grain compatibility and enforces safe aggregation without permitting arbitrary SQL injection.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl bg-[#F8F9FB] border border-[#E7EBF0]">
-            <div>
-              <label className="block text-[12px] font-bold text-[#19222D] mb-1.5">
-                Analytical Measure:
-              </label>
-              <select
-                value={selectedMeasure}
-                onChange={(e) => setSelectedMeasure(e.target.value)}
-                className="w-full h-[40px] px-3 rounded-lg bg-white border border-[#E2E7EE] text-[13px] font-semibold text-[#19222D] outline-none"
-              >
-                {Object.values(SEMANTIC_MEASURES).map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name} ({m.unit}) — {m.defaultAggregation}
-                  </option>
-                ))}
-              </select>
-              <p className="text-[11px] text-[#748091] mt-1 m-0">
-                {SEMANTIC_MEASURES[selectedMeasure]?.description}
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-[12px] font-bold text-[#19222D] mb-1.5">
-                Conformed Dimension:
-              </label>
-              <select
-                value={selectedDimension}
-                onChange={(e) => setSelectedDimension(e.target.value)}
-                className="w-full h-[40px] px-3 rounded-lg bg-white border border-[#E2E7EE] text-[13px] font-semibold text-[#19222D] outline-none"
-              >
-                {Object.values(SEMANTIC_DIMENSIONS).map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name} ({d.dimensionTable})
-                  </option>
-                ))}
-              </select>
-              <p className="text-[11px] text-[#748091] mt-1 m-0">
-                Conformed dimension table: <code>dw.{SEMANTIC_DIMENSIONS[selectedDimension]?.dimensionTable}</code>
-              </p>
-            </div>
-          </div>
-
-          {/* Grain Compatibility Banner */}
-          <div className="flex items-center justify-between p-3.5 rounded-lg border text-[12px]">
-            {grainValidation.compatible ? (
-              <div className="flex items-center gap-2 text-[#177763]">
-                <ShieldCheck size={16} />
-                <span className="font-semibold">
-                  Grain Compatible: Safe aggregation across conformed dimension and fact grains.
-                </span>
+        /* Governed Semantic Layer */
+        <div className="space-y-6">
+          <div className="card-glass p-6">
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Sparkles size={16} className="text-[#E9A43B]" />
+                  <h2 className="text-[18px] font-bold text-[#19222D] tracking-[-0.45px] m-0">
+                    Governed Power BI-Style Semantic Modeling
+                  </h2>
+                </div>
+                <p className="text-[13px] text-[#64748B] mt-1 m-0">
+                  Select a standardized business measure and dimension. The semantic layer validates dimensional grain compatibility and enforces physical unit safety (MW rate vs MWh energy).
+                </p>
               </div>
-            ) : (
-              <div className="flex items-center gap-2 text-[#B03A2E]">
-                <ShieldAlert size={16} />
-                <span className="font-semibold">
-                  Grain Incompatibility: {grainValidation.reason}
-                </span>
+              <span className="text-[11px] font-bold text-[#177763] px-2.5 py-1 border border-[#229C88]/30 rounded-[7px] bg-[#E8F6F2]">
+                Strictly Governed
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
+              {/* Measure Selection */}
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-[#748091] mb-2">
+                  Business Measure
+                </label>
+                <div className="space-y-2">
+                  {Object.values(SEMANTIC_MEASURES).map((m) => (
+                    <label
+                      key={m.id}
+                      className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                        selectedMeasure === m.id
+                          ? "bg-[#FFF6E8] border-[#E9A43B]"
+                          : "bg-white border-[#E2E7EE] hover:bg-[#F8F9FB]"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="measure"
+                        value={m.id}
+                        checked={selectedMeasure === m.id}
+                        onChange={(e) => setSelectedMeasure(e.target.value)}
+                        className="mt-1 accent-[#E9A43B]"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[13px] font-bold text-[#19222D]">
+                            {m.name}
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-white text-[#748091] border border-[#E7EBF0]">
+                            {m.unit}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-[#64748B] mt-0.5 m-0">
+                          {m.description}
+                        </p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Dimension Selection */}
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-[#748091] mb-2">
+                  Analysis Dimension
+                </label>
+                <div className="space-y-2">
+                  {Object.values(SEMANTIC_DIMENSIONS).map((d) => (
+                    <label
+                      key={d.id}
+                      className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                        selectedDimension === d.id
+                          ? "bg-[#EAF2FA] border-[#4278B9]"
+                          : "bg-white border-[#E2E7EE] hover:bg-[#F8F9FB]"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="dimension"
+                        value={d.id}
+                        checked={selectedDimension === d.id}
+                        onChange={(e) => setSelectedDimension(e.target.value)}
+                        className="mt-1 accent-[#4278B9]"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[13px] font-bold text-[#19222D]">
+                            {d.name}
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-mono text-[#64748B] bg-white border border-[#E7EBF0]">
+                            {d.dimensionTable}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-[#64748B] mt-0.5 m-0">
+                          {d.allowedValues ? `${d.allowedValues.length} allowed categories (${d.allowedValues.slice(0, 3).join(", ")}...)` : "Promoted dimensional entities"}
+                        </p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Grain Compatibility & Execution Trigger */}
+            <div className="p-4 rounded-lg bg-[#F8F9FB] border border-[#E7EBF0] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-2 text-[12px]">
+                {grainValidation.compatible ? (
+                  <>
+                    <ShieldCheck size={18} className="text-[#229C88]" />
+                    <span className="font-semibold text-[#19222D]">
+                      Valid Kimball grain combination: {grainValidation.reason}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldAlert size={18} className="text-[#D65F62]" />
+                    <span className="font-semibold text-[#D65F62]">
+                      Invalid grain pairing: {grainValidation.reason}
+                    </span>
+                  </>
+                )}
+              </div>
+
+              <button
+                type="button"
+                disabled={!grainValidation.compatible || semanticLoading}
+                onClick={handleRunSemanticQuery}
+                className="h-[38px] px-5 rounded-[8px] bg-[#19222D] hover:bg-[#303C4A] disabled:opacity-40 text-white text-[12px] font-bold inline-flex items-center gap-2 transition-colors cursor-pointer"
+              >
+                {semanticLoading ? (
+                  <span>Aggregating...</span>
+                ) : (
+                  <>
+                    <Search size={14} />
+                    <span>Run Semantic Aggregation</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Semantic Result Display */}
+            {semanticResult && (
+              <div className="mt-6 pt-6 border-t border-[#EEF1F4]">
+                {semanticResult.success ? (
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <h3 className="text-[15px] font-bold text-[#19222D] m-0">
+                          {semanticResult.measure} by {semanticResult.dimension}
+                        </h3>
+                        <p className="text-[11px] text-[#86919E] mt-0.5 m-0">
+                          Standardized Unit: {semanticResult.unit} · Promoted via {semanticResult.sourceQuery}
+                        </p>
+                      </div>
+                      <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-[#E8F6F2] text-[#177763]">
+                        {semanticResult.results.length} Categories
+                      </span>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-[13px] border-collapse">
+                        <thead>
+                          <tr className="border-b border-[#E7EBF0] bg-[#F8F9FB] text-[11px] font-bold uppercase tracking-wider text-[#64748B]">
+                            <th className="py-2.5 px-3">Category</th>
+                            <th className="py-2.5 px-3 text-right">Measure Value</th>
+                            <th className="py-2.5 px-3 text-right">Unit</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#EEF1F4]">
+                          {semanticResult.results.map((row, idx) => (
+                            <tr key={idx} className="hover:bg-[#F9FBFD]">
+                              <td className="py-2.5 px-3 font-semibold text-[#19222D]">
+                                {row.dimension}
+                              </td>
+                              <td className="py-2.5 px-3 text-right font-mono font-bold text-[#19222D]">
+                                {row.measure.toLocaleString("en-US", {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
+                              </td>
+                              <td className="py-2.5 px-3 text-right text-[11px] text-[#748091] font-mono">
+                                {row.unit}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-3 rounded-lg bg-[#FDEDEC] text-[#B03A2E] text-[12px]">
+                    Semantic aggregation error: {semanticResult.error}
+                  </div>
+                )}
               </div>
             )}
-
-            <button
-              type="button"
-              disabled={!grainValidation.compatible || semanticLoading}
-              onClick={handleRunSemanticQuery}
-              className={`px-4 py-2 rounded-lg text-[12px] font-bold transition-all ${
-                grainValidation.compatible
-                  ? "bg-[#19222D] text-white hover:bg-[#2A374A] shadow-sm cursor-pointer"
-                  : "bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed"
-              }`}
-            >
-              {semanticLoading ? "Aggregating..." : "Execute Governed Aggregation"}
-            </button>
           </div>
-
-          {/* Semantic Query Results Display */}
-          {semanticResult && semanticResult.results && (
-            <div className="pt-2">
-              <DataTable
-                title={`${semanticResult.measure} by ${semanticResult.dimension}`}
-                subtitle={`Source Query: ${semanticResult.sourceQuery} · Unit: ${semanticResult.unit}`}
-                badge={`Semantic Layer · ${semanticResult.sourceMode || "Snapshot"}`}
-                data={semanticResult.results}
-                filename={`gridlens-semantic-${selectedMeasure}-${selectedDimension}.csv`}
-              />
-            </div>
-          )}
         </div>
       )}
     </div>

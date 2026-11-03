@@ -8,7 +8,7 @@ import { GenerationDonutChart } from "@/components/charts/generation-donut-chart
 import { CoverageIndicator } from "@/components/dashboard/coverage-indicator";
 import { DataTable, ColumnDef } from "@/components/tables/data-table";
 import { toNumeric } from "@/lib/formatting/units";
-import { Calendar, ShieldCheck, FilterX } from "lucide-react";
+import { Calendar, ShieldCheck, RotateCcw } from "lucide-react";
 
 interface SalesRecord {
   year: number;
@@ -53,22 +53,30 @@ export default function OverviewPage() {
           if (q01Res.sourceMode) setSourceMode(q01Res.sourceMode);
         }
         if (q21Res.success && Array.isArray(q21Res.data) && q21Res.data.length > 0) {
-          // Parse Q21 GROUPING SETS into yearly sales records
-          const yearMap = new Map<number, { total: number; productive: number; residential: number }>();
+          // Parse Q21 GROUPING SETS into yearly sales records without double-counting subtotals
+          const yearMap = new Map<number, { total: number; productive: number; residential: number; share: number }>();
+          
           q21Res.data.forEach((r: Record<string, unknown>) => {
-            const yr = Number(r.calendar_year);
-            if (!yr) return;
-            const current = yearMap.get(yr) || { total: 0, productive: 0, residential: 0 };
-            const mwh = toNumeric(r.total_sales_gwh as string | number | null | undefined) || 0;
-            const classification = String(r.economic_classification || "").toUpperCase();
+            const yr = Number(r.reporting_year || r.calendar_year);
+            if (!yr || isNaN(yr)) return;
 
-            if (classification.includes("PRODUCTIVE")) {
-              current.productive += mwh;
-            } else if (classification.includes("RESIDENTIAL") || classification.includes("DOMESTIC")) {
-              current.residential += mwh;
-            }
-            if (classification.includes("TOTAL") || r.sector_code === "ALL") {
-              current.total = mwh;
+            const grpYear = Number(r.grp_year ?? 0);
+            const grpClass = Number(r.grp_class ?? 0);
+            const current = yearMap.get(yr) || { total: 0, productive: 0, residential: 0, share: 0 };
+            const gwh = toNumeric(r.total_sales_gwh as string | number | null | undefined) || 0;
+            const classification = String(r.economic_sector_class || r.economic_classification || "").toUpperCase();
+
+            // Handle annual subtotal rows (grp_class === 1)
+            if (grpYear === 0 && grpClass === 1) {
+              current.total = gwh;
+            } else if (grpYear === 0 && grpClass === 0) {
+              // Detail rows (grp_class === 0)
+              if (classification.includes("PRODUCTIVE")) {
+                current.productive = gwh;
+                current.share = toNumeric(r.annual_share_pct as string | number | null | undefined) || 0;
+              } else if (classification.includes("RESIDENTIAL") || classification.includes("DOMESTIC")) {
+                current.residential = gwh;
+              }
             }
             yearMap.set(yr, current);
           });
@@ -76,13 +84,17 @@ export default function OverviewPage() {
           if (yearMap.size >= 5) {
             const parsed = Array.from(yearMap.entries())
               .sort(([a], [b]) => a - b)
-              .map(([year, val]) => ({
-                year,
-                total_sales: val.total || (val.productive + val.residential),
-                productive_sector: val.productive,
-                residential: val.residential,
-                productive_share: val.total > 0 ? (val.productive / val.total) * 100 : 50,
-              }));
+              .map(([year, val]) => {
+                const total = val.total > 0 ? val.total : (val.productive + val.residential);
+                const share = val.share > 0 ? val.share : (total > 0 ? (val.productive / total) * 100 : 50);
+                return {
+                  year,
+                  total_sales: total,
+                  productive_sector: val.productive,
+                  residential: val.residential,
+                  productive_share: share,
+                };
+              });
             setSalesRecords(parsed);
           }
         }
@@ -94,7 +106,7 @@ export default function OverviewPage() {
       });
   }, []);
 
-  // Compute dynamic KPIs
+  // Compute dynamic KPIs synchronized with selected year
   const kpis = useMemo(() => {
     let coalMWh = 595524.5;
     let oilMWh = 387450.75;
@@ -109,16 +121,35 @@ export default function OverviewPage() {
     const hydro = generationData.find((g) => g.energy_category?.toLowerCase().includes("hydro"));
     if (hydro) hydroMWh = toNumeric(hydro.total_energy_mwh) || hydroMWh;
 
-    const latestYearRecord = salesRecords.find((r) => r.year === 2024) || salesRecords[salesRecords.length - 1];
-    const latestSales = latestYearRecord ? latestYearRecord.total_sales : 15190.5;
+    // Determine sales KPI dynamically based on selectedYear
+    let activeSales = 15190.5;
+    let salesLabel = "2024 billed electricity sales";
+    let salesPeriod = "Calendar year 2024";
+
+    if (selectedYear === "all") {
+      const rec2024 = salesRecords.find((r) => r.year === 2024);
+      activeSales = rec2024 ? rec2024.total_sales : 15190.5;
+      salesLabel = "2024 billed electricity sales (Latest)";
+      salesPeriod = "Calendar year 2024 (5-Yr Total: 73,365 GWh)";
+    } else {
+      const parsedYear = Number(selectedYear);
+      const rec = salesRecords.find((r) => r.year === parsedYear);
+      if (rec) {
+        activeSales = rec.total_sales;
+        salesLabel = `${selectedYear} billed electricity sales`;
+        salesPeriod = `Calendar year ${selectedYear} (CEB Audited)`;
+      }
+    }
 
     return {
       coalMWh,
       oilMWh,
       hydroMWh,
-      latestSales,
+      activeSales,
+      salesLabel,
+      salesPeriod,
     };
-  }, [generationData, salesRecords]);
+  }, [generationData, salesRecords, selectedYear]);
 
   const filteredSales = useMemo(() => {
     return selectedYear === "all"
@@ -206,7 +237,7 @@ export default function OverviewPage() {
         description="Explore Sri Lanka’s electricity generation, sectoral sales and data coverage. Built from historical CEB, PUCSL and NASA POWER observations."
         onExportCsv={handleExportCsv}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span
             className={`px-2.5 py-1 rounded-[8px] text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 ${
               sourceMode === "live"
@@ -227,7 +258,7 @@ export default function OverviewPage() {
               onChange={(e) => setSelectedYear(e.target.value)}
               className="bg-transparent border-none text-[#19222D] font-bold text-[12px] cursor-pointer outline-none ml-1"
             >
-              <option value="all">2020–2024</option>
+              <option value="all">2020–2024 (All)</option>
               <option value="2020">2020</option>
               <option value="2021">2021</option>
               <option value="2022">2022</option>
@@ -235,6 +266,17 @@ export default function OverviewPage() {
               <option value="2024">2024</option>
             </select>
           </label>
+
+          {selectedYear !== "all" && (
+            <button
+              onClick={() => setSelectedYear("all")}
+              className="h-[41px] px-3 rounded-[10px] bg-[#F1F3F6] hover:bg-[#E5E8EB] text-[#475467] text-[12px] font-semibold inline-flex items-center gap-1.5 transition-colors border border-[#E2E7EE]"
+              title="Reset year filter to full 5-year timeline"
+            >
+              <RotateCcw size={13} />
+              <span>Reset</span>
+            </button>
+          )}
         </div>
       </PageHeader>
 
@@ -265,10 +307,10 @@ export default function OverviewPage() {
           accentColor="#4278B9"
         />
         <KpiCard
-          name="2024 billed electricity sales"
-          value={kpis.latestSales.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          name={kpis.salesLabel}
+          value={kpis.activeSales.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           unit="GWh"
-          period="Calendar year 2024"
+          period={kpis.salesPeriod}
           sourcePill="CEB"
           accentColor="#229C88"
         />
@@ -277,7 +319,17 @@ export default function OverviewPage() {
       {/* Main Analytical Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         <div className="lg:col-span-8">
-          <SalesTrendChart />
+          <SalesTrendChart
+            data={salesRecords.map((r) => ({
+              year: r.year,
+              total: r.total_sales,
+              productive: r.productive_sector,
+              residential: r.residential,
+              share: r.productive_share,
+            }))}
+            selectedYear={selectedYear}
+            onSelectYear={(yr) => setSelectedYear(yr === selectedYear ? "all" : yr)}
+          />
         </div>
         <div className="lg:col-span-4">
           <GenerationDonutChart />
@@ -287,7 +339,11 @@ export default function OverviewPage() {
       {/* Sector Sales Table */}
       <DataTable
         title="Sales by Economic Sector"
-        subtitle="Five years of sectoral sales and productive-sector contribution (CEB Audited Digests)"
+        subtitle={
+          selectedYear === "all"
+            ? "Five years of sectoral sales and productive-sector contribution (CEB Audited Digests)"
+            : `Audited sectoral sales breakdown for calendar year ${selectedYear} (CEB Audited Digest)`
+        }
         badge="CEB · Q09 & Q21"
         data={filteredSales}
         columns={columns}

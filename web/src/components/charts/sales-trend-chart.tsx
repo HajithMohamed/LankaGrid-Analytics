@@ -195,9 +195,24 @@ export function SalesTrendChart({
           <span className="w-2 h-2 rounded-full bg-[#E9A43B]" />
           <span>Annual billed sales (GWh)</span>
         </div>
-        <div className="ml-auto text-[11px] text-[#A1A9B4]">
-          Click any year point to filter detailed sectoral tables
-        </div>
+        {selectedYear !== "all" ? (
+          <div className="ml-auto flex items-center gap-2">
+            <span className="text-[11px] font-bold text-[#E9A43B] bg-[#FFF6E8] px-2 py-0.5 rounded-[5px]">
+              Filtering by year {selectedYear}
+            </span>
+            <button
+              type="button"
+              onClick={() => onSelectYear && onSelectYear("all")}
+              className="text-[11px] text-[#748091] hover:text-[#19222D] underline cursor-pointer"
+            >
+              Show all years
+            </button>
+          </div>
+        ) : (
+          <div className="ml-auto text-[11px] text-[#A1A9B4]">
+            Click any year point or label to filter detailed sectoral tables
+          </div>
+        )}
       </div>
     </div>
   );

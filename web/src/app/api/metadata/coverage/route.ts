@@ -5,11 +5,11 @@ export async function GET() {
   const startTime = Date.now();
   let dbStatus: "connected" | "offline" = "offline";
   let countSource: "live_postgresql" | "verified_snapshot_manifest" = "verified_snapshot_manifest";
-  const liveTableCounts: Record<string, { schema: string; approxRows: number }> = {};
+  const liveTableCounts: Record<string, { schema: string; tableName: string; approxRows: number }> = {};
   let connectionError: string | null = null;
 
   try {
-    // Query actual implemented warehouse schemas (dw, audit, mart, ref, staging)
+    // Query actual implemented warehouse schemas (dw, audit, mart, staging, ref)
     const res = await executeQuery<{
       schemaname: string;
       relname: string;
@@ -18,7 +18,7 @@ export async function GET() {
       SELECT 
         schemaname, 
         relname, 
-        n_live_tup
+        COALESCE(n_live_tup, 0) AS n_live_tup
       FROM pg_stat_user_tables
       WHERE schemaname IN ('dw', 'audit', 'mart', 'staging', 'ref')
       ORDER BY schemaname, relname;
@@ -27,14 +27,11 @@ export async function GET() {
     dbStatus = "connected";
     countSource = "live_postgresql";
     res.rows.forEach((row) => {
-      const key = `${row.schemaname}.${row.relname}`;
-      liveTableCounts[key] = {
+      // Store strictly by qualified key to prevent double-counting
+      const qualifiedKey = `${row.schemaname}.${row.relname}`;
+      liveTableCounts[qualifiedKey] = {
         schema: row.schemaname,
-        approxRows: Number(row.n_live_tup) || 0,
-      };
-      // Also register by unqualified table name
-      liveTableCounts[row.relname] = {
-        schema: row.schemaname,
+        tableName: row.relname,
         approxRows: Number(row.n_live_tup) || 0,
       };
     });
@@ -44,16 +41,23 @@ export async function GET() {
     connectionError = (dbErr as Error).message;
   }
 
-  // Sum partition table live counts if connected
+  // Calculate dispatch row count without double-counting partitions
   const getDispatchRowCount = (): number => {
     if (dbStatus === "connected") {
-      let total = 0;
+      // Look for child partition rows (fact_dispatch_interval_y2024, etc.)
+      let partitionSum = 0;
       for (const [key, val] of Object.entries(liveTableCounts)) {
-        if (key.startsWith("fact_dispatch_interval") || key.includes(".fact_dispatch_interval")) {
-          total += val.approxRows;
+        if (key.startsWith("dw.fact_dispatch_interval_y")) {
+          partitionSum += val.approxRows;
         }
       }
-      return total > 0 ? total : 107115;
+      if (partitionSum > 0) return partitionSum;
+      
+      // Fallback to parent table if non-partitioned or directly reported
+      const parentCount = liveTableCounts["dw.fact_dispatch_interval"]?.approxRows;
+      if (parentCount && parentCount > 0) return parentCount;
+      
+      return 107115;
     }
     return 107115;
   };
@@ -62,6 +66,7 @@ export async function GET() {
 
   const payload = {
     status: "ok",
+    connected: dbStatus === "connected",
     dbStatus,
     countSource,
     countType: dbStatus === "connected" ? "catalog_statistical_estimate" : "verified_historical_audit",

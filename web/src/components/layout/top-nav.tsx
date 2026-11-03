@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, X, Database } from "lucide-react";
 
 interface TopNavProps {
-  isLive?: boolean;
+  initialLive?: boolean;
 }
 
 const NAV_LINKS = [
@@ -20,9 +20,28 @@ const NAV_LINKS = [
   { name: "Query Explorer", href: "/query-explorer" },
 ];
 
-export function TopNav({ isLive = true }: TopNavProps) {
+export function TopNav({ initialLive = false }: TopNavProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLive, setIsLive] = useState<boolean>(initialLive);
+
+  useEffect(() => {
+    let isCurrent = true;
+    fetch("/api/metadata/coverage")
+      .then((res) => res.json())
+      .then((data) => {
+        if (isCurrent && data) {
+          setIsLive(data.dbStatus === "connected" || Boolean(data.connected));
+        }
+      })
+      .catch(() => {
+        if (isCurrent) setIsLive(false);
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
 
   return (
     <header className="sticky top-0 z-40 h-[76px] bg-white/95 backdrop-blur-md border-b border-[#E7EBF0]">
@@ -86,7 +105,7 @@ export function TopNav({ isLive = true }: TopNavProps) {
               }`}
             />
             <span className="font-medium">
-              {isLive ? "PostgreSQL 18 Connected" : "Historical Snapshot"}
+              {isLive ? "PostgreSQL 18 Connected" : "Historical Snapshot Active"}
             </span>
           </div>
 
@@ -100,44 +119,51 @@ export function TopNav({ isLive = true }: TopNavProps) {
           {/* Mobile menu button */}
           <button
             type="button"
-            className="xl:hidden p-2 rounded-lg text-[#738092] hover:bg-[#F2F4F7]"
+            className="xl:hidden p-2 rounded-lg text-[#697685] hover:bg-[#F2F4F7]"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle navigation menu"
+            aria-label="Toggle main menu"
           >
             {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="xl:hidden bg-white border-b border-[#E7EBF0] px-4 py-4 shadow-lg animate-in slide-in-from-top duration-200">
-          <div className="flex flex-col gap-1">
-            {NAV_LINKS.map((link) => {
-              const isActive =
-                link.href === "/"
-                  ? pathname === "/"
-                  : pathname === link.href || pathname.startsWith(`${link.href}/`);
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`px-3 py-2.5 rounded-lg text-[14px] font-semibold ${
-                    isActive
-                      ? "bg-[#F2F4F7] text-[#19222D]"
-                      : "text-[#738092] hover:bg-[#F5F7F9]"
-                  }`}
-                >
-                  {link.name}
-                </Link>
-              );
-            })}
-            <div className="pt-3 mt-2 border-t border-[#E7EBF0] flex items-center gap-2 text-xs text-[#697685]">
-              <Database size={14} className="text-[#229C88]" />
-              <span>Sri Lanka National Grid Analytics Warehouse</span>
-            </div>
+        <div className="xl:hidden bg-white border-b border-[#E7EBF0] px-4 py-4 space-y-1 shadow-lg">
+          <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-lg bg-[#F8F9FB] border border-[#E7EBF0] text-[12px]">
+            <span
+              className={`w-2 h-2 rounded-full ${
+                isLive
+                  ? "bg-[#229C88] ring-4 ring-[#E9F7F2]"
+                  : "bg-[#E9A43B] ring-4 ring-[#FFF6E8]"
+              }`}
+            />
+            <span className="font-medium text-[#19222D]">
+              {isLive ? "PostgreSQL 18 Connected" : "Historical Snapshot Active"}
+            </span>
           </div>
+
+          {NAV_LINKS.map((link) => {
+            const isActive =
+              link.href === "/"
+                ? pathname === "/"
+                : pathname === link.href || pathname.startsWith(`${link.href}/`);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`block px-3 py-2 rounded-lg text-[14px] font-semibold ${
+                  isActive
+                    ? "bg-[#F2F4F7] text-[#19222D]"
+                    : "text-[#738092] hover:bg-[#F5F7F9]"
+                }`}
+              >
+                {link.name}
+              </Link>
+            );
+          })}
         </div>
       )}
     </header>
