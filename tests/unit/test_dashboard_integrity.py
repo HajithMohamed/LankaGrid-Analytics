@@ -110,8 +110,45 @@ def test_q06_ramp_rate_accuracy():
     assert top_event["severity_rank"] == 1
 
 
+def test_q21_grouping_sets_and_annual_totals():
+    """Verify Q21 GROUPING SETS output structure, detail rows, and annual subtotals."""
+    q21_path = SNAPSHOT_DIR / "Q21.json"
+    assert q21_path.exists(), "Q21.json snapshot missing"
+
+    with open(q21_path, encoding="utf-8") as f:
+        q21_records = json.load(f)
+
+    assert len(q21_records) > 0
+    expected_annual_totals = {
+        "2020": 14287.0,
+        "2021": 15214.0,
+        "2022": 14520.0,
+        "2023": 14153.5,
+        "2024": 15190.5,
+    }
+
+    # Verify detail rows (grp_year == 0 && grp_class == 0)
+    detail_rows = [r for r in q21_records if r.get("grp_year") == 0 and r.get("grp_class") == 0]
+    assert len(detail_rows) == 20  # 4 sectors * 5 years
+
+    # Verify annual subtotal rows (grp_year == 0 && grp_class == 1)
+    subtotal_rows = [r for r in q21_records if r.get("grp_year") == 0 and r.get("grp_class") == 1]
+    assert len(subtotal_rows) == 5
+
+    for sub in subtotal_rows:
+        yr = str(sub["reporting_year"])
+        assert yr in expected_annual_totals
+        assert sub["total_sales_gwh"] == expected_annual_totals[yr]
+
+    # Verify grand total row (grp_year == 1 && grp_class == 1)
+    grand_total_row = next(
+        r for r in q21_records if r.get("grp_year") == 1 and r.get("grp_class") == 1
+    )
+    assert grand_total_row["total_sales_gwh"] == 73365.0
+
+
 def test_q22_multi_tier_reconciliation_accuracy():
-    """Verify Q22 reconciles CEB sales and PUCSL dispatch without unsupported claims."""
+    """Verify Q22 reconciles CEB sales and PUCSL dispatch with distinct tier separation."""
     q22_path = SNAPSHOT_DIR / "Q22.json"
     with open(q22_path, encoding="utf-8") as f:
         q22_records = json.load(f)
@@ -120,11 +157,47 @@ def test_q22_multi_tier_reconciliation_accuracy():
     assert "CEB_SALES_DIGEST_ANNUAL" in tiers
     assert "PUCSL_DISPATCH_TELEMETRY_DAILY" in tiers
 
-    # Check rounding precision reconciliation for CEB sales (variance <= 0.05%)
+    # Check rounding precision reconciliation for CEB sales (variance <= 0.007%)
     ceb_recons = [r for r in q22_records if r["reconciliation_tier"] == "CEB_SALES_DIGEST_ANNUAL"]
-    assert len(ceb_recons) >= 5
+    assert len(ceb_recons) == 5
     for r in ceb_recons:
-        assert float(r["variance_pct"]) <= 0.05, f"CEB sales variance exceeded precision: {r}"
+        assert float(r["variance_pct"]) <= 0.007, (
+            f"CEB sales variance exceeded published precision: {r}"
+        )
+
+    # Check PUCSL daily operational telemetry reconciliation tier
+    pucsl_recons = [
+        r for r in q22_records if r["reconciliation_tier"] == "PUCSL_DISPATCH_TELEMETRY_DAILY"
+    ]
+    assert len(pucsl_recons) == 1
+    pucsl_row = pucsl_recons[0]
+    assert pucsl_row["variance_pct"] == 3.971
+    assert "UNTELEMETERED" in pucsl_row["audit_status"]
+
+
+def test_q23_quarantine_grouping_sets_handling():
+    """Verify Q23 GROUPING SETS detail rows contain 879 entity issues and 47 negative power issues."""
+    q23_path = SNAPSHOT_DIR / "Q23.json"
+    assert q23_path.exists(), "Q23.json snapshot missing"
+
+    with open(q23_path, encoding="utf-8") as f:
+        q23_records = json.load(f)
+
+    # Verify detail rows without subtotal duplication (grp_rule == 0 && grp_class == 0)
+    detail_rows = [r for r in q23_records if r.get("grp_rule") == 0 and r.get("grp_class") == 0]
+    assert len(detail_rows) == 2, "Q23 detail rows must contain exactly 2 rule violation categories"
+
+    unmatched = next(r for r in detail_rows if "ENTITY" in r["dq_rule_code"])
+    assert unmatched["total_issues_logged"] == 879
+    assert unmatched["percentage_of_all_issues"] == 94.92
+
+    negative = next(r for r in detail_rows if "NEGATIVE" in r["dq_rule_code"])
+    assert negative["total_issues_logged"] == 47
+    assert negative["percentage_of_all_issues"] == 5.08
+
+    # Verify grand total (grp_rule == 1 && grp_class == 1)
+    grand_total = next(r for r in q23_records if r.get("grp_rule") == 1 and r.get("grp_class") == 1)
+    assert grand_total["total_issues_logged"] == 926
 
 
 def test_dashboard_security_migration_022_exists():

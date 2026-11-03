@@ -3,7 +3,7 @@
 **Project:** GridLens — National Electricity Grid Analytics Data Warehouse, Sri Lanka  
 **Institution:** University of Ruhuna, Faculty of Technology, Department of ICT  
 **Framework:** Next.js 16 App Router (React 19, TypeScript, Tailwind CSS v4, Lucide Icons, Recharts)  
-**Database Engine:** PostgreSQL 18 (Dedicated least-privilege read-only role `grid_analyst`)  
+**Database Engine:** PostgreSQL (Dedicated least-privilege read-only role `grid_analyst` or local `postgres`)  
 **Design System:** Premium White Analytics (`#F8F9FB` canvas, `#FFFFFF` cards, `#19222D` typography)  
 
 ---
@@ -14,8 +14,8 @@ The GridLens Dashboard provides an interactive, full-stack Business Intelligence
 
 ### Key Architectural Tenets:
 1. **Dual-Mode Data Architecture:**
-   - **Primary (Live PostgreSQL 18):** Direct parameterized queries against `sl_grid_warehouse` via connection pooling using the `grid_analyst` role. Enforces a 5-second statement timeout and session read-only transaction defaults.
-   - **Historical Snapshot Mode:** When the warehouse container is offline (e.g. during static auditing or offline presentation), the dashboard seamlessly serves pre-computed, authentic snapshots from `public/data/snapshots/` with a visible provenance badge.
+   - **Primary (Live PostgreSQL):** Direct parameterized queries against `sl_grid_warehouse` via connection pooling using the `grid_analyst` role. Enforces a 5-second statement timeout and session read-only transaction defaults. Supports both local native PostgreSQL (port `5432`) and Docker (port `5433`).
+   - **Historical Snapshot Mode:** When the warehouse is offline (e.g. during portable offline demonstration), the dashboard seamlessly serves pre-computed, authentic snapshots from `public/data/snapshots/` with an amber provenance badge.
 2. **Controlled Semantic Layer:**
    - Enforces Kimball fact-grain compatibility (`web/src/lib/analytics/semantic-layer.ts`).
    - Prevents invalid cross-grain aggregations (e.g. cross-multiplying 15-minute interval dispatch with annual consumer billing).
@@ -41,7 +41,7 @@ web/
 │   └── gridlens-logo.svg            # Official vector mark
 └── src/
     ├── app/
-    │   ├── layout.tsx               # Root layout with TopNav and Footer
+    │   ├── layout.tsx               # Root layout with dynamic TopNav and Footer
     │   ├── page.tsx                 # Executive Overview dashboard (KPIs, sales trends, mix)
     │   ├── overview/page.tsx        # Overview alias
     │   ├── generation/page.tsx      # Generation Mix & Renewables (Q01–Q04)
@@ -66,7 +66,7 @@ web/
         │   ├── query-registry.ts    # Allowlist of Q01–Q24 definitions & metadata
         │   └── semantic-layer.ts    # Measures, dimensions, and fact-grain rules
         ├── db/
-        │   ├── client.ts            # Read-only PostgreSQL 18 connection pool
+        │   ├── client.ts            # Read-only PostgreSQL connection pool
         │   └── snapshot-loader.ts   # Dual-mode live query and snapshot fallback
         └── formatting/
             └── units.ts             # Strict electricity units (MW vs MWh/GWh)
@@ -77,39 +77,56 @@ web/
 ## 3. Local Setup & Configuration
 
 ### Prerequisites:
-- Node.js 20+
-- `pnpm` 10+
-- PostgreSQL 18 running in Docker (optional; snapshots are used if offline)
+- Node.js 20+ or 22+
+- `pnpm` (`npm install -g pnpm`)
+- PostgreSQL database populated following [Local Native PostgreSQL Setup Guide](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/database/local-native-postgresql-setup-guide.md)
 
-### Step 1: Clone & Configure Environment
-```bash
+### Step 1: Configure Environment
+```powershell
 cd web
-copy .env.example .env.local
+Copy-Item .env.example .env.local
 ```
 
-Edit `.env.local` to provide your local database password for the read-only role:
+Edit `.env.local` to configure your database connection:
+
+**For Local Native PostgreSQL (pgAdmin / default port 5432):**
+```ini
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=sl_grid_warehouse
+POSTGRES_USER=grid_analyst
+POSTGRES_PASSWORD=grid_analyst_dev_password_change_me
+DATA_SOURCE_MODE=hybrid
+```
+*(Or set `POSTGRES_USER=postgres` and your superuser password).*
+
+**For Docker PostgreSQL (port 5433):**
 ```ini
 POSTGRES_HOST=localhost
 POSTGRES_PORT=5433
 POSTGRES_DB=sl_grid_warehouse
 POSTGRES_USER=grid_analyst
-POSTGRES_PASSWORD=your_read_only_password_here
+POSTGRES_PASSWORD=grid_analyst_dev_password_change_me
 DATA_SOURCE_MODE=hybrid
 ```
 
-### Step 2: Install Dependencies
-```bash
+### Step 2: Clean Cache & Install Dependencies
+```powershell
+# Clear any stale Next.js cache
+Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue
+
+# Install dependencies
 pnpm install
 ```
 
 ### Step 3: Start Development Server
-```bash
-pnpm dev
+```powershell
+pnpm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open **[http://localhost:3000](http://localhost:3000)** in your browser.
 
 ### Step 4: Build for Production
-```bash
+```powershell
 pnpm run build
 pnpm start
 ```
@@ -128,7 +145,7 @@ pnpm start
 - Never aggregate MW and MWh together.
 - Never treat missing observations as zero ($0\text{ MW}$ signifies complete plant outage; missing data is represented as `NULL`).
 - Q06 Maximum Ramp Rate: Verified as **141.00 MW** on March 17, 2024 at 18:30 (Interval 75, PEAK time block).
-- Q22 Reconciliation: Multi-tier statutory digest reconciliation showing variance $\le 0.007\%$ for CEB sales and exact 48,223.00 MWh PUCSL March 1 control total.
+- Q22 Reconciliation: Multi-tier statutory digest reconciliation showing variance $\le 0.007\%$ for CEB sales and 3.971% for PUCSL March 1 dispatch (unmetered small solar/hydro scope).
 
 ---
 
@@ -141,4 +158,4 @@ If any database password was previously exposed in local development:
    ```
 2. Update `.env.local` with the new password.
 3. Verify that `git status` does not track `.env.local` or `.env`.
-4. Ensure `tests/unit/test_dashboard_integrity.py` passes to confirm zero exposed credentials.
+4. Ensure `pytest tests/unit/test_dashboard_integrity.py` passes to confirm zero exposed credentials.
