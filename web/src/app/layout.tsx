@@ -27,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased light">
       <body className="min-h-full flex flex-col bg-[#F8F9FB] text-[#19222D]">
-        <TopNav isLive={true} />
+        <TopNav />
         <main className="flex-1 max-w-[1500px] w-full mx-auto px-4 md:px-9 py-8 md:py-10">
           {children}
         </main>

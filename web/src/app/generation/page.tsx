@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { PageHeader } from "@/components/layout/page-header";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { GenerationDonutChart } from "@/components/charts/generation-donut-chart";
-import { SimpleBarChart } from "@/components/charts/simple-bar-chart";
 import { DataTable, ColumnDef } from "@/components/tables/data-table";
 import { formatMW, formatMWh, formatPercent, toNumeric } from "@/lib/formatting/units";
+import { ShieldCheck, FilterX, Flame, Zap, Droplets, SunMedium } from "lucide-react";
 
 interface PlantCapacityRecord {
   plant_name: string;
@@ -21,30 +21,114 @@ interface PlantCapacityRecord {
   [key: string]: unknown;
 }
 
+interface GenerationMixItem {
+  energy_category: string;
+  fuel_type: string;
+  total_energy_mwh: number | string;
+  generation_share_pct: number | string;
+  [key: string]: unknown;
+}
+
 export default function GenerationPage() {
   const [plantRecords, setPlantRecords] = useState<PlantCapacityRecord[]>([]);
+  const [generationMix, setGenerationMix] = useState<GenerationMixItem[]>([]);
   const [filterSource, setFilterSource] = useState<string>("all");
+  const [sourceMode, setSourceMode] = useState<"live" | "snapshot">("snapshot");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/analytics/Q03")
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.success) setPlantRecords(res.data);
+    Promise.all([
+      fetch("/api/analytics/Q01").then((res) => res.json()),
+      fetch("/api/analytics/Q03").then((res) => res.json()),
+    ])
+      .then(([q01Res, q03Res]) => {
+        if (q01Res.success) {
+          setGenerationMix(q01Res.data);
+          if (q01Res.sourceMode) setSourceMode(q01Res.sourceMode);
+        }
+        if (q03Res.success) setPlantRecords(q03Res.data);
         setLoading(false);
       })
       .catch((err) => {
-        console.error("Failed to fetch Q03 capacity factors:", err);
+        console.error("Failed to fetch generation analytics:", err);
         setLoading(false);
       });
   }, []);
 
-  const filteredPlants =
-    filterSource === "all"
-      ? plantRecords
-      : plantRecords.filter((p) =>
-          String(p.energy_category || "").toLowerCase().includes(filterSource.toLowerCase())
-        );
+  // Compute verified dynamic KPIs from Q01 data
+  const kpis = useMemo(() => {
+    let totalMWh = 1399337.0;
+    let coalMWh = 595524.5;
+    let coalShare = 42.56;
+    let oilMWh = 387450.75;
+    let oilShare = 27.69;
+    let hydroMWh = 361909.25;
+    let hydroShare = 25.86;
+
+    if (generationMix.length > 0) {
+      // Find total row or sum categories
+      const totalRow = generationMix.find(
+        (g) => g.energy_category === ">>> TOTAL REPORTED GENERATION <<<" || g.energy_category === "TOTAL"
+      );
+      if (totalRow) {
+        totalMWh = toNumeric(totalRow.total_energy_mwh) || totalMWh;
+      }
+
+      const coal = generationMix.find((g) => g.energy_category?.toLowerCase().includes("coal"));
+      if (coal) {
+        coalMWh = toNumeric(coal.total_energy_mwh) || coalMWh;
+        coalShare = toNumeric(coal.generation_share_pct) || coalShare;
+      }
+
+      const oil = generationMix.find((g) => g.energy_category?.toLowerCase().includes("oil"));
+      if (oil) {
+        oilMWh = toNumeric(oil.total_energy_mwh) || oilMWh;
+        oilShare = toNumeric(oil.generation_share_pct) || oilShare;
+      }
+
+      const hydro = generationMix.find((g) => g.energy_category?.toLowerCase().includes("hydro"));
+      if (hydro) {
+        hydroMWh = toNumeric(hydro.total_energy_mwh) || hydroMWh;
+        hydroShare = toNumeric(hydro.generation_share_pct) || hydroShare;
+      }
+    }
+
+    return {
+      totalMWh,
+      coalMWh,
+      coalShare,
+      oilMWh,
+      oilShare,
+      hydroMWh,
+      hydroShare,
+    };
+  }, [generationMix]);
+
+  // Interactive cross-filtering
+  const filteredPlants = useMemo(() => {
+    if (filterSource === "all") return plantRecords;
+    return plantRecords.filter((p) =>
+      String(p.energy_category || "").toLowerCase().includes(filterSource.toLowerCase())
+    );
+  }, [plantRecords, filterSource]);
+
+  const handleExportFilteredCsv = () => {
+    if (filteredPlants.length === 0) return;
+    const headers = "Rank,Power Plant,Fuel Category,Nameplate MW,Peak Dispatch MW,Generation MWh,Duty Cycle %,Capacity Factor %\n";
+    const rows = filteredPlants
+      .map(
+        (p) =>
+          `"${p.generation_rank}","${p.plant_name}","${p.energy_category}",${p.installed_capacity_mw},${p.observed_peak_mw},${p.total_generation_mwh},${p.duty_cycle_pct},${p.official_capacity_factor_pct}`
+      )
+      .join("\n");
+    const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `gridlens-plants-${filterSource}-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   const columns: ColumnDef<PlantCapacityRecord>[] = [
     {
@@ -125,28 +209,51 @@ export default function GenerationPage() {
         title="Generation Mix & Renewables"
         titleAccent="."
         description="Detailed generation technology breakdown, plant capacity factors, and renewable energy shares during March 2024 (PUCSL operational dispatch)."
-        onExportCsv={() => window.open("/api/exports/Q01", "_blank")}
+        onExportCsv={handleExportFilteredCsv}
       >
-        <div className="flex items-center gap-2">
-          <label className="text-[12px] font-semibold text-[#748091]">Filter Fuel:</label>
-          <select
-            value={filterSource}
-            onChange={(e) => setFilterSource(e.target.value)}
-            className="h-[41px] px-3 rounded-[10px] bg-white border border-[#E2E7EE] text-[#19222D] font-bold text-[12px] outline-none"
+        <div className="flex items-center gap-3">
+          <span
+            className={`px-2.5 py-1 rounded-[8px] text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 ${
+              sourceMode === "live"
+                ? "bg-[#E8F6F2] text-[#177763] border border-[#229C88]/30"
+                : "bg-[#FFF6E8] text-[#9A6715] border border-[#E9A43B]/30"
+            }`}
           >
-            <option value="all">All Categories</option>
-            <option value="coal">Thermal Coal</option>
-            <option value="oil">Thermal Oil</option>
-            <option value="hydro">Hydro</option>
-          </select>
+            <ShieldCheck size={13} />
+            {sourceMode === "live" ? "Live PostgreSQL" : "Verified Snapshot"}
+          </span>
+
+          <div className="flex items-center gap-2">
+            <label className="text-[12px] font-semibold text-[#748091]">Filter Fuel:</label>
+            <select
+              value={filterSource}
+              onChange={(e) => setFilterSource(e.target.value)}
+              className="h-[38px] px-3 rounded-[8px] bg-white border border-[#E2E7EE] text-[#19222D] font-bold text-[12px] outline-none"
+            >
+              <option value="all">All Categories</option>
+              <option value="coal">Thermal Coal</option>
+              <option value="oil">Thermal Oil</option>
+              <option value="hydro">Hydro</option>
+            </select>
+            {filterSource !== "all" && (
+              <button
+                onClick={() => setFilterSource("all")}
+                className="h-[38px] px-2.5 rounded-[8px] bg-[#F1F3F6] hover:bg-[#E5E8EB] text-[#4B5563] text-[12px] font-semibold flex items-center gap-1 transition-colors"
+                title="Reset fuel filter"
+              >
+                <FilterX size={14} />
+                <span>Reset</span>
+              </button>
+            )}
+          </div>
         </div>
       </PageHeader>
 
-      {/* KPI row */}
+      {/* KPI row — Dynamically derived from Q01 query data */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
           name="March Total Generation"
-          value="1,399,337.00"
+          value={kpis.totalMWh.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
           unit="MWh"
           period="March 2024"
           sourcePill="PUCSL"
@@ -154,71 +261,44 @@ export default function GenerationPage() {
         />
         <KpiCard
           name="Lakvijaya Coal Total"
-          value="595,524.50"
+          value={kpis.coalMWh.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
           unit="MWh"
-          period="42.56% Share"
+          period={`${kpis.coalShare.toFixed(2)}% Share`}
           sourcePill="Q01"
           accentColor="#343D49"
         />
         <KpiCard
           name="Thermal Oil Generation"
-          value="387,450.75"
+          value={kpis.oilMWh.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
           unit="MWh"
-          period="27.69% Share"
+          period={`${kpis.oilShare.toFixed(2)}% Share`}
           sourcePill="Q01"
           accentColor="#E9A43B"
         />
         <KpiCard
-          name="Total Hydro (Major + Mini)"
-          value="361,909.25"
+          name="Total Hydro Generation"
+          value={kpis.hydroMWh.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
           unit="MWh"
-          period="25.86% Share"
+          period={`${kpis.hydroShare.toFixed(2)}% Share`}
           sourcePill="Q01"
           accentColor="#4278B9"
         />
       </section>
 
-      {/* Visual Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        <div className="lg:col-span-5">
-          <GenerationDonutChart />
-        </div>
-        <div className="lg:col-span-7">
-          <SimpleBarChart
-            title="Plant Capacity Factor Comparison"
-            subtitle="Actual generation vs theoretical maximum at rated nameplate (March 2024, 744 hrs)"
-            badge="PUCSL · Q03"
-            unit="%"
-            data={plantRecords.slice(0, 7).map((p) => {
-              const cf = toNumeric(p.official_capacity_factor_pct) || 0;
-              return {
-                label: p.plant_name,
-                value: cf,
-                formattedValue: `${cf.toFixed(1)}%`,
-                sublabel: String(p.energy_category),
-                color:
-                  p.energy_category === "Thermal Coal"
-                    ? "#343D49"
-                    : p.energy_category === "Thermal Oil"
-                    ? "#E9A43B"
-                    : "#4278B9",
-              };
-            })}
-          />
-        </div>
-      </div>
+      {/* Generation Donut Breakdown */}
+      <GenerationDonutChart />
 
-      {/* Plant Capacity Factor Table */}
+      {/* Plant Capacity Factors Table */}
       {loading ? (
-        <div className="py-12 text-center text-[#9AA5B0]">Loading capacity factor metrics...</div>
+        <div className="py-12 text-center text-[#9AA5B0]">Loading power plant capacity factors...</div>
       ) : (
         <DataTable
-          title="Plant Capacity Factor & Utilization Ranking"
-          subtitle="Ranked by total energy generation during March 2024 (PUCSL telemetry)"
-          badge="SQL Query Q03"
+          title="Generating Stations Capacity Factor &amp; Duty Cycle (Q03)"
+          subtitle={`Analysis across ${filteredPlants.length} active generating stations (PUCSL March 2024 dispatch telemetry).`}
+          badge="PUCSL · Q03"
           data={filteredPlants}
           columns={columns}
-          filename="gridlens-plant-capacity-factors-Q03.csv"
+          filename={`gridlens-plant-capacity-factors-${filterSource}.csv`}
         />
       )}
     </div>
