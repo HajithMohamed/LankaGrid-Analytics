@@ -24,17 +24,15 @@ Before starting, ensure your local workstation has the following installed:
 
 ---
 
-## 2. Complete Step-by-Step Setup from Scratch
+## 2. Complete Setup from Scratch
 
 ```mermaid
 flowchart TD
     A["1. Clone Repo & Checkout Branch"] --> B["2. Setup Python Virtual Environment"]
-    B --> C["3. Create Local Database ('sl_grid_warehouse')"]
-    C --> D["4. Configure Root '.env'"]
-    D --> E["5. Run Migrations 001-022 ('migrate.py up')"]
-    E --> F["6. Seed Reference Dimensions ('seed_reference.py')"]
-    F --> G["7. Load Real Historical Data ('load_historical_warehouse.py')"]
-    G --> H["8. Configure & Run Next.js Dashboard ('web')"]
+    B --> C["3. Configure Root '.env'"]
+    C --> D["4. Run One-Command Bootstrap ('python scripts/bootstrap_local.py')"]
+    D --> E["5. Run Tests ('pytest tests/unit tests/data_quality -v')"]
+    E --> F["6. Start Next.js Dashboard ('cd web; pnpm dev')"]
 ```
 
 ---
@@ -50,9 +48,8 @@ git clone https://github.com/HajithMohamed/LankaGrid-Analytics.git
 # Move into project directory
 cd LankaGrid-Analytics
 
-# Ensure you are on the latest development/feature branch
+# Ensure you are on the development branch
 git checkout development
-# (or the working branch: git checkout fix/phase-5-dashboard-accuracy-and-demo)
 ```
 
 ---
@@ -82,21 +79,91 @@ pip install pytest pytest-cov ruff mypy
 
 ---
 
-### Step 3: Create Local PostgreSQL Database
+### Step 3: Configure Root `.env`
 
-Your local PostgreSQL installation must have the empty database created before running migrations.
+Copy `.env.example` to `.env`:
 
-#### Option A: Using `psql` (Command Line)
 ```powershell
-# Connect to your local PostgreSQL with your superuser (usually 'postgres')
-psql -U postgres -h localhost -p 5432
+Copy-Item .env.example .env
+```
 
-# Inside the psql prompt, run:
+Open `.env` in any text editor and adjust your local PostgreSQL credentials:
+
+```ini
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=sl_grid_warehouse
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=your_installed_postgresql_password
+```
+
+*(Note: For default PostgreSQL installations on Windows, `POSTGRES_USER` is `postgres` and port is `5432`).*
+
+---
+
+### Step 4: Run the One-Command Automated Bootstrap (Recommended)
+
+Run the following command in PowerShell:
+
+```powershell
+python scripts/bootstrap_local.py
+```
+
+**What this one command does automatically:**
+1. **Validates Environment**: Checks Python runtime (>= 3.11), `.env` existence, and raw data files.
+2. **Safely Provisions Databases**: Creates `sl_grid_warehouse` and `sl_grid_warehouse_test` if they don't exist (never drops existing data).
+3. **Applies Sequential Migrations**: Executes migrations `001` through `022` with SHA-256 immutability verification.
+4. **Configures Application Roles**: Sets credentials for `grid_etl` and dedicated read-only `grid_analyst`.
+5. **Seeds Conformed Dimensions**: Seeds 13 conformed dimensions and reference tables (dates, intervals, plants, energy sources).
+6. **Populates Historical Warehouse Data**: Loads CEB 5-year sales, NASA POWER 5-year weather, and PUCSL 15-minute dispatch idempotently.
+7. **Performs Non-Destructive Audit**: Verifies all 7 schemas, 4 fact tables, conformed dimensions, 5 materialized views, and least-privilege role permissions.
+8. **Configures Next.js Dashboard**: Automatically writes and synchronizes `web/.env.local` configured with `DATA_SOURCE_MODE=live`.
+
+#### Useful CLI Flags:
+- `python scripts/bootstrap_local.py --dry-run` : Preview all steps without modifying the database or filesystem.
+- `python scripts/bootstrap_local.py --verify-only` : Audit existing database schemas, row counts, and permissions non-destructively.
+- `python scripts/bootstrap_local.py --skip-data` : Run migrations, roles, and reference dimensions, skipping large fact data loading.
+
+---
+
+### Step 5: Run Automated Tests
+
+Verify that your local environment passes all unit and data quality tests:
+
+```powershell
+pytest tests/unit tests/data_quality -v
+```
+
+---
+
+### Step 6: Start Next.js Analytics Dashboard
+
+```powershell
+cd web
+pnpm install
+pnpm dev
+```
+
+Open your browser to:
+👉 **http://localhost:3000**
+
+You will see:
+- Top navigation with **"PostgreSQL 18 Connected"** (green indicator).
+- Executive Overview with dynamic year filtering (2020–2024), 14,287 to 15,190 GWh billed sales, and March 2024 generation mix.
+- All 8 analytical pages fully styled with Premium White theme.
+- Query Explorer showing live PostgreSQL execution times and OLAP method explanations.
+
+---
+
+### Alternative: Manual Step-by-Step Setup (Option B)
+
+If you prefer to run each step manually instead of using `bootstrap_local.py`:
+
+#### 1. Create Local PostgreSQL Database:
+In `psql` or **pgAdmin**:
+```sql
 CREATE DATABASE sl_grid_warehouse;
 CREATE DATABASE sl_grid_warehouse_test;
-
-# Exit psql:
-\q
 ```
 
 #### Option B: Using pgAdmin GUI
@@ -266,8 +333,13 @@ You will see:
 
 | Task | Command |
 | :--- | :--- |
+| **One-command full bootstrap** | `python scripts/bootstrap_local.py` |
+| **Simulate bootstrap (dry-run)** | `python scripts/bootstrap_local.py --dry-run` |
+| **Verify warehouse non-destructively** | `python scripts/bootstrap_local.py --verify-only` |
 | **Check migration status** | `python scripts/migrate.py status` |
 | **Apply new migrations** | `python scripts/migrate.py up` |
+| **Configure role passwords** | `python scripts/migrate.py configure-roles` |
+| **Seed conformed dimensions** | `python scripts/seed_reference.py` |
 | **Reload historical data** | `python scripts/load_historical_warehouse.py` |
 | **Run unit & quality tests** | `pytest tests/unit tests/data_quality -v` |
 | **Check code formatting** | `ruff check .` and `ruff format --check .` |

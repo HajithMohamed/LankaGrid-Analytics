@@ -52,12 +52,12 @@ An academic data warehouse engineering project modeling and analyzing historical
 You can run GridLens either using your **Local Native PostgreSQL (pgAdmin)** or using **Docker**.
 
 ### Detailed Guides:
-- 📖 **Local Native PostgreSQL (No Docker Required)**: See [Local Native PostgreSQL Setup Guide](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/database/local-native-postgresql-setup-guide.md).
-- 📖 **UI Demonstration & Presentation Guide**: See [Final UI Demonstration Guide](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/dashboard/final-ui-demonstration-guide.md).
+- 📖 **Local Native PostgreSQL (No Docker Required)**: See [Local Native PostgreSQL Setup Guide](docs/database/local-native-postgresql-setup-guide.md).
+- 📖 **UI Demonstration & Presentation Guide**: See [Final UI Demonstration Guide](docs/dashboard/final-ui-demonstration-guide.md).
 
 ---
 
-### Path A: Local Native PostgreSQL (No Docker) — Step-by-Step
+### Path A: Local Native PostgreSQL (No Docker) — One-Command Setup
 
 #### 1. Setup Python Virtual Environment:
 ```powershell
@@ -69,18 +69,11 @@ pip install -e .
 pip install pytest pytest-cov ruff mypy
 ```
 
-#### 2. Create Local Database in PostgreSQL:
-In `psql` or **pgAdmin**, create the database:
-```sql
-CREATE DATABASE sl_grid_warehouse;
-CREATE DATABASE sl_grid_warehouse_test;
-```
-
-#### 3. Configure `.env`:
+#### 2. Configure Local Database Credentials in `.env`:
 ```powershell
 Copy-Item .env.example .env
 ```
-Open `.env` and set your local PostgreSQL credentials:
+Open `.env` in any text editor and set your local PostgreSQL credentials:
 ```ini
 POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
@@ -89,37 +82,37 @@ POSTGRES_USER=postgres
 POSTGRES_PASSWORD=your_local_postgres_password
 ```
 
-#### 4. Apply Migrations, Seed Dimensions & Load Historical Data:
+#### 3. Run the Automated One-Command Bootstrap:
 ```powershell
-# Apply all 22 database migrations
-python scripts/migrate.py up
-
-# Configure password authentication for application roles
-python scripts/migrate.py configure-roles
-
-# Seed reference taxonomies and conformed dimensions
-python scripts/seed_reference.py
-
-# Load official historical CEB, NASA POWER, and PUCSL datasets into fact tables
-python scripts/load_historical_warehouse.py
-
-# Verify database structure and row counts
-python scripts/verify_database.py
+python scripts/bootstrap_local.py
 ```
+This single command safely and automatically:
+1. Validates your Python runtime (>= 3.11) and raw data assets.
+2. Creates the target databases (`sl_grid_warehouse`, `sl_grid_warehouse_test`) if they do not exist (never drops existing data).
+3. Applies all 22 sequential forward migrations with SHA-256 immutability verification.
+4. Configures least-privilege database roles (`grid_etl`, `grid_analyst`).
+5. Seeds 13 conformed dimension and reference tables idempotently.
+6. Populates authentic historical data (CEB 5-yr sales, NASA POWER 5-yr weather, PUCSL dispatch) without duplicating existing records.
+7. Performs a non-destructive read-only warehouse integrity verification across all 7 schemas and 5 materialized views.
+8. Automatically generates and synchronizes `web/.env.local` for the Next.js Analytics Dashboard (`DATA_SOURCE_MODE=live`).
 
-#### 5. Run the Automated Test Suite:
+*Optional flags:*
+- `python scripts/bootstrap_local.py --dry-run` : Preview planned actions without modifying anything.
+- `python scripts/bootstrap_local.py --verify-only` : Run non-destructive verification without re-seeding or re-loading.
+- `python scripts/bootstrap_local.py --skip-data` : Apply migrations and seeds, but skip large historical fact loads.
+
+#### 4. Run the Automated Test Suite:
 ```powershell
 pytest tests/unit tests/data_quality -v
 ```
 
-#### 6. Run the Next.js Analytics Dashboard (`web/`):
+#### 5. Run the Next.js Analytics Dashboard (`web/`):
 ```powershell
 cd web
-Copy-Item .env.example .env.local
 pnpm install
-pnpm run dev
+pnpm dev
 ```
-Open **http://localhost:3000** in your browser.
+Open [http://localhost:3000](http://localhost:3000) in your browser. (Database connection is automatically configured by `bootstrap_local.py`).
 
 ---
 
@@ -156,12 +149,12 @@ pnpm run dev
 ---
 
 ## Academic Documentation References
-- [System Architecture Overview](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/architecture/system-overview.md)
-- [Dimensional Bus Matrix](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/architecture/dimensional-bus-matrix.md)
-- [Fact Constellation & Schema ERDs](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/database/erd-fact-constellation.md)
-- [Complete Data Dictionary](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/database/data-dictionary.md)
-- [Local Native PostgreSQL Setup Guide](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/database/local-native-postgresql-setup-guide.md)
-- [Final UI Demonstration & Evaluation Guide](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/dashboard/final-ui-demonstration-guide.md)
+- [System Architecture Overview](docs/architecture/system-overview.md)
+- [Dimensional Bus Matrix](docs/architecture/dimensional-bus-matrix.md)
+- [Fact Constellation & Schema ERDs](docs/database/erd-fact-constellation.md)
+- [Complete Data Dictionary](docs/database/data-dictionary.md)
+- [Local Native PostgreSQL Setup Guide](docs/database/local-native-postgresql-setup-guide.md)
+- [Final UI Demonstration & Evaluation Guide](docs/dashboard/final-ui-demonstration-guide.md)
 
 ## License
 Academic coursework project. University of Ruhuna, Faculty of Technology, Department of ICT. All rights reserved.
