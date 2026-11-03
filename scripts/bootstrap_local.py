@@ -25,16 +25,39 @@ import sys
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 import psycopg
 from dotenv import load_dotenv
 from psycopg import sql
+from psycopg.cursor import Cursor
 
 from scripts.migrate import MigrationRunner
 from scripts.seed_reference import ReferenceSeeder
 
 # Project imports
 from src.common.config import DatabaseConfig
+
+
+# -----------------------------------------------------------------------------
+# Safe Database Result Helpers
+# -----------------------------------------------------------------------------
+def _fetch_scalar(cur: Cursor[Any], default: Any = None) -> Any:
+    """Safely fetch a scalar value from the first column of the next row."""
+    row = cur.fetchone()
+    if row is None or len(row) == 0:
+        return default
+    return row[0]
+
+
+def _fetch_int(cur: Cursor[Any], default: int = 0) -> int:
+    """Safely fetch an integer count from the first column of the next row."""
+    val = _fetch_scalar(cur, default)
+    try:
+        return int(val)
+    except (TypeError, ValueError):
+        return default
+
 
 # -----------------------------------------------------------------------------
 # Configuration Constants
@@ -298,12 +321,16 @@ class LocalBootstrapOrchestrator:
 
         try:
             analyst_user = os.getenv("POSTGRES_ANALYST_USER", "grid_analyst")
-            analyst_pwd = os.getenv("POSTGRES_ANALYST_PASSWORD") or os.getenv(
-                "POSTGRES_PASSWORD", "grid_analyst_dev_password_change_me"
+            analyst_pwd = (
+                os.getenv("POSTGRES_ANALYST_PASSWORD")
+                or os.getenv("POSTGRES_PASSWORD")
+                or "grid_analyst_dev_password_change_me"
             )
             etl_user = os.getenv("POSTGRES_ETL_USER", "grid_etl")
-            etl_pwd = os.getenv("POSTGRES_ETL_PASSWORD") or os.getenv(
-                "POSTGRES_PASSWORD", "grid_etl_dev_password_change_me"
+            etl_pwd = (
+                os.getenv("POSTGRES_ETL_PASSWORD")
+                or os.getenv("POSTGRES_PASSWORD")
+                or "grid_etl_dev_password_change_me"
             )
 
             with psycopg.connect(**self.config.to_conn_kwargs(), autocommit=True) as conn:
@@ -317,7 +344,7 @@ class LocalBootstrapOrchestrator:
                                 "SELECT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = %s);",
                                 (role_name,),
                             )
-                            if cur.fetchone()[0]:
+                            if _fetch_scalar(cur, False):
                                 stmt = sql.SQL("ALTER ROLE {} WITH LOGIN PASSWORD {};").format(
                                     sql.Identifier(role_name),
                                     sql.Literal(role_pwd),
@@ -436,7 +463,7 @@ class LocalBootstrapOrchestrator:
             with psycopg.connect(**self.config.to_conn_kwargs()) as conn:
                 with conn.cursor() as cur:
                     cur.execute("SELECT count(*) FROM dw.fact_electricity_sales;")
-                    sales_count = cur.fetchone()[0]
+                    sales_count = _fetch_int(cur)
 
             if sales_count >= 49:
                 details.append(
@@ -455,7 +482,7 @@ class LocalBootstrapOrchestrator:
             with psycopg.connect(**self.config.to_conn_kwargs()) as conn:
                 with conn.cursor() as cur:
                     cur.execute("SELECT count(*) FROM dw.fact_weather_daily;")
-                    weather_count = cur.fetchone()[0]
+                    weather_count = _fetch_int(cur)
 
             if weather_count >= 21924:
                 details.append(
@@ -481,7 +508,7 @@ class LocalBootstrapOrchestrator:
             with psycopg.connect(**self.config.to_conn_kwargs()) as conn:
                 with conn.cursor() as cur:
                     cur.execute("SELECT count(*) FROM dw.fact_dispatch_interval_y2024;")
-                    dispatch_count = cur.fetchone()[0]
+                    dispatch_count = _fetch_int(cur)
 
             if dispatch_count >= 107115:
                 details.append(
@@ -547,34 +574,47 @@ class LocalBootstrapOrchestrator:
 
                     # 2. Fact table counts
                     fact_checks = [
-                        ("dw.fact_electricity_sales", 49),
-                        ("dw.fact_weather_daily", 21924),
-                        ("dw.fact_dispatch_interval_y2024", 107115),
-                        ("audit.data_quality_issue", 926),
+                        ("dw", "fact_electricity_sales", 49),
+                        ("dw", "fact_weather_daily", 21924),
+                        ("dw", "fact_dispatch_interval_y2024", 107115),
+                        ("audit", "data_quality_issue", 926),
                     ]
-                    for table_name, expected_min in fact_checks:
+                    for schema_name, tbl_name, expected_min in fact_checks:
+                        full_name = f"{schema_name}.{tbl_name}"
                         try:
-                            cur.execute(f"SELECT count(*) FROM {table_name};")
-                            cnt = cur.fetchone()[0]
+                            stmt = sql.SQL("SELECT count(*) FROM {}.{};").format(
+                                sql.Identifier(schema_name),
+                                sql.Identifier(tbl_name),
+                            )
+                            cur.execute(stmt)
+                            cnt = _fetch_int(cur)
                             status_sym = "[OK]" if cnt >= expected_min else "[WARN]"
                             details.append(
-                                f"{status_sym} {table_name}: {cnt:,} rows (expected >= {expected_min:,})"
+                                f"{status_sym} {full_name}: {cnt:,} rows (expected >= {expected_min:,})"
                             )
                         except Exception as e:
-                            details.append(f"[WARN] {table_name} query failed: {e}")
+                            details.append(f"[WARN] {full_name} query failed: {e}")
 
                     # 3. Conformed Dimension counts
                     dim_checks = [
-                        ("dw.dim_power_plant", 41),
-                        ("dw.dim_date", 2922),
+                        ("dw", "dim_power_plant", 41),
+                        ("dw", "dim_date", 2922),
                     ]
-                    for dim_name, expected_exact in dim_checks:
-                        cur.execute(f"SELECT count(*) FROM {dim_name};")
-                        cnt = cur.fetchone()[0]
-                        status_sym = "[OK]" if cnt == expected_exact else "[WARN]"
-                        details.append(
-                            f"{status_sym} {dim_name}: {cnt:,} rows (expected {expected_exact:,})"
-                        )
+                    for schema_name, dim_name, expected_exact in dim_checks:
+                        full_name = f"{schema_name}.{dim_name}"
+                        try:
+                            stmt = sql.SQL("SELECT count(*) FROM {}.{};").format(
+                                sql.Identifier(schema_name),
+                                sql.Identifier(dim_name),
+                            )
+                            cur.execute(stmt)
+                            cnt = _fetch_int(cur)
+                            status_sym = "[OK]" if cnt == expected_exact else "[WARN]"
+                            details.append(
+                                f"{status_sym} {full_name}: {cnt:,} rows (expected {expected_exact:,})"
+                            )
+                        except Exception as e:
+                            details.append(f"[WARN] {full_name} query failed: {e}")
 
                     # 4. Materialized Views check
                     cur.execute("SELECT matviewname FROM pg_matviews WHERE schemaname = 'mart';")
@@ -593,8 +633,10 @@ class LocalBootstrapOrchestrator:
 
             # 5. Role Security & Least Privilege Check
             analyst_user = os.getenv("POSTGRES_ANALYST_USER", "grid_analyst")
-            analyst_pwd = os.getenv("POSTGRES_ANALYST_PASSWORD") or os.getenv(
-                "POSTGRES_PASSWORD", "grid_analyst_dev_password_change_me"
+            analyst_pwd = (
+                os.getenv("POSTGRES_ANALYST_PASSWORD")
+                or os.getenv("POSTGRES_PASSWORD")
+                or "grid_analyst_dev_password_change_me"
             )
             analyst_cfg = self.config.with_credentials(analyst_user, analyst_pwd)
 
@@ -602,7 +644,7 @@ class LocalBootstrapOrchestrator:
                 with psycopg.connect(**analyst_cfg.to_conn_kwargs()) as aconn:
                     with aconn.cursor() as acur:
                         acur.execute("SELECT count(*) FROM dw.fact_electricity_sales;")
-                        analyst_rows = acur.fetchone()[0]
+                        analyst_rows = _fetch_int(acur)
                         details.append(
                             f"[OK] Read-only role '{analyst_user}' authenticated and queried {analyst_rows} sales records."
                         )
