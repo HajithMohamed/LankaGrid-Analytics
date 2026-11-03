@@ -1,0 +1,57 @@
+[
+  {
+    "calendar_year": 2020,
+    "ceb_retail_sales_gwh": 12682.0,
+    "leco_bulk_sales_gwh": 1605.0,
+    "total_national_billed_sales_gwh": 14287.0,
+    "ceb_retail_share_pct": 88.77,
+    "leco_bulk_share_pct": 11.23,
+    "ceb_to_leco_ratio": 7.9,
+    "leco_yoy_growth_pct": null,
+    "ceb_retail_yoy_growth_pct": null
+  },
+  {
+    "calendar_year": 2021,
+    "ceb_retail_sales_gwh": 13581.0,
+    "leco_bulk_sales_gwh": 1633.0,
+    "total_national_billed_sales_gwh": 15214.0,
+    "ceb_retail_share_pct": 89.27,
+    "leco_bulk_share_pct": 10.73,
+    "ceb_to_leco_ratio": 8.32,
+    "leco_yoy_growth_pct": 1.74,
+    "ceb_retail_yoy_growth_pct": 7.09
+  },
+  {
+    "calendar_year": 2022,
+    "ceb_retail_sales_gwh": 12970.0,
+    "leco_bulk_sales_gwh": 1550.0,
+    "total_national_billed_sales_gwh": 14520.0,
+    "ceb_retail_share_pct": 89.33,
+    "leco_bulk_share_pct": 10.67,
+    "ceb_to_leco_ratio": 8.37,
+    "leco_yoy_growth_pct": -5.08,
+    "ceb_retail_yoy_growth_pct": -4.5
+  },
+  {
+    "calendar_year": 2023,
+    "ceb_retail_sales_gwh": 12614.5,
+    "leco_bulk_sales_gwh": 1539.0,
+    "total_national_billed_sales_gwh": 14153.5,
+    "ceb_retail_share_pct": 89.13,
+    "leco_bulk_share_pct": 10.87,
+    "ceb_to_leco_ratio": 8.2,
+    "leco_yoy_growth_pct": -0.71,
+    "ceb_retail_yoy_growth_pct": -2.74
+  },
+  {
+    "calendar_year": 2024,
+    "ceb_retail_sales_gwh": 13565.5,
+    "leco_bulk_sales_gwh": 1625.0,
+    "total_national_billed_sales_gwh": 15190.5,
+    "ceb_retail_share_pct": 89.3,
+    "leco_bulk_share_pct": 10.7,
+    "ceb_to_leco_ratio": 8.35,
+    "leco_yoy_growth_pct": 5.59,
+    "ceb_retail_yoy_growth_pct": 7.54
+  }
+]

@@ -1,0 +1,10 @@
+sector_code,sector_name,tariff_group,sales_2020_gwh,sales_2021_gwh,sales_2022_gwh,sales_2023_gwh,sales_2024_gwh,net_5yr_change_gwh,net_5yr_change_pct,crisis_impact_2022_pct,cagr_2020_2024_pct,growth_magnitude_rank
+GENERAL_PURPOSE,"General Purpose (GP-1, GP-2, GP-3)",Commercial & General,2837.00,2897.00,2962.00,3158.00,3472.00,635.00,22.38,2.24,5.18,1
+INDUSTRIAL,"Industrial (I-1, I-2, I-3)",Industrial,4164.00,4820.00,4332.00,4278.00,4622.00,458.00,11.00,-10.12,2.64,2
+HOTEL,"Hotel (H-1, H-2, H-3)",Hotel & Tourism,193.00,220.00,245.00,293.00,355.00,162.00,83.94,11.36,16.46,3
+GOVERNMENT,"Government Institutions (GV-1, GV-2, GV-3)",Government,208.00,226.00,207.00,220.00,241.00,33.00,15.87,-8.41,3.75,4
+BULK_LECO,Bulk Supply to LECO,Bulk Supply,1605.00,1633.00,1550.00,1539.00,1625.00,20.00,1.25,-5.08,0.31,5
+AGRICULTURE,Agriculture Tariff,Agriculture,0.00,2.00,2.00,2.50,3.50,3.50,,0.00,,6
+RELIGIOUS,Religious & Charitable,Religious,82.00,81.00,81.00,72.00,75.00,-7.00,-8.54,0.00,-2.21,7
+STREET_LIGHTING,Street Lighting,Public Lighting,108.00,97.00,97.00,96.00,96.00,-12.00,-11.11,0.00,-2.90,8
+DOMESTIC,Domestic,Domestic,5090.00,5238.00,5044.00,4495.00,4701.00,-389.00,-7.64,-3.70,-1.97,9

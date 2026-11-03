@@ -1,0 +1,100 @@
+import { Pool, QueryResult, QueryResultRow } from "pg";
+
+let pool: Pool | null = null;
+
+export interface DbConfig {
+  host: string;
+  port: number;
+  database: string;
+  user: string;
+  hasPassword: boolean;
+  ssl: boolean;
+}
+
+/**
+ * Return non-sensitive database connection metadata for health/coverage reporting.
+ * Never exposes passwords or secret connection strings.
+ */
+export function getDbConfigSummary(): DbConfig {
+  return {
+    host: process.env.POSTGRES_HOST || "localhost",
+    port: Number(process.env.POSTGRES_PORT || 5433),
+    database: process.env.POSTGRES_DB || "sl_grid_warehouse",
+    user: process.env.POSTGRES_USER || "grid_analyst",
+    hasPassword: Boolean(process.env.POSTGRES_PASSWORD || process.env.DATABASE_URL),
+    ssl: process.env.NODE_ENV === "production",
+  };
+}
+
+/**
+ * Acquire or initialize the singleton PostgreSQL client pool.
+ * Dedicated strictly to read-only dashboard analysis using least-privilege role 'grid_analyst'.
+ */
+export function getDbPool(): Pool {
+  if (!pool) {
+    const connectionString = process.env.DATABASE_URL;
+    const host = process.env.POSTGRES_HOST || "localhost";
+    const port = Number(process.env.POSTGRES_PORT || 5433);
+    const database = process.env.POSTGRES_DB || "sl_grid_warehouse";
+    const user = process.env.POSTGRES_USER || "grid_analyst";
+    const password = process.env.POSTGRES_PASSWORD || "";
+
+    pool = new Pool({
+      connectionString: connectionString || undefined,
+      host: connectionString ? undefined : host,
+      port: connectionString ? undefined : port,
+      database: connectionString ? undefined : database,
+      user: connectionString ? undefined : user,
+      password: connectionString ? undefined : password,
+      connectionTimeoutMillis: 2000,
+      idleTimeoutMillis: 10000,
+      max: 10,
+      statement_timeout: 5000, // Enforce 5-second maximum statement execution timeout
+    });
+
+    pool.on("connect", (client) => {
+      // Enforce read-only transactions at the session level as a defense-in-depth measure
+      client.query("SET default_transaction_read_only = on;").catch((err) => {
+        console.warn("Could not enforce read-only transaction on client connection:", err.message);
+      });
+    });
+
+    pool.on("error", (err) => {
+      console.warn("Unexpected error on idle PostgreSQL client pool:", err.message);
+    });
+  }
+  return pool;
+}
+
+/**
+ * Execute a read-only parameterized query against PostgreSQL.
+ * Rejects destructive DDL/DML write statements and enforces statement timeouts.
+ */
+export async function executeQuery<T extends QueryResultRow = QueryResultRow>(
+  sqlText: string,
+  params: unknown[] = []
+): Promise<QueryResult<T>> {
+  const trimmedUpper = sqlText.trim().toUpperCase();
+
+  // Defense-in-depth: Reject any statement starting with destructive keywords
+  const destructivePrefixes = [
+    "DROP ",
+    "TRUNCATE ",
+    "DELETE ",
+    "ALTER ",
+    "INSERT ",
+    "UPDATE ",
+    "GRANT ",
+    "REVOKE ",
+    "CREATE ",
+  ];
+
+  for (const prefix of destructivePrefixes) {
+    if (trimmedUpper.startsWith(prefix)) {
+      throw new Error(`Security violation: Operation '${prefix.trim()}' is strictly prohibited on the analytical warehouse.`);
+    }
+  }
+
+  const p = getDbPool();
+  return p.query<T>(sqlText, params);
+}

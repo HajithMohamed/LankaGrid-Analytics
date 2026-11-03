@@ -1,0 +1,5 @@
+pipeline_name,target_table,total_executed_runs,cumulative_rows_read,cumulative_rows_inserted,cumulative_rows_updated,cumulative_rows_quarantined,avg_duration_seconds,max_duration_seconds,avg_throughput_rows_per_sec,total_verified_lineage_records,overall_quarantine_rate_pct,pipeline_quality_grade
+pucsl_dispatch_loader,fact_dispatch_interval,4,228960,217816,10329,815,148.05,319.90,405.3,228145,0.36,HIGH FIDELITY (< 1.0% QUARANTINE)
+nasa_weather_loader,fact_weather_daily,3,44220,21924,22296,0,63.00,169.08,532.3,44220,0.00,CLEAN ZERO-ERROR PIPELINE
+ceb_sales_loader,fact_electricity_sales,11,167,107,0,60,0.14,0.28,123.0,107,35.93,GOVERNED QUARANTINE PIPELINE
+pucsl_daily_pdf_loader,fact_generation_period,3,105,18,36,51,0.09,0.11,385.8,54,48.57,GOVERNED QUARANTINE PIPELINE
