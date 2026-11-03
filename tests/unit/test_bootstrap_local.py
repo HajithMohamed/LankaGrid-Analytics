@@ -10,6 +10,9 @@ Verifies:
 6. Non-destructive warehouse verification of schemas, facts, dims, and views.
 7. Next.js web/.env.local generation and synchronization.
 8. CLI flags: --dry-run, --verify-only, and --skip-data.
+
+Note: In accordance with .agents/rules/testing.md, unit tests are offline, in-memory,
+and execute with zero external database dependencies via mocked connections.
 """
 
 from __future__ import annotations
@@ -21,8 +24,12 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from scripts.bootstrap_local import (
+    EXPECTED_SCHEMAS,
     LocalBootstrapOrchestrator,
+    StepResult,
 )
+from scripts.migrate import MigrationRunner
+from scripts.seed_reference import ReferenceSeeder
 
 
 @pytest.fixture
@@ -112,7 +119,6 @@ class TestBootstrapLocalSafety:
         """Verify safe create database logic skips when databases are already present."""
         orchestrator.step1_validate_environment()
 
-        # Mock connection and cursor returning exists=True
         mock_cursor = MagicMock()
         mock_cursor.fetchone.return_value = (1,)  # DB exists
         mock_conn = MagicMock()
@@ -124,7 +130,6 @@ class TestBootstrapLocalSafety:
 
             assert res.status == "OK"
             assert any("already exists. Skipping creation" in d for d in res.details)
-            # Ensure CREATE DATABASE was never executed
             for call_args in mock_cursor.execute.call_args_list:
                 stmt_str = str(call_args[0][0])
                 assert "CREATE DATABASE" not in stmt_str
@@ -134,63 +139,123 @@ class TestBootstrapLocalSafety:
     ) -> None:
         """Verify that step3 detects all applied migrations and enforces SHA-256 integrity."""
         orchestrator.step1_validate_environment()
-        res = orchestrator.step3_run_migrations()
 
-        assert res.status == "OK"
-        assert "22 migrations already up to date" in res.message
-        assert any("Already applied: 22 migrations" in d for d in res.details)
+        mock_statuses = [
+            MagicMock(version=f"{i:03d}_migration", is_applied=True) for i in range(1, 23)
+        ]
+        with patch.object(MigrationRunner, "get_status", return_value=mock_statuses):
+            res = orchestrator.step3_run_migrations()
+
+            assert res.status == "OK"
+            assert "All 22 migrations already up to date" in res.message
+            assert any("Already applied: 22 migrations" in d for d in res.details)
 
     def test_role_configuration_updates_credentials(
         self, orchestrator: LocalBootstrapOrchestrator
     ) -> None:
         """Verify role credential configuration without password leakage."""
         orchestrator.step1_validate_environment()
-        res = orchestrator.step4_configure_roles()
 
-        assert res.status == "OK"
-        assert any("Configured login password for role 'grid_analyst'" in d for d in res.details)
-        # Ensure raw password string does not appear in details or message
-        env_pwd = os.getenv("POSTGRES_PASSWORD", "")
-        if env_pwd:
-            assert env_pwd not in res.message
-            for d in res.details:
-                assert env_pwd not in d
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = (True,)
+        mock_conn = MagicMock()
+        mock_conn.__enter__.return_value = mock_conn
+        mock_conn.transaction.return_value.__enter__.return_value = mock_conn
+        mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
+
+        with patch("psycopg.connect", return_value=mock_conn):
+            res = orchestrator.step4_configure_roles()
+
+            assert res.status == "OK"
+            assert any(
+                "Configured login password for role 'grid_analyst'" in d for d in res.details
+            )
+            env_pwd = os.getenv("POSTGRES_PASSWORD", "")
+            if env_pwd:
+                assert env_pwd not in res.message
+                for d in res.details:
+                    assert env_pwd not in d
 
     def test_reference_seeding_idempotence(self, orchestrator: LocalBootstrapOrchestrator) -> None:
-        """Verify reference seeding succeeds idempotently on existing database."""
+        """Verify reference seeding succeeds idempotently."""
         orchestrator.step1_validate_environment()
-        res = orchestrator.step5_seed_reference()
 
-        assert res.status == "OK"
-        assert "Seeded 13 dimension and reference tables" in res.message
+        seed_counts = {
+            "dw.dim_date": 2922,
+            "dw.dim_interval": 120,
+            "dw.dim_power_plant": 41,
+            "dw.dim_energy_source": 9,
+            "ref.unit": 17,
+        }
+        with patch.object(ReferenceSeeder, "seed_all", return_value=seed_counts):
+            res = orchestrator.step5_seed_reference()
+
+            assert res.status == "OK"
+            assert "Seeded 5 dimension and reference tables" in res.message
 
     def test_historical_data_loader_skips_when_facts_populated(
         self, orchestrator: LocalBootstrapOrchestrator
     ) -> None:
         """Verify step6 skips fact loading when records meet or exceed targets."""
         orchestrator.step1_validate_environment()
-        res = orchestrator.step6_load_historical_data()
 
-        assert res.status == "OK"
-        assert any("CEB 5-Year electricity sales already populated" in d for d in res.details)
-        assert any("NASA POWER 5-Year weather already populated" in d for d in res.details)
-        assert any("PUCSL March 2024 dispatch already populated" in d for d in res.details)
+        mock_cursor = MagicMock()
+        # Return sales=49, weather=21924, dispatch=107115
+        mock_cursor.fetchone.side_effect = [(49,), (21924,), (107115,)]
+        mock_conn = MagicMock()
+        mock_conn.__enter__.return_value = mock_conn
+        mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
+
+        with patch("psycopg.connect", return_value=mock_conn):
+            res = orchestrator.step6_load_historical_data()
+
+            assert res.status == "OK"
+            assert any("CEB 5-Year electricity sales already populated" in d for d in res.details)
+            assert any("NASA POWER 5-Year weather already populated" in d for d in res.details)
+            assert any("PUCSL March 2024 dispatch already populated" in d for d in res.details)
 
     def test_warehouse_verification_read_only_audit(
         self, orchestrator: LocalBootstrapOrchestrator
     ) -> None:
         """Verify non-destructive warehouse verification passes with expected counts."""
         orchestrator.step1_validate_environment()
-        res = orchestrator.step7_verify_warehouse()
 
-        assert res.status == "OK"
-        assert any("All 7 core schemas present" in d for d in res.details)
-        assert any("dw.fact_electricity_sales: 49 rows" in d for d in res.details)
-        assert any("dw.fact_weather_daily: 21,924 rows" in d for d in res.details)
-        assert any("dw.fact_dispatch_interval_y2024: 107,115 rows" in d for d in res.details)
-        assert any("audit.data_quality_issue: 926 rows" in d for d in res.details)
-        assert any("Materialized Views: 5/5 verified" in d for d in res.details)
-        assert any("Read-only role 'grid_analyst' authenticated" in d for d in res.details)
+        mock_cursor = MagicMock()
+        mock_cursor.fetchall.side_effect = [
+            [(s,) for s in EXPECTED_SCHEMAS],  # Schemas query
+            [
+                ("mv_monthly_weather_summary",),
+                ("mv_daily_dispatch_by_source",),
+                ("mv_monthly_generation_summary",),
+                ("mv_annual_energy_mix",),
+                ("mv_monthly_sales_summary",),
+            ],  # Matviews query
+        ]
+        # Counts for: 4 facts + 2 dims + 1 analyst select
+        mock_cursor.fetchone.side_effect = [
+            (49,),
+            (21924,),
+            (107115,),
+            (926,),  # facts
+            (41,),
+            (2922,),  # dims
+            (49,),  # analyst role query
+        ]
+        mock_conn = MagicMock()
+        mock_conn.__enter__.return_value = mock_conn
+        mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
+
+        with patch("psycopg.connect", return_value=mock_conn):
+            res = orchestrator.step7_verify_warehouse()
+
+            assert res.status == "OK"
+            assert any("All 7 core schemas present" in d for d in res.details)
+            assert any("dw.fact_electricity_sales: 49 rows" in d for d in res.details)
+            assert any("dw.fact_weather_daily: 21,924 rows" in d for d in res.details)
+            assert any("dw.fact_dispatch_interval_y2024: 107,115 rows" in d for d in res.details)
+            assert any("audit.data_quality_issue: 926 rows" in d for d in res.details)
+            assert any("Materialized Views: 5/5 verified" in d for d in res.details)
+            assert any("Read-only role 'grid_analyst' authenticated" in d for d in res.details)
 
     def test_frontend_env_sync_maintains_live_mode(
         self, orchestrator: LocalBootstrapOrchestrator, repo_root: Path
@@ -220,22 +285,27 @@ class TestBootstrapLocalSafety:
         assert exit_code == 0
         statuses = [r.status for r in dry_orch.results]
         assert "FAIL" not in statuses
-        # Roles, seed, and data load should be SKIPPED in dry-run mode
+        # Provisioning, migrations, roles, seed, data load, and verification should be SKIPPED in dry-run mode
         assert "SKIPPED" in statuses
 
     def test_verify_only_flag_runs_only_audit_and_sync(self, repo_root: Path) -> None:
         """Verify --verify-only executes only validation, verification, and frontend sync."""
-        verify_orch = LocalBootstrapOrchestrator(
-            project_root=repo_root,
-            dry_run=False,
-            verify_only=True,
-            skip_data=False,
-        )
-        exit_code = verify_orch.run()
+        with patch.object(
+            LocalBootstrapOrchestrator,
+            "step7_verify_warehouse",
+            return_value=StepResult(7, "Warehouse Verification", "OK", "Simulated audit OK"),
+        ):
+            verify_orch = LocalBootstrapOrchestrator(
+                project_root=repo_root,
+                dry_run=False,
+                verify_only=True,
+                skip_data=False,
+            )
+            exit_code = verify_orch.run()
 
-        assert exit_code == 0
-        step_numbers = [r.step_number for r in verify_orch.results]
-        assert step_numbers == [1, 7, 8]
+            assert exit_code == 0
+            step_numbers = [r.step_number for r in verify_orch.results]
+            assert step_numbers == [1, 7, 8]
 
     def test_skip_data_flag_skips_fact_loading(self, repo_root: Path) -> None:
         """Verify --skip-data bypasses step 6 fact data loading."""

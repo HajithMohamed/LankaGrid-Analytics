@@ -188,6 +188,20 @@ class LocalBootstrapOrchestrator:
         # Build maintenance DB config targeting 'postgres'
         maint_config = self.config.with_dbname(MAINTENANCE_DB_NAME)
 
+        if self.dry_run:
+            details.append("[Dry-Run] Would connect to maintenance database 'postgres'.")
+            details.append(
+                f"[Dry-Run] Would verify existence of '{PRIMARY_DB_NAME}' and '{TEST_DB_NAME}'."
+            )
+            return StepResult(
+                2,
+                "Database Provisioning",
+                "SKIPPED",
+                "Dry run: database provisioning simulated.",
+                details,
+                time.time() - t0,
+            )
+
         try:
             # Connect with autocommit=True (required for CREATE DATABASE)
             with psycopg.connect(**maint_config.to_conn_kwargs(), autocommit=True) as conn:
@@ -201,16 +215,11 @@ class LocalBootstrapOrchestrator:
                                 f"Database '{dbname}' already exists. Skipping creation."
                             )
                         else:
-                            if self.dry_run:
-                                details.append(
-                                    f"[Dry-Run] Would execute: CREATE DATABASE {dbname} WITH ENCODING = 'UTF8';"
-                                )
-                            else:
-                                stmt = sql.SQL("CREATE DATABASE {} WITH ENCODING = 'UTF8';").format(
-                                    sql.Identifier(dbname)
-                                )
-                                cur.execute(stmt)
-                                details.append(f"Database '{dbname}' created successfully.")
+                            stmt = sql.SQL("CREATE DATABASE {} WITH ENCODING = 'UTF8';").format(
+                                sql.Identifier(dbname)
+                            )
+                            cur.execute(stmt)
+                            details.append(f"Database '{dbname}' created successfully.")
             return StepResult(
                 2,
                 "Database Provisioning",
@@ -244,6 +253,19 @@ class LocalBootstrapOrchestrator:
         assert self.config is not None
 
         runner = MigrationRunner(migrations_dir=self.project_root / "database/migrations")
+        if self.dry_run:
+            files = runner.discover_migrations()
+            details.append(f"Discovered {len(files)} total migration files.")
+            details.append("[Dry-Run] Would verify checksums and apply pending migrations.")
+            return StepResult(
+                3,
+                "Database Migrations",
+                "SKIPPED",
+                f"Dry run: {len(files)} migrations discovered.",
+                details,
+                time.time() - t0,
+            )
+
         try:
             statuses = runner.get_status(self.config)
             pending = [s for s in statuses if not s.is_applied]
@@ -261,19 +283,6 @@ class LocalBootstrapOrchestrator:
                     "Database Migrations",
                     "OK",
                     "All 22 migrations already up to date.",
-                    details,
-                    time.time() - t0,
-                )
-
-            if self.dry_run:
-                details.append(
-                    f"[Dry-Run] Would apply {len(pending)} pending migrations: {[s.version for s in pending]}"
-                )
-                return StepResult(
-                    3,
-                    "Database Migrations",
-                    "SKIPPED",
-                    f"Dry run: {len(pending)} migrations pending.",
                     details,
                     time.time() - t0,
                 )
@@ -557,6 +566,19 @@ class LocalBootstrapOrchestrator:
         t0 = time.time()
         details: list[str] = []
         assert self.config is not None
+
+        if self.dry_run:
+            details.append(
+                "[Dry-Run] Would audit schemas, fact counts, dimension counts, views, and analyst role."
+            )
+            return StepResult(
+                7,
+                "Warehouse Verification",
+                "SKIPPED",
+                "Dry run: warehouse verification skipped.",
+                details,
+                time.time() - t0,
+            )
 
         try:
             with psycopg.connect(**self.config.to_conn_kwargs()) as conn:
