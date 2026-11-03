@@ -79,9 +79,12 @@ web/
 ### Prerequisites:
 - Node.js 20+ or 22+
 - `pnpm` (`npm install -g pnpm`)
-- PostgreSQL database populated following [Local Native PostgreSQL Setup Guide](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/database/local-native-postgresql-setup-guide.md)
+- PostgreSQL database populated following [Local Native PostgreSQL Setup Guide](../docs/database/local-native-postgresql-setup-guide.md) or using `python scripts/bootstrap_local.py` from repository root.
 
-### Step 1: Configure Environment
+### Step 1: Automatic Environment Setup (Recommended)
+If you ran `python scripts/bootstrap_local.py`, your `web/.env.local` is already automatically created and configured for your local PostgreSQL database!
+
+To configure manually:
 ```powershell
 cd web
 Copy-Item .env.example .env.local
@@ -96,7 +99,7 @@ POSTGRES_PORT=5432
 POSTGRES_DB=sl_grid_warehouse
 POSTGRES_USER=grid_analyst
 POSTGRES_PASSWORD=grid_analyst_dev_password_change_me
-DATA_SOURCE_MODE=hybrid
+DATA_SOURCE_MODE=live
 ```
 *(Or set `POSTGRES_USER=postgres` and your superuser password).*
 
