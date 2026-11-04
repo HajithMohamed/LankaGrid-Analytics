@@ -5,11 +5,70 @@ Application and PostgreSQL database configuration loaded from environment variab
 from __future__ import annotations
 
 import os
+import urllib.parse
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
+
+
+def parse_database_url(url: str) -> dict[str, Any]:
+    """Safely parse a database connection URL (e.g., Supabase, PostgreSQL).
+
+    Handles bracketed placeholders like [YOUR-PASSWORD], URL-encoded
+    credentials, query parameters like sslmode, and fallback defaults.
+    """
+    cleaned_url = url
+    has_bracket_placeholder = False
+
+    # Guard against RFC 3986 IPv6 validation errors when bracketed placeholders are present
+    if "[" in url and "]" in url:
+        at_pos = url.rfind("@")
+        if at_pos != -1:
+            user_pass_part = url[:at_pos]
+            rest = url[at_pos:]
+            if "[" in user_pass_part:
+                has_bracket_placeholder = True
+                cleaned_user_pass = (
+                    user_pass_part.replace("[YOUR-PASSWORD]", "YOUR_PASSWORD_PLACEHOLDER")
+                    .replace("[", "")
+                    .replace("]", "")
+                )
+                cleaned_url = cleaned_user_pass + rest
+
+    parsed = urllib.parse.urlparse(cleaned_url)
+    qs = urllib.parse.parse_qs(parsed.query)
+
+    hostname = parsed.hostname or "localhost"
+    is_supabase = "supabase.co" in hostname or "supabase.com" in hostname
+
+    username = urllib.parse.unquote(parsed.username) if parsed.username else None
+    password = urllib.parse.unquote(parsed.password) if parsed.password else None
+
+    if has_bracket_placeholder and password == "YOUR_PASSWORD_PLACEHOLDER":
+        password = "[YOUR-PASSWORD]"
+
+    dbname = parsed.path.lstrip("/") or "postgres"
+
+    port = parsed.port
+    if port is None:
+        port = 5432
+
+    if is_supabase:
+        sslmode = qs.get("sslmode", ["require"])[0]
+    else:
+        sslmode = qs.get("sslmode", [os.getenv("POSTGRES_SSLMODE", "disable")])[0]
+
+    return {
+        "host": hostname,
+        "port": port,
+        "dbname": dbname,
+        "user": username or ("postgres" if is_supabase else "grid_admin"),
+        "password": password or "",
+        "sslmode": sslmode,
+        "is_supabase": is_supabase,
+    }
 
 
 @dataclass(frozen=True)
@@ -72,44 +131,46 @@ class DatabaseConfig:
         )
 
     @classmethod
+    def from_url(cls, url: str) -> DatabaseConfig:
+        """Create a DatabaseConfig from a connection URL string."""
+        params = parse_database_url(url)
+        return cls(
+            host=params["host"],
+            port=params["port"],
+            dbname=params["dbname"],
+            user=params["user"],
+            password=params["password"],
+            sslmode=params["sslmode"],
+            connect_timeout=int(os.getenv("DB_TIMEOUT_SECONDS", "30")),
+        )
+
+    @classmethod
     def from_env(cls, use_test_db: bool = False) -> DatabaseConfig:
         """Load database configuration from environment variables (and local .env if unset).
 
         Supports both granular POSTGRES_* parameters and unified DATABASE_URL connection strings
         (e.g., Supabase transaction/session poolers).
         """
-        import urllib.parse
-
         load_dotenv(override=False)
 
         db_url = os.getenv("DATABASE_URL") or os.getenv("SUPABASE_DB_URL")
         if db_url and not use_test_db:
-            parsed = urllib.parse.urlparse(db_url)
-            qs = urllib.parse.parse_qs(parsed.query)
-            is_supabase = "supabase.co" in (parsed.hostname or "") or "supabase.com" in (parsed.hostname or "")
-            if is_supabase:
-                sslmode = qs.get("sslmode", ["require"])[0]
-            else:
-                sslmode = qs.get("sslmode", [os.getenv("POSTGRES_SSLMODE", "disable")])[0]
-
-            return cls(
-                host=parsed.hostname or "localhost",
-                port=parsed.port or (5432 if not is_supabase else 5432),
-                dbname=parsed.path.lstrip("/") or "postgres",
-                user=parsed.username or "postgres",
-                password=parsed.password or "",
-                sslmode=sslmode,
-                connect_timeout=int(os.getenv("DB_TIMEOUT_SECONDS", "30")),
-            )
+            return cls.from_url(db_url)
 
         db_key = "POSTGRES_TEST_DB" if use_test_db else "POSTGRES_DB"
         default_db = "sl_grid_warehouse_test" if use_test_db else "sl_grid_warehouse"
         host = os.getenv("POSTGRES_HOST", "localhost")
         is_supabase = "supabase.co" in host or "supabase.com" in host
 
+        port_env = os.getenv("POSTGRES_PORT")
+        if is_supabase and (not port_env or port_env == "5433"):
+            port = 5432
+        else:
+            port = int(port_env) if port_env else 5432
+
         return cls(
             host=host,
-            port=int(os.getenv("POSTGRES_PORT", "5432")),
+            port=port,
             dbname=os.getenv(db_key, "postgres" if is_supabase else default_db),
             user=os.getenv("POSTGRES_USER", "postgres" if is_supabase else "grid_admin"),
             password=os.getenv("POSTGRES_PASSWORD", ""),

@@ -3,7 +3,7 @@
 GridLens — Supabase Cloud Data Warehouse Migration & Provisioning Runner.
 
 GOVERNANCE & SAFETY:
-- Connects to Supabase Managed PostgreSQL via DatabaseConfig.from_env().
+- Connects to Supabase Managed PostgreSQL via DatabaseConfig.from_env() or --database-url.
 - Non-destructive: NEVER executes DROP DATABASE, DROP SCHEMA, or DROP TABLE.
 - Applies all 22 sequential forward migrations with SHA-256 immutability verification.
 - Seeds 13 conformed dimensions and reference domains idempotently.
@@ -17,11 +17,13 @@ Usage:
     python scripts/migrate_supabase.py --dry-run        # Preview migrations without executing DDL/DML
     python scripts/migrate_supabase.py --verify-only    # Non-destructive audit of remote warehouse
     python scripts/migrate_supabase.py --skip-data      # Apply schema and seed, skip large fact loads
+    python scripts/migrate_supabase.py --database-url "postgresql://postgres:pass@host:5432/postgres"
 """
 
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 import time
 from dataclasses import dataclass, field
@@ -29,6 +31,7 @@ from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
+from psycopg import sql
 from psycopg.cursor import Cursor
 
 from scripts.migrate import MigrationRunner
@@ -87,9 +90,8 @@ class SupabaseMigrator:
 
     def check_connection(self) -> tuple[bool, str]:
         """Test database connectivity with masked diagnostics."""
-        if "[YOUR-PASSWORD]" in (self.config.password or "") or "[YOUR-PASSWORD]" in str(
-            self.config
-        ):
+        raw_env_url = os.getenv("DATABASE_URL", "")
+        if "[YOUR-PASSWORD]" in (self.config.password or "") or "[YOUR-PASSWORD]" in raw_env_url:
             return (
                 False,
                 "Supabase password placeholder '[YOUR-PASSWORD]' detected in environment.\n"
@@ -100,9 +102,9 @@ class SupabaseMigrator:
             with get_connection(self.config, autocommit=True) as conn:
                 with conn.cursor() as cur:
                     cur.execute("SELECT version();")
-                    ver = _fetch_scalar(cur, "PostgreSQL")
+                    ver = str(_fetch_scalar(cur, "PostgreSQL"))
                     cur.execute("SHOW ssl;")
-                    ssl_status = _fetch_scalar(cur, "off")
+                    ssl_status = str(_fetch_scalar(cur, "off"))
                     return (
                         True,
                         f"Connected to {self.config.host}:{self.config.port}/{self.config.dbname} "
@@ -119,10 +121,17 @@ class SupabaseMigrator:
         with get_connection(self.config, autocommit=True) as conn:
             with conn.cursor() as cur:
                 # 1. Server & SSL Info
-                cur.execute("SHOW server_version;")
-                report.server_version = str(_fetch_scalar(cur, "Unknown"))
-                cur.execute("SHOW ssl;")
-                report.ssl_active = str(_fetch_scalar(cur, "off")).lower() in ("on", "true")
+                try:
+                    cur.execute("SHOW server_version;")
+                    report.server_version = str(_fetch_scalar(cur, "Unknown"))
+                except Exception:
+                    report.server_version = "Unknown"
+
+                try:
+                    cur.execute("SHOW ssl;")
+                    report.ssl_active = str(_fetch_scalar(cur, "off")).lower() in ("on", "true")
+                except Exception:
+                    report.ssl_active = False
 
                 # 2. Schemas
                 cur.execute(
@@ -133,7 +142,8 @@ class SupabaseMigrator:
                     ORDER BY schema_name;
                     """
                 )
-                report.schemas_found = [r[0] for r in cur.fetchall()]
+                rows = cur.fetchall()
+                report.schemas_found = [str(r[0]) for r in rows if r and len(r) > 0]
                 expected_schemas = {"raw", "staging", "ref", "dw", "mart", "audit", "etl"}
                 report.all_schemas_healthy = expected_schemas.issubset(set(report.schemas_found))
 
@@ -154,6 +164,27 @@ class SupabaseMigrator:
                 total_files = len(self.migration_runner.discover_migrations())
                 report.migrations_total = total_files
 
+                # Helper to count rows safely via to_regclass
+                def _safe_table_count(qualified_name: str) -> int:
+                    try:
+                        cur.execute("SELECT to_regclass(%s);", (qualified_name,))
+                        if _fetch_scalar(cur) is not None:
+                            parts = qualified_name.split(".")
+                            if len(parts) == 2:
+                                stmt = sql.SQL("SELECT count(*) FROM {}.{};").format(
+                                    sql.Identifier(parts[0]),
+                                    sql.Identifier(parts[1]),
+                                )
+                            else:
+                                stmt = sql.SQL("SELECT count(*) FROM {};").format(
+                                    sql.Identifier(qualified_name)
+                                )
+                            cur.execute(stmt)
+                            return _fetch_int(cur)
+                        return -1
+                    except Exception:
+                        return -1
+
                 # 4. Dimensions & Reference Tables
                 dim_tables = [
                     "dw.dim_date",
@@ -167,11 +198,7 @@ class SupabaseMigrator:
                     "dw.dim_administrative_area",
                 ]
                 for tbl in dim_tables:
-                    try:
-                        cur.execute(f"SELECT count(*) FROM {tbl};")
-                        report.dimension_tables[tbl] = _fetch_int(cur)
-                    except Exception:
-                        report.dimension_tables[tbl] = -1
+                    report.dimension_tables[tbl] = _safe_table_count(tbl)
 
                 ref_tables = [
                     "ref.unit",
@@ -183,11 +210,7 @@ class SupabaseMigrator:
                     "ref.source_precedence",
                 ]
                 for tbl in ref_tables:
-                    try:
-                        cur.execute(f"SELECT count(*) FROM {tbl};")
-                        report.reference_tables[tbl] = _fetch_int(cur)
-                    except Exception:
-                        report.reference_tables[tbl] = -1
+                    report.reference_tables[tbl] = _safe_table_count(tbl)
 
                 # 5. Fact Tables
                 fact_tables = [
@@ -200,11 +223,7 @@ class SupabaseMigrator:
                     "dw.fact_published_metric",
                 ]
                 for tbl in fact_tables:
-                    try:
-                        cur.execute(f"SELECT count(*) FROM {tbl};")
-                        report.fact_tables[tbl] = _fetch_int(cur)
-                    except Exception:
-                        report.fact_tables[tbl] = -1
+                    report.fact_tables[tbl] = _safe_table_count(tbl)
 
                 # 6. Materialized Views
                 mvs = [
@@ -215,18 +234,10 @@ class SupabaseMigrator:
                     "mart.mv_weather_correlation_summary",
                 ]
                 for mv in mvs:
-                    try:
-                        cur.execute(f"SELECT count(*) FROM {mv};")
-                        report.materialized_views[mv] = _fetch_int(cur)
-                    except Exception:
-                        report.materialized_views[mv] = -1
+                    report.materialized_views[mv] = _safe_table_count(mv)
 
                 # 7. Data Quality Audit
-                try:
-                    cur.execute("SELECT count(*) FROM audit.data_quality_issue;")
-                    report.data_quality_issues = _fetch_int(cur)
-                except Exception:
-                    report.data_quality_issues = -1
+                report.data_quality_issues = _safe_table_count("audit.data_quality_issue")
 
         return report
 
@@ -243,7 +254,10 @@ class SupabaseMigrator:
 
         print("Executing sequential forward migrations...")
         applied_count = self.migration_runner.apply_migrations(self.config)
-        self.migration_runner.configure_role_passwords_from_env(self.config)
+        try:
+            self.migration_runner.configure_role_passwords_from_env(self.config)
+        except Exception as e:
+            print(f"Notice: Role password configuration skipped or restricted: {e}")
         return applied_count
 
     def seed_dimensions(self, dry_run: bool = False) -> dict[str, int]:
@@ -319,8 +333,22 @@ class SupabaseMigrator:
         t0 = time.time()
         with get_connection(self.config, autocommit=True) as conn:
             with conn.cursor() as cur:
-                cur.execute("CALL etl.sp_refresh_analytical_marts();")
-        print(f"Materialized views refreshed in {time.time() - t0:.2f}s.")
+                cur.execute(
+                    """
+                    SELECT EXISTS (
+                        SELECT 1 FROM pg_proc p
+                        JOIN pg_namespace n ON p.pronamespace = n.oid
+                        WHERE n.nspname = 'etl' AND p.proname = 'sp_refresh_analytical_marts'
+                    );
+                    """
+                )
+                if _fetch_scalar(cur, False):
+                    cur.execute("CALL etl.sp_refresh_analytical_marts();")
+                    print(f"Materialized views refreshed in {time.time() - t0:.2f}s.")
+                else:
+                    print(
+                        "Notice: Procedure etl.sp_refresh_analytical_marts() not found (pending migration 021)."
+                    )
 
 
 def print_audit_summary(report: SupabaseAuditReport) -> None:
@@ -342,26 +370,26 @@ def print_audit_summary(report: SupabaseAuditReport) -> None:
 
     print("\nConformed Dimensions:")
     for dim, count in sorted(report.dimension_tables.items()):
-        status = f"{count:>8,d} rows" if count >= 0 else "  MISSING"
+        status = f"{count:>8,d} rows" if count >= 0 else "  NOT CREATED"
         print(f"  - {dim:<35}: {status}")
 
     print("\nReference Taxonomies:")
     for ref, count in sorted(report.reference_tables.items()):
-        status = f"{count:>8,d} rows" if count >= 0 else "  MISSING"
+        status = f"{count:>8,d} rows" if count >= 0 else "  NOT CREATED"
         print(f"  - {ref:<35}: {status}")
 
     print("\nFact Tables (Kimball Constellation):")
     for fact, count in sorted(report.fact_tables.items()):
-        status = f"{count:>8,d} rows" if count >= 0 else "  MISSING"
+        status = f"{count:>8,d} rows" if count >= 0 else "  NOT CREATED"
         print(f"  - {fact:<35}: {status}")
 
     print("\nAnalytical Materialized Views (Marts):")
     for mv, count in sorted(report.materialized_views.items()):
-        status = f"{count:>8,d} rows" if count >= 0 else "  MISSING"
+        status = f"{count:>8,d} rows" if count >= 0 else "  NOT CREATED"
         print(f"  - {mv:<35}: {status}")
 
     print(
-        f"\nAudit Quality Ledger: {report.data_quality_issues:,d} issues tracked in audit.data_quality_issue"
+        f"\nAudit Quality Ledger: {max(report.data_quality_issues, 0):,d} issues tracked in audit.data_quality_issue"
     )
     print("=" * 70)
 
@@ -372,6 +400,12 @@ def main(argv: list[str] | None = None) -> int:
 
     parser = argparse.ArgumentParser(
         description="Migrate and provision the GridLens Data Warehouse on Supabase PostgreSQL."
+    )
+    parser.add_argument(
+        "--database-url",
+        type=str,
+        default=None,
+        help="Explicit PostgreSQL connection URL (e.g. Supabase connection string). Overrides .env.",
     )
     parser.add_argument(
         "--dry-run",
@@ -395,10 +429,24 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    config = DatabaseConfig.from_env(use_test_db=False)
+    if args.database_url:
+        config = DatabaseConfig.from_url(args.database_url)
+    else:
+        config = DatabaseConfig.from_env(use_test_db=False)
+
     migrator = SupabaseMigrator(config=config)
 
     print(f"Targeting database: {config.host}:{config.port}/{config.dbname}")
+
+    # Check if user forgot to set DATABASE_URL
+    if not args.database_url and not os.getenv("DATABASE_URL") and not os.getenv("SUPABASE_DB_URL"):
+        if "supabase.co" not in config.host:
+            print("\n[NOTE] No DATABASE_URL specified. Defaulting to local configuration.")
+            print("To target Supabase, set DATABASE_URL in .env or pass --database-url:")
+            print(
+                "  python scripts/migrate_supabase.py --database-url "
+                '"postgresql://postgres:[PASSWORD]@db.leormbswimbnpixkkbbu.supabase.co:5432/postgres"\n'
+            )
 
     # Step 1: Connectivity check
     ok, msg = migrator.check_connection()

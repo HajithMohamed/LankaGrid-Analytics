@@ -83,4 +83,3 @@ def test_dry_run_performs_zero_database_mutations() -> None:
         assert r.status == "SUCCEEDED"
         assert r.duration_seconds >= 0.0
         assert r.marts_refreshed is True  # Dry run marks simulated success
-
