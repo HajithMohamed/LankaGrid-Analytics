@@ -1,0 +1,64 @@
+name: Scheduled Data Warehouse Refresh
+
+on:
+  schedule:
+    # Run daily at 02:00 UTC (07:30 Asia/Colombo) for PUCSL dispatch and NASA observations
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+    inputs:
+      dataset:
+        description: "Dataset to refresh"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - ceb
+          - pucsl
+          - nasa
+      force:
+        description: "Force re-processing of already recorded source files"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  refresh-warehouse:
+    name: Incremental Acquisition & Mart Refresh
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run Incremental Warehouse Refresh
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          POSTGRES_SSLMODE: "require"
+        run: |
+          FORCE_FLAG=""
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+            FORCE_FLAG="--force"
+          fi
+          DATASET="${{ github.event.inputs.dataset || 'all' }}"
+          python scripts/refresh_warehouse.py --dataset "$DATASET" $FORCE_FLAG --verbose
+
+      - name: Verify Analytical Marts Health
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          POSTGRES_SSLMODE: "require"
+        run: |
+          python scripts/migrate_supabase.py --verify-only
+

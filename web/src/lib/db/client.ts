@@ -16,19 +16,41 @@ export interface DbConfig {
  * Never exposes passwords or secret connection strings.
  */
 export function getDbConfigSummary(): DbConfig {
+  const dbUrl = process.env.DATABASE_URL;
+  if (dbUrl) {
+    try {
+      const parsed = new URL(dbUrl);
+      const isSupabase =
+        parsed.hostname.includes("supabase.co") || parsed.hostname.includes("supabase.com");
+      return {
+        host: parsed.hostname,
+        port: parsed.port ? Number(parsed.port) : 5432,
+        database: parsed.pathname ? parsed.pathname.replace(/^\//, "") : "postgres",
+        user: parsed.username || "postgres",
+        hasPassword: Boolean(parsed.password),
+        ssl: isSupabase || process.env.POSTGRES_SSLMODE === "require" || process.env.NODE_ENV === "production",
+      };
+    } catch {
+      // Fallback if URL parsing fails
+    }
+  }
+
+  const host = process.env.POSTGRES_HOST || "localhost";
+  const isSupabase = host.includes("supabase.co") || host.includes("supabase.com");
   return {
-    host: process.env.POSTGRES_HOST || "localhost",
+    host,
     port: Number(process.env.POSTGRES_PORT || 5433),
-    database: process.env.POSTGRES_DB || "sl_grid_warehouse",
-    user: process.env.POSTGRES_USER || "grid_analyst",
+    database: process.env.POSTGRES_DB || (isSupabase ? "postgres" : "sl_grid_warehouse"),
+    user: process.env.POSTGRES_USER || (isSupabase ? "postgres" : "grid_analyst"),
     hasPassword: Boolean(process.env.POSTGRES_PASSWORD || process.env.DATABASE_URL),
-    ssl: process.env.NODE_ENV === "production",
+    ssl: isSupabase || process.env.POSTGRES_SSLMODE === "require" || process.env.NODE_ENV === "production",
   };
 }
 
 /**
  * Acquire or initialize the singleton PostgreSQL client pool.
- * Dedicated strictly to read-only dashboard analysis using least-privilege role 'grid_analyst'.
+ * Dedicated strictly to read-only dashboard analysis using least-privilege role 'grid_analyst'
+ * or managed Supabase PostgreSQL connection with TLS enforcement.
  */
 export function getDbPool(): Pool {
   if (!pool) {
@@ -39,6 +61,13 @@ export function getDbPool(): Pool {
     const user = process.env.POSTGRES_USER || "grid_analyst";
     const password = process.env.POSTGRES_PASSWORD || "";
 
+    const isSupabase =
+      (connectionString && (connectionString.includes("supabase.co") || connectionString.includes("supabase.com"))) ||
+      host.includes("supabase.co") ||
+      host.includes("supabase.com");
+
+    const useSsl = isSupabase || process.env.POSTGRES_SSLMODE === "require" || process.env.NODE_ENV === "production";
+
     pool = new Pool({
       connectionString: connectionString || undefined,
       host: connectionString ? undefined : host,
@@ -46,10 +75,11 @@ export function getDbPool(): Pool {
       database: connectionString ? undefined : database,
       user: connectionString ? undefined : user,
       password: connectionString ? undefined : password,
-      connectionTimeoutMillis: 2000,
+      ssl: useSsl ? { rejectUnauthorized: false } : undefined,
+      connectionTimeoutMillis: isSupabase ? 10000 : 2000,
       idleTimeoutMillis: 10000,
       max: 10,
-      statement_timeout: 5000, // Enforce 5-second maximum statement execution timeout
+      statement_timeout: 10000, // Enforce 10-second maximum statement execution timeout
     });
 
     pool.on("connect", (client) => {

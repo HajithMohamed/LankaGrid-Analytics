@@ -198,37 +198,37 @@ Profiled with `EXPLAIN (ANALYZE, BUFFERS)` across all 24 production business que
 
 The 24 business queries answer foundational power sector questions across six engineering domains:
 
-### 8.1 Domain 1: Generation Mix & Renewables (Member 1 — Q01–Q04)
+### 8.1 Domain 1: Generation Mix & Renewables (Domain 1 — Q01–Q04)
 - **March 2024 Generation Mix (Q01):** Total national dispatched generation was **1,399,337.00 MWh** (~1.40 TWh). Thermal Coal supplied **42.56% (595,524.50 MWh)**, Thermal Oil contributed **27.69% (387,450.75 MWh)**, Major Hydro generated **22.98% (321,595.50 MWh)**, and NCRE provided **6.77%** (Mini Hydro 2.88%, Solar PV 1.63%, Wind 1.42%, Biomass 0.84%).
 - **Renewable Trajectory (Q02):** Daily renewable penetration averaged **29.75%**, fluctuating between 27.13% and 34.68%. A 7-day centered moving average indicates that daily fluctuations in March 2024 were driven primarily by hydro reservoir dispatch scheduling rather than non-conventional renewable intermittency.
 - **Capacity Factors (Q03):** Lakvijaya Coal units operated as sustained baseload at **88.74%–89.15% capacity factor** relative to reference nameplates, while major hydro was modulated for peak matching (Victoria CF **38.15%**, Kotmale CF **12.21%**). Reference nameplate values are derived from published plant registers; observed peak utilization proxies are provided to differentiate baseline ratings from operational output envelopes.
 - **Time-of-Use Peaking (Q04):** During the Evening Peak block (18:30–22:30), major hydro dispatch expanded to **32.40%** of peak generation, compensating for the physical cessation of daytime solar PV generation ($0.00\%$).
 
-### 8.2 Domain 2: Grid Dispatch Dynamics & Telemetry Reconciliation (Member 2 — Q05–Q08)
+### 8.2 Domain 2: Grid Dispatch Dynamics & Telemetry Reconciliation (Domain 2: Dispatch Dynamics — Q05–Q08)
 - **Diurnal Load Curves (Q05):** Weekday demand peaked at **2,476.32 MW** (Interval 77, 19:15), while weekend demand peaked at **2,241.18 MW** (a **9.50% drop of 235.14 MW**). Night baseload demand (03:00–04:30) hovered steadily at 1,280–1,340 MW across both weekday and weekend profiles.
 - **Ramping Velocity (Q06):** In-database first derivatives via `LAG()` identified the maximum positive ramping stress occurring systematically at **18:30 (Interval 75)**, reaching **+141.00 MW in 15 minutes (+9.40 MW/min)** on Sunday, March 17, as lighting demand increases alongside solar decline.
 - **Baseload vs Peaker Screening (Q07):** Lakvijaya Coal exhibited a low Coefficient of Variation ($CV = 0.09$, 100% availability), characterizing baseload operation. Upper Kotmale ($CV = 1.39$) was characterized as an operational peaking facility.
 - **Telemetry Reconciliation (Q08):** Discrete 15-minute Riemann integration of high-voltage transmission telemetry (46,308.00 MWh on March 1, 2024) was reconciled against published PUCSL daily generation report benchmarks (48,223.00 MWh from Sheet `01.03`). Telemetered Coal (+0.04%, +8.75 MWh) and Major Hydro (+0.05%, +5.10 MWh) matched published figures with high precision. The 3.97% (1,915.00 MWh) net variance is consistent with untelemetered distributed generation (including rooftop solar and embedded 33kV mini-hydro below transmission SCADA metering); full attribution of all residual components remains subject to availability of distribution-level sub-metering data.
 
-### 8.3 Domain 3: Electricity Demand Dynamics & Sectoral Shifts (Member 3 — Q09–Q12)
+### 8.3 Domain 3: Electricity Demand Dynamics & Sectoral Shifts (Domain 3: Demand Dynamics — Q09–Q12)
 - **Five-Year Growth (Q09):** Audited national billed electricity sales grew from **14,287.00 GWh in 2020** to **15,190.50 GWh in 2024** (**+6.32% net gain**, **CAGR +1.54%**).
 - **Tourism Sector Rebound (Q10):** Hotel sector billed sales rebounded by **+83.94%** from **193.00 GWh (2020)** to **355.00 GWh (2024)**, exhibiting a **CAGR of +16.46%** across the post-COVID recovery window.
 - **Domestic Consumption Trends (Q11):** Billed residential sales contracted by **-7.64%** (5,090 GWh to 4,701 GWh) between 2020 and 2024, coincident with macroeconomic tariff restructuring periods, with average monthly household consumption declining from 71.3 to 62.4 kWh/account/month.
 - **LECO Bulk Supply Decoupling (Q12):** LECO bulk purchases remained stable between 1,539.00 and 1,633.00 GWh annually (10.67% to 11.23% of national consumption), verified without double-counting against CEB retail sales.
 
-### 8.4 Domain 4: Weather & Renewable Coupling (Member 4 — Q13–Q16)
+### 8.4 Domain 4: Weather & Renewable Coupling (Domain 4 — Q13–Q16)
 - **Solar Potential Profiles (Q13):** Five-year NASA POWER daily observations showed Mannar (`LOC_MANNAR_WIND`) averaged **5.16 Peak Sun Hours/day** (18.57 MJ/m²/day), while the Victoria catchment (`LOC_VICTORIA_CATCHMENT`) averaged **5.09 PSH/day** (18.31 MJ/m²/day), with both regions exhibiting peak solar irradiance in March–April.
 - **Temperature vs Dispatch Correlation (Q14):** In-database Pearson correlation revealed near-zero correlation ($r = +0.0083$) between the two-station non-urban average temperature (Victoria and Mannar) and national peak dispatch active power, while exhibiting a mild positive correlation ($r = +0.1248$) with total daily integrated energy. This confirms that monitoring station temperatures outside urban load centres do not serve as proxies for national cooling demand.
 - **Monsoon Rainfall CUBE (Q15):** A multi-dimensional cross-tabulation over 16,929.50 mm of recorded rainfall indicated that the Victoria catchment captured **63.54% (10,757.20 mm)**, dominated by the Second Inter-Monsoon (3,421.10 mm).
 - **Wind Resource Coupling (Q16):** Pearson correlation between satellite 50m wind speed at Mannar and utility wind dispatch reached **$r = +0.7143$** ($r(v^3) = +0.7132$), demonstrating strong physical co-movement with aerodynamic power curves.
 
-### 8.5 Domain 5: Power Plant Operations & Capacity Performance (Member 5 — Q17–Q20)
+### 8.5 Domain 5: Power Plant Operations & Capacity Performance (Domain 5 — Q17–Q20)
 - **Operational Dispatch Duty Cycles (Q17):** Lakvijaya Units 1–3 operated with **100.0% duty cycle** across all 2,976 intervals in March 2024. Hydro dispatch was selectively scheduled (Victoria active in 96.2% of intervals; Bowatenna in 8.5%). Zero dispatch indicates no active power dispatched in that interval (whether due to reserve standby, water management, or maintenance) rather than unverified forced outages.
 - **Observed Peak Dispatch vs Reference Nameplate (Q18):** 10 stations delivered $\ge 95\%$ of their rated reference capacity. Stations where observed dispatch exceeded baseline registry ratings (Polpitiya at 116.0%, West Coast at 107.0%) are catalogued objectively as observed dispatch exceedances relative to baseline registers, avoiding unsubstantiated engineering claims.
 - **Lakvijaya Baseload Reliability (Q19):** Lakvijaya Coal delivered **595,524.50 MWh with zero offline intervals** across 744 operating hours in March 2024.
 - **Evening Peak Merit-Order (Q20):** During the evening peak, Coal supplied 39.67%, Major Hydro contributed 32.40%, and Thermal Oil provided 23.19%, with zero dispatch recorded from open-cycle gas turbines.
 
-### 8.6 Domain 6: Grid Efficiency, Reconciliation & Quality (Member 6 — Q21–Q24)
+### 8.6 Domain 6: Grid Efficiency, Reconciliation & Quality (Domain 6: Grid Efficiency & Quality — Q21–Q24)
 - **Productive Demand Share (Q21):** `GROUPING SETS` revealed that billed electricity consumed by productive economic sectors (Industrial, Commercial, Hotels, Agriculture) expanded from **50.35% (2020)** to **55.64% (2024)** of total billed consumption.
 - **Cross-Source Published-Total Reconciliation (Q22):** Compares audited annual gross generation totals with retail billed sales facts (2020–2024). Billed retail sales represent 90.4%–91.2% of gross generated energy, leaving a macro residual difference of **8.8% to 9.6%** representing system-wide transmission losses, distribution losses, and station auxiliary consumption, consistent with published CEB statistical balance sheets.
 - **Data Quality Quarantine Audit (Q23):** Exactly **926 records** were quarantined (0.34% of processed volume). Unmatched station entities (879 records, 94.92%) and negative power measurements (47 records, 5.08%) reconcile to **100.00%** with zero unallocated records.

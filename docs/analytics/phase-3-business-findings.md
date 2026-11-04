@@ -5,7 +5,7 @@ This report synthesizes the core findings and numerical insights produced by the
 
 ---
 
-## 1. Generation Mix and Renewable Penetration (Member 1)
+## 1. Generation Mix and Renewable Penetration (Domain 1: Generation Mix)
 
 1. **March 2024 Generation Mix (Q01)**:
    - Total national dispatched electrical energy in March 2024 was **1,399,337.00 MWh** (~1.40 TWh).
@@ -35,7 +35,7 @@ This report synthesizes the core findings and numerical insights produced by the
 
 ---
 
-## 2. Grid Dispatch Dynamics and Operational Ramping (Member 2)
+## 2. Grid Dispatch Dynamics and Operational Ramping (Domain 2: Dispatch Dynamics)
 
 1. **Diurnal Load Curves: Weekday vs Weekend (Q05)**:
    - Average weekday system demand peaked at **2,476.32 MW** at Slot 77 (19:15), with a secondary daytime plateau averaging **2,150–2,280 MW**.
@@ -65,7 +65,7 @@ This report synthesizes the core findings and numerical insights produced by the
 
 ---
 
-## 3. Electricity Demand & Customer Dynamics (Member 3)
+## 3. Electricity Demand & Customer Dynamics (Domain 3: Demand Dynamics)
 
 1. **Five-Year Sectoral Trajectories (Q09 & Q10)**:
    - **Hotel Sector**: Rebounded dramatically from **193.00 GWh (2020)** to **355.00 GWh (2024)**, exhibiting **+83.94% net growth** and a **CAGR of +16.46%**, tracking the post-pandemic revival of Sri Lanka's tourism industry.
@@ -83,7 +83,7 @@ This report synthesizes the core findings and numerical insights produced by the
 
 ---
 
-## 4. Weather and Renewable Resource Coupling (Member 4)
+## 4. Weather and Renewable Resource Coupling (Domain 4: Weather Coupling)
 
 1. **Climatic Solar Irradiance Profiles (Q13)**:
    - Northern dry zone (`LOC_MANNAR_WIND`) recorded a 5-year average Global Horizontal Irradiance of **18.57 MJ/m²/day** (**5.16 Peak Sun Hours/day**).
@@ -105,7 +105,7 @@ This report synthesizes the core findings and numerical insights produced by the
 
 ---
 
-## 5. Plant Operations & Capacity Performance (Member 5)
+## 5. Plant Operations & Capacity Performance (Domain 5: Plant Operations)
 
 1. **Online Availability & Duty Cycles (Q17)**:
    - Lakvijaya Units 1, 2, and 3 operated with **100.0% duty cycle** (2,976 out of 2,976 fifteen-minute intervals online).
@@ -124,7 +124,7 @@ This report synthesizes the core findings and numerical insights produced by the
 
 ---
 
-## 6. Grid Efficiency, Reconciliation & Data Quality (Member 6)
+## 6. Grid Efficiency, Reconciliation & Data Quality (Domain 6: Grid Efficiency & Quality)
 
 1. **Five-Year Grid Sales Efficiency Trends (Q21)**:
    - Between 2020 and 2024, the productive economic share of national billed electricity consumption expanded steadily from **50.35% (7,194.00 GWh) in 2020** to **55.64% (8,452.50 GWh) in 2024**.

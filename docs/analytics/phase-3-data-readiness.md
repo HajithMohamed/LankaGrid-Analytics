@@ -20,7 +20,7 @@ The 24 academic analytical queries are allocated across the 6 software engineeri
 
 ---
 
-### 2.1 Member 1: Generation Mix & Renewable Penetration (Queries 01 – 04)
+### 2.1 Domain 1: Generation Mix & Renewables Mix & Renewable Penetration (Queries 01 – 04)
 
 | Query ID | Business Question / Analytical Goal | Required Schema Objects & Grain | Status | Analytical Scope & Constraints |
 |---|---|---|---|---|
@@ -31,7 +31,7 @@ The 24 academic analytical queries are allocated across the 6 software engineeri
 
 ---
 
-### 2.2 Member 2: Grid Dispatch & Operational Dynamics (Queries 05 – 08)
+### 2.2 Domain 2: Grid Dispatch & Operational Dynamics (Queries 05 – 08)
 
 | Query ID | Business Question / Analytical Goal | Required Schema Objects & Grain | Status | Analytical Scope & Constraints |
 |---|---|---|---|---|
@@ -42,7 +42,7 @@ The 24 academic analytical queries are allocated across the 6 software engineeri
 
 ---
 
-### 2.3 Member 3: Sectoral Electricity Sales & Demand Dynamics (Queries 09 – 12)
+### 2.3 Domain 3: Sectoral Electricity Sales & Demand Dynamics (Queries 09 – 12)
 
 | Query ID | Business Question / Analytical Goal | Required Schema Objects & Grain | Status | Analytical Scope & Constraints |
 |---|---|---|---|---|
@@ -53,7 +53,7 @@ The 24 academic analytical queries are allocated across the 6 software engineeri
 
 ---
 
-### 2.4 Member 4: Solar Irradiance & Renewable Potential (Queries 13 – 16)
+### 2.4 Domain 4: Solar Irradiance & Renewable Potential (Queries 13 – 16)
 
 | Query ID | Business Question / Analytical Goal | Required Schema Objects & Grain | Status | Analytical Scope & Constraints |
 |---|---|---|---|---|
@@ -64,7 +64,7 @@ The 24 academic analytical queries are allocated across the 6 software engineeri
 
 ---
 
-### 2.5 Member 5: Plant Reliability, Outages & Availability (Queries 17 – 20)
+### 2.5 Domain 5: Plant Operations & Capacity Reliability, Outages & Availability (Queries 17 – 20)
 
 | Query ID | Business Question / Analytical Goal | Required Schema Objects & Grain | Status | Analytical Scope & Constraints |
 |---|---|---|---|---|
@@ -75,7 +75,7 @@ The 24 academic analytical queries are allocated across the 6 software engineeri
 
 ---
 
-### 2.6 Member 6: System Losses, Grid Efficiency & Data Quality (Queries 21 – 24)
+### 2.6 Domain 6: System Losses, Grid Efficiency & Data Quality (Queries 21 – 24)
 
 | Query ID | Business Question / Analytical Goal | Required Schema Objects & Grain | Status | Analytical Scope & Constraints |
 |---|---|---|---|---|

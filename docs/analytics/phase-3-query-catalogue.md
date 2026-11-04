@@ -5,7 +5,7 @@ This catalogue documents all 24 analytical queries designed and implemented acro
 
 ---
 
-## Member 1: Grid Generation Mix & Renewable Penetration
+## Domain 1: Grid Generation Mix & Renewable Penetration
 
 ### [Q01: Generation Mix by Energy Source (March 2024)](../../database/queries/phase3/member_01_generation/Q01.sql)
 - **Business Question**: What was the total energy generation (MWh and %) by energy source and fuel type for March 2024?
@@ -41,7 +41,7 @@ This catalogue documents all 24 analytical queries designed and implemented acro
 
 ---
 
-## Member 2: Grid Dispatch Dynamics & 15-Minute Load Profiles
+## Domain 2: Grid Dispatch Dynamics & 15-Minute Load Profiles
 
 ### [Q05: 15-Minute Diurnal Dispatch Curves — Weekday vs Weekend](../../database/queries/phase3/member_02_dispatch/Q05.sql)
 - **Business Question**: What is the average 24-hour diurnal dispatch curve for weekdays compared to weekends across March 2024?
@@ -77,7 +77,7 @@ This catalogue documents all 24 analytical queries designed and implemented acro
 
 ---
 
-## Member 3: Sectoral Electricity Sales & Demand Dynamics
+## Domain 3: Sectoral Electricity Sales & Demand Dynamics
 
 ### [Q09: Five-Year Sectoral Electricity Sales Trends (2020–2024)](../../database/queries/phase3/member_03_sales/Q09.sql)
 - **Business Question**: How did electricity sales change across consumer categories from 2020 to 2024?
@@ -113,7 +113,7 @@ This catalogue documents all 24 analytical queries designed and implemented acro
 
 ---
 
-## Member 4: Weather Impacts & Renewable Resource Correlation
+## Domain 4: Weather & Renewable Coupling Impacts & Renewable Resource Correlation
 
 ### [Q13: Five-Year Solar Irradiance Profiles Across Climate Zones](../../database/queries/phase3/member_04_weather/Q13.sql)
 - **Business Question**: How does daily and monthly solar irradiance (GHI) vary across Sri Lanka's climatic zones?
@@ -149,7 +149,7 @@ This catalogue documents all 24 analytical queries designed and implemented acro
 
 ---
 
-## Member 5: Power Plant Performance & Operational Efficiency
+## Domain 5: Power Plant Performance & Operational Efficiency
 
 ### [Q17: Daily Operating Duty Cycle & Online Availability](../../database/queries/phase3/member_05_plant_operations/Q17.sql)
 - **Business Question**: What was the daily operating duty cycle, online availability, and zero-generation interval distribution across all grid plants?
@@ -185,7 +185,7 @@ This catalogue documents all 24 analytical queries designed and implemented acro
 
 ---
 
-## Member 6: Grid Efficiency, Reconciliation & Data Quality
+## Domain 6: Grid Efficiency, Reconciliation & Data Quality
 
 ### [Q21: Five-Year Grid Sales Efficiency & Productive Demand Share Analysis (2020–2024)](../../database/queries/phase3/member_06_grid_efficiency/Q21.sql)
 - **Business Question**: How did the sectoral distribution of billed electricity consumption, productive economic demand share, and system sales intensity evolve between 2020 and 2024?
