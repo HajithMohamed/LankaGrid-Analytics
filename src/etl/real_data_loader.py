@@ -297,12 +297,20 @@ class RealDataWarehouseLoader:
                             (batch_id,),
                         )
                         cur.execute(
-                            "DELETE FROM raw.extracted_record WHERE batch_id = %s;", (batch_id,)
+                            """
+                            CREATE TEMP TABLE tmp_extracted_dispatch (
+                                batch_id BIGINT,
+                                source_document_id BIGINT,
+                                source_row_locator VARCHAR(128),
+                                raw_payload JSONB,
+                                content_sha256 VARCHAR(64)
+                            ) ON COMMIT DROP;
+                            """
                         )
 
                         with cur.copy(
                             """
-                            COPY raw.extracted_record (
+                            COPY tmp_extracted_dispatch (
                                 batch_id, source_document_id, source_row_locator, raw_payload, content_sha256
                             ) FROM STDIN
                             """
@@ -327,6 +335,19 @@ class RealDataWarehouseLoader:
                                         hashlib.sha256(payload_json.encode("utf-8")).hexdigest(),
                                     )
                                 )
+
+                        cur.execute(
+                            """
+                            INSERT INTO raw.extracted_record (
+                                batch_id, source_document_id, source_row_locator, raw_payload, content_sha256
+                            )
+                            SELECT batch_id, source_document_id, source_row_locator, raw_payload, content_sha256
+                            FROM tmp_extracted_dispatch
+                            ON CONFLICT (batch_id, source_row_locator) DO UPDATE
+                                SET raw_payload = EXCLUDED.raw_payload,
+                                    content_sha256 = EXCLUDED.content_sha256;
+                            """
+                        )
 
                         with cur.copy(
                             """
@@ -500,12 +521,20 @@ class RealDataWarehouseLoader:
                             (batch_id,),
                         )
                         cur.execute(
-                            "DELETE FROM raw.extracted_record WHERE batch_id = %s;", (batch_id,)
+                            """
+                            CREATE TEMP TABLE tmp_extracted_weather (
+                                batch_id BIGINT,
+                                source_document_id BIGINT,
+                                source_row_locator VARCHAR(128),
+                                raw_payload JSONB,
+                                content_sha256 VARCHAR(64)
+                            ) ON COMMIT DROP;
+                            """
                         )
 
                         with cur.copy(
                             """
-                            COPY raw.extracted_record (
+                            COPY tmp_extracted_weather (
                                 batch_id, source_document_id, source_row_locator, raw_payload, content_sha256
                             ) FROM STDIN
                             """
@@ -522,6 +551,19 @@ class RealDataWarehouseLoader:
                                         hashlib.sha256(payload_json.encode("utf-8")).hexdigest(),
                                     )
                                 )
+
+                        cur.execute(
+                            """
+                            INSERT INTO raw.extracted_record (
+                                batch_id, source_document_id, source_row_locator, raw_payload, content_sha256
+                            )
+                            SELECT batch_id, source_document_id, source_row_locator, raw_payload, content_sha256
+                            FROM tmp_extracted_weather
+                            ON CONFLICT (batch_id, source_row_locator) DO UPDATE
+                                SET raw_payload = EXCLUDED.raw_payload,
+                                    content_sha256 = EXCLUDED.content_sha256;
+                            """
+                        )
 
                         with cur.copy(
                             """
