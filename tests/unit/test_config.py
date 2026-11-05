@@ -10,6 +10,8 @@ from src.common.config import DatabaseConfig, get_config
 @pytest.mark.unit
 def test_database_config_defaults(monkeypatch):
     """Test default database configuration values when environment is minimal."""
+    monkeypatch.setenv("DATABASE_URL", "")
+    monkeypatch.setenv("SUPABASE_DB_URL", "")
     monkeypatch.setenv("POSTGRES_DB", "sl_grid_warehouse")
     monkeypatch.setenv("POSTGRES_USER", "grid_admin")
     monkeypatch.setenv("POSTGRES_PASSWORD", "secret123")

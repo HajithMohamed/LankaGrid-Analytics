@@ -292,71 +292,94 @@ class RealDataWarehouseLoader:
             try:
                 with conn.transaction():
                     with conn.cursor() as cur:
-                        raw_rows = []
-                        stg_rows = []
-                        for rec in all_records:
-                            row_loc = f"{rec.sheet_name}:r{rec.row_index}:c{rec.column_index}"
-                            payload_json = json.dumps(
-                                {
-                                    "date": rec.observation_date.isoformat(),
-                                    "slot": rec.interval_slot_number,
-                                    "timestamp": rec.observation_timestamp.isoformat(),
-                                    "station": rec.raw_entity_name,
-                                    "power_mw": rec.power_mw,
-                                }
-                            )
-                            raw_rows.append(
-                                (
-                                    batch_id,
-                                    doc_id,
-                                    row_loc,
-                                    payload_json,
-                                    hashlib.sha256(payload_json.encode("utf-8")).hexdigest(),
-                                )
-                            )
-                            stg_rows.append(
-                                (
-                                    batch_id,
-                                    doc_id,
-                                    rec.raw_entity_name,
-                                    rec.observation_date,
-                                    rec.interval_slot_number,
-                                    rec.observation_timestamp.isoformat(),
-                                    rec.observation_timestamp,
-                                    str(rec.power_mw) if rec.power_mw is not None else None,
-                                    rec.power_mw,
-                                    revision,
-                                )
-                            )
+                        cur.execute(
+                            "DELETE FROM staging.stg_dispatch_observation WHERE batch_id = %s;",
+                            (batch_id,),
+                        )
+                        cur.execute(
+                            """
+                            CREATE TEMP TABLE tmp_extracted_dispatch (
+                                batch_id BIGINT,
+                                source_document_id BIGINT,
+                                source_row_locator VARCHAR(128),
+                                raw_payload JSONB,
+                                content_sha256 VARCHAR(64)
+                            ) ON COMMIT DROP;
+                            """
+                        )
 
-                        cur.executemany(
+                        with cur.copy(
+                            """
+                            COPY tmp_extracted_dispatch (
+                                batch_id, source_document_id, source_row_locator, raw_payload, content_sha256
+                            ) FROM STDIN
+                            """
+                        ) as copy:
+                            for rec in all_records:
+                                row_loc = f"{rec.sheet_name}:r{rec.row_index}:c{rec.column_index}"
+                                payload_json = json.dumps(
+                                    {
+                                        "date": rec.observation_date.isoformat(),
+                                        "slot": rec.interval_slot_number,
+                                        "timestamp": rec.observation_timestamp.isoformat(),
+                                        "station": rec.raw_entity_name,
+                                        "power_mw": rec.power_mw,
+                                    }
+                                )
+                                copy.write_row(
+                                    (
+                                        batch_id,
+                                        doc_id,
+                                        row_loc,
+                                        payload_json,
+                                        hashlib.sha256(payload_json.encode("utf-8")).hexdigest(),
+                                    )
+                                )
+
+                        cur.execute(
                             """
                             INSERT INTO raw.extracted_record (
                                 batch_id, source_document_id, source_row_locator, raw_payload, content_sha256
-                            ) VALUES (%s, %s, %s, %s::jsonb, %s)
-                            ON CONFLICT (batch_id, source_row_locator) DO UPDATE SET raw_payload = EXCLUDED.raw_payload;
-                            """,
-                            raw_rows,
+                            )
+                            SELECT batch_id, source_document_id, source_row_locator, raw_payload, content_sha256
+                            FROM tmp_extracted_dispatch
+                            ON CONFLICT (batch_id, source_row_locator) DO UPDATE
+                                SET raw_payload = EXCLUDED.raw_payload,
+                                    content_sha256 = EXCLUDED.content_sha256;
+                            """
                         )
 
-                        cur.executemany(
+                        with cur.copy(
                             """
-                            INSERT INTO staging.stg_dispatch_observation (
+                            COPY staging.stg_dispatch_observation (
                                 batch_id, source_document_id, source_code,
                                 raw_entity_name, reporting_date, interval_slot_number,
                                 raw_timestamp_text, parsed_timestamp,
                                 interval_duration_minutes, raw_power_text, parsed_power_mw,
                                 reported_unit_code, metric_code, dataset_revision, validation_status
-                            ) VALUES (
-                                %s, %s, 'PUCSL',
-                                %s, %s, %s,
-                                %s, %s,
-                                15, %s, %s,
-                                'MW', 'PLANT_DISPATCH_MW', %s, 'pending'
-                            );
-                            """,
-                            stg_rows,
-                        )
+                            ) FROM STDIN
+                            """
+                        ) as copy:
+                            for rec in all_records:
+                                copy.write_row(
+                                    (
+                                        batch_id,
+                                        doc_id,
+                                        "PUCSL",
+                                        rec.raw_entity_name,
+                                        rec.observation_date,
+                                        rec.interval_slot_number,
+                                        rec.observation_timestamp.isoformat(),
+                                        rec.observation_timestamp,
+                                        15,
+                                        str(rec.power_mw) if rec.power_mw is not None else None,
+                                        rec.power_mw,
+                                        "MW",
+                                        "PLANT_DISPATCH_MW",
+                                        revision,
+                                        "pending",
+                                    )
+                                )
 
                         cur.execute(
                             """
@@ -493,61 +516,82 @@ class RealDataWarehouseLoader:
             try:
                 with conn.transaction():
                     with conn.cursor() as cur:
-                        raw_rows = []
-                        stg_rows = []
-                        for rec in records:
-                            row_loc = f"{rec.location_code}:{rec.source_variable_name}:{rec.observation_date.isoformat()}"
-                            payload_json = json.dumps(rec.__dict__, default=str)
-                            raw_rows.append(
-                                (
-                                    batch_id,
-                                    doc_id,
-                                    row_loc,
-                                    payload_json,
-                                    hashlib.sha256(payload_json.encode("utf-8")).hexdigest(),
-                                )
-                            )
-                            stg_rows.append(
-                                (
-                                    batch_id,
-                                    doc_id,
-                                    rec.location_code,
-                                    rec.observation_date,
-                                    rec.source_variable_name,
-                                    str(rec.parsed_value),
-                                    rec.parsed_value,
-                                    rec.reported_unit_code,
-                                    rec.missing_value_code,
-                                    revision,
-                                )
-                            )
+                        cur.execute(
+                            "DELETE FROM staging.stg_weather_observation WHERE batch_id = %s;",
+                            (batch_id,),
+                        )
+                        cur.execute(
+                            """
+                            CREATE TEMP TABLE tmp_extracted_weather (
+                                batch_id BIGINT,
+                                source_document_id BIGINT,
+                                source_row_locator VARCHAR(128),
+                                raw_payload JSONB,
+                                content_sha256 VARCHAR(64)
+                            ) ON COMMIT DROP;
+                            """
+                        )
 
-                        cur.executemany(
+                        with cur.copy(
+                            """
+                            COPY tmp_extracted_weather (
+                                batch_id, source_document_id, source_row_locator, raw_payload, content_sha256
+                            ) FROM STDIN
+                            """
+                        ) as copy:
+                            for rec in records:
+                                row_loc = f"{rec.location_code}:{rec.source_variable_name}:{rec.observation_date.isoformat()}"
+                                payload_json = json.dumps(rec.__dict__, default=str)
+                                copy.write_row(
+                                    (
+                                        batch_id,
+                                        doc_id,
+                                        row_loc,
+                                        payload_json,
+                                        hashlib.sha256(payload_json.encode("utf-8")).hexdigest(),
+                                    )
+                                )
+
+                        cur.execute(
                             """
                             INSERT INTO raw.extracted_record (
                                 batch_id, source_document_id, source_row_locator, raw_payload, content_sha256
-                            ) VALUES (%s, %s, %s, %s::jsonb, %s)
-                            ON CONFLICT (batch_id, source_row_locator) DO UPDATE SET raw_payload = EXCLUDED.raw_payload;
-                            """,
-                            raw_rows,
+                            )
+                            SELECT batch_id, source_document_id, source_row_locator, raw_payload, content_sha256
+                            FROM tmp_extracted_weather
+                            ON CONFLICT (batch_id, source_row_locator) DO UPDATE
+                                SET raw_payload = EXCLUDED.raw_payload,
+                                    content_sha256 = EXCLUDED.content_sha256;
+                            """
                         )
 
-                        cur.executemany(
+                        with cur.copy(
                             """
-                            INSERT INTO staging.stg_weather_observation (
+                            COPY staging.stg_weather_observation (
                                 batch_id, source_document_id, source_code,
                                 location_code, observation_date, source_variable_name,
                                 raw_value_text, parsed_value, original_unit_code,
                                 missing_value_code, dataset_revision, validation_status
-                            ) VALUES (
-                                %s, %s, 'NASA_POWER',
-                                %s, %s, %s,
-                                %s, %s, %s,
-                                %s, %s, 'pending'
-                            );
-                            """,
-                            stg_rows,
-                        )
+                            ) FROM STDIN
+                            """
+                        ) as copy:
+                            for rec in records:
+                                copy.write_row(
+                                    (
+                                        batch_id,
+                                        doc_id,
+                                        "NASA_POWER",
+                                        rec.location_code,
+                                        rec.observation_date,
+                                        rec.source_variable_name,
+                                        str(rec.parsed_value),
+                                        rec.parsed_value,
+                                        rec.reported_unit_code,
+                                        rec.missing_value_code,
+                                        revision,
+                                        "pending",
+                                    )
+                                )
 
                         cur.execute(
                             """

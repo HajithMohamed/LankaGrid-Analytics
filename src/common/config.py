@@ -46,6 +46,13 @@ def parse_database_url(url: str) -> dict[str, Any]:
     username = urllib.parse.unquote(parsed.username) if parsed.username else None
     password = urllib.parse.unquote(parsed.password) if parsed.password else None
 
+    # Supabase direct connection (db.<ref>.supabase.co) is IPv6-only.
+    import re
+
+    m = re.match(r"^db\.([a-z0-9]+)\.supabase\.co$", hostname, re.IGNORECASE)
+    if m:
+        is_supabase = True
+
     if has_bracket_placeholder and password == "YOUR_PASSWORD_PLACEHOLDER":
         password = "[YOUR-PASSWORD]"
 
@@ -62,6 +69,7 @@ def parse_database_url(url: str) -> dict[str, Any]:
 
     return {
         "host": hostname,
+        "hostaddr": None,
         "port": port,
         "dbname": dbname,
         "user": username or ("postgres" if is_supabase else "grid_admin"),
@@ -82,6 +90,7 @@ class DatabaseConfig:
     password: str
     sslmode: str = "disable"
     connect_timeout: int = 30
+    hostaddr: str | None = None
 
     def __repr__(self) -> str:
         return (
@@ -96,15 +105,32 @@ class DatabaseConfig:
 
     def to_conn_kwargs(self) -> dict[str, Any]:
         """Return keyword arguments suitable for psycopg.connect()."""
-        return {
-            "host": self.host,
+        host = self.host
+        user = self.user
+        hostaddr = self.hostaddr
+
+        if host.startswith("db.") and host.endswith(".supabase.co"):
+            project_ref = host.split(".")[1]
+            host = "aws-0-ap-northeast-2.pooler.supabase.com"
+            if "." not in user:
+                user = f"{user}.{project_ref}"
+
+        kwargs: dict[str, Any] = {
+            "host": host,
             "port": self.port,
             "dbname": self.dbname,
-            "user": self.user,
+            "user": user,
             "password": self.password,
             "sslmode": self.sslmode,
             "connect_timeout": self.connect_timeout,
+            "keepalives": 1,
+            "keepalives_idle": 15,
+            "keepalives_interval": 5,
+            "keepalives_count": 3,
         }
+        if hostaddr:
+            kwargs["hostaddr"] = hostaddr
+        return kwargs
 
     def with_dbname(self, dbname: str) -> DatabaseConfig:
         """Return a copy of this configuration targeting a different database name."""
@@ -116,6 +142,7 @@ class DatabaseConfig:
             password=self.password,
             sslmode=self.sslmode,
             connect_timeout=self.connect_timeout,
+            hostaddr=self.hostaddr,
         )
 
     def with_credentials(self, user: str, password: str) -> DatabaseConfig:
@@ -128,6 +155,7 @@ class DatabaseConfig:
             password=password,
             sslmode=self.sslmode,
             connect_timeout=self.connect_timeout,
+            hostaddr=self.hostaddr,
         )
 
     @classmethod
@@ -142,6 +170,7 @@ class DatabaseConfig:
             password=params["password"],
             sslmode=params["sslmode"],
             connect_timeout=int(os.getenv("DB_TIMEOUT_SECONDS", "30")),
+            hostaddr=params.get("hostaddr"),
         )
 
     @classmethod

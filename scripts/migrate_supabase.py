@@ -188,24 +188,26 @@ class SupabaseMigrator:
                 # 4. Dimensions & Reference Tables
                 dim_tables = [
                     "dw.dim_date",
-                    "dw.dim_time_of_day",
+                    "dw.dim_interval",
+                    "dw.dim_source_system",
+                    "dw.dim_energy_source",
+                    "dw.dim_region",
+                    "dw.dim_consumption_sector",
                     "dw.dim_power_plant",
-                    "dw.dim_generation_unit",
-                    "dw.dim_fuel_type",
-                    "dw.dim_grid_substation",
-                    "dw.dim_transmission_line",
-                    "dw.dim_tariff_customer_class",
-                    "dw.dim_administrative_area",
+                    "dw.dim_weather_location",
+                    "dw.dim_metric",
                 ]
                 for tbl in dim_tables:
                     report.dimension_tables[tbl] = _safe_table_count(tbl)
 
                 ref_tables = [
                     "ref.unit",
-                    "ref.reporting_period",
-                    "ref.plant_alias",
+                    "ref.unit_conversion",
+                    "ref.reporting_period_type",
                     "ref.energy_source_mapping",
+                    "ref.plant_alias",
                     "ref.region_alias",
+                    "ref.metric_mapping",
                     "ref.data_quality_rule",
                     "ref.source_precedence",
                 ]
@@ -227,11 +229,11 @@ class SupabaseMigrator:
 
                 # 6. Materialized Views
                 mvs = [
-                    "mart.mv_daily_system_summary",
-                    "mart.mv_monthly_fuel_mix",
-                    "mart.mv_hourly_dispatch_pattern",
-                    "mart.mv_station_efficiency_benchmarks",
-                    "mart.mv_weather_correlation_summary",
+                    "mart.mv_monthly_generation_summary",
+                    "mart.mv_annual_energy_mix",
+                    "mart.mv_monthly_sales_summary",
+                    "mart.mv_daily_dispatch_by_source",
+                    "mart.mv_monthly_weather_summary",
                 ]
                 for mv in mvs:
                     report.materialized_views[mv] = _safe_table_count(mv)
@@ -324,31 +326,29 @@ class SupabaseMigrator:
         return results
 
     def refresh_analytical_marts(self, dry_run: bool = False) -> None:
-        """Invoke PostgreSQL stored procedure to refresh all analytical materialized views."""
+        """Invoke PostgreSQL stored procedures / commands to refresh all 5 analytical materialized views."""
         if dry_run:
-            print("[DRY-RUN] Would call etl.sp_refresh_analytical_marts().")
+            print("[DRY-RUN] Would refresh analytical materialized views.")
             return
 
-        print("\nRefreshing analytical materialized views via etl.sp_refresh_analytical_marts()...")
+        print("\nRefreshing analytical materialized views in schema 'mart'...")
         t0 = time.time()
         with get_connection(self.config, autocommit=True) as conn:
             with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    SELECT EXISTS (
-                        SELECT 1 FROM pg_proc p
-                        JOIN pg_namespace n ON p.pronamespace = n.oid
-                        WHERE n.nspname = 'etl' AND p.proname = 'sp_refresh_analytical_marts'
-                    );
-                    """
-                )
-                if _fetch_scalar(cur, False):
-                    cur.execute("CALL etl.sp_refresh_analytical_marts();")
-                    print(f"Materialized views refreshed in {time.time() - t0:.2f}s.")
-                else:
+                try:
+                    cur.execute("CALL etl.sp_refresh_mart_views(FALSE);")
                     print(
-                        "Notice: Procedure etl.sp_refresh_analytical_marts() not found (pending migration 021)."
+                        "  - Refreshed monthly generation, annual energy mix, and monthly sales marts."
                     )
+                except Exception as e:
+                    print(f"  - Notice refreshing etl.sp_refresh_mart_views: {e}")
+                try:
+                    cur.execute("REFRESH MATERIALIZED VIEW mart.mv_daily_dispatch_by_source;")
+                    cur.execute("REFRESH MATERIALIZED VIEW mart.mv_monthly_weather_summary;")
+                    print("  - Refreshed daily dispatch by source and monthly weather marts.")
+                except Exception as e:
+                    print(f"  - Notice refreshing mart analytical views: {e}")
+        print(f"Materialized views refresh sequence completed in {time.time() - t0:.2f}s.")
 
 
 def print_audit_summary(report: SupabaseAuditReport) -> None:
