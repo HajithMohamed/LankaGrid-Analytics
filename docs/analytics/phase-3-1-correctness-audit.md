@@ -30,7 +30,7 @@ All queries, tests, documentation, and visualizations have now been corrected, m
 
 ## 2. Query-by-Query Audit Findings & Corrective Actions
 
-### Member 1: Generation Mix & Renewable Penetration (Q01–Q04)
+### Domain 1: Generation Mix & Renewables Mix & Renewable Penetration (Q01–Q04)
 
 - **Q01 (Generation Mix by Technology)**:
   - *Status*: **PASS**.
@@ -49,7 +49,7 @@ All queries, tests, documentation, and visualizations have now been corrected, m
 
 ---
 
-### Member 2: Grid Dispatch & Operational Dynamics (Q05–Q08)
+### Domain 2: Grid Dispatch & Operational Dynamics (Q05–Q08)
 
 - **Q05 (15-Minute Daily Dispatch Curves: Weekday vs Weekend)**:
   - *Status*: **PASS**.
@@ -68,7 +68,7 @@ All queries, tests, documentation, and visualizations have now been corrected, m
 
 ---
 
-### Member 3: Electricity Demand & Customer Dynamics (Q09–Q12)
+### Domain 3: Electricity Demand & Customer Dynamics (Q09–Q12)
 
 - **Q09 (Five-Year Sectoral Electricity Sales Trends 2020–2024)**:
   - *Status*: **PASS**.
@@ -85,7 +85,7 @@ All queries, tests, documentation, and visualizations have now been corrected, m
 
 ---
 
-### Member 4: Weather, Solar Resource & Renewable Potential (Q13–Q16)
+### Domain 4: Weather & Renewable Coupling, Solar Resource & Renewable Potential (Q13–Q16)
 
 - **Q13 (Daily Solar Irradiance Profiles & Peak Sun Hours)**:
   - *Status*: **PASS**.
@@ -103,7 +103,7 @@ All queries, tests, documentation, and visualizations have now been corrected, m
 
 ---
 
-### Member 5: Plant Operations & Capacity Analysis (Q17–Q20)
+### Domain 5: Plant Operations & Capacity Operations & Capacity Analysis (Q17–Q20)
 
 - **Q17 (Daily Operating Duty Cycle & Online Availability)**:
   - *Status*: **PASS**.
@@ -120,7 +120,7 @@ All queries, tests, documentation, and visualizations have now been corrected, m
 
 ---
 
-### Member 6: Grid Efficiency, Reconciliation & Data Quality (Q21–Q24)
+### Domain 6: Grid Efficiency, Reconciliation & Data Quality (Q21–Q24)
 
 - **Q21 (Five-Year Grid Sales Efficiency Trends with GROUPING SETS)**:
   - *Status*: **REDEVELOPED & VERIFIED**.
