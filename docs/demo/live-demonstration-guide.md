@@ -127,7 +127,7 @@ GROUP BY rule_code, severity;
 
 Execute selected queries representing the key lecture concepts directly from the CLI or database tool:
 
-### Demo Query 1: Generation Mix with ROLLUP (Member 1 — Query Q01)
+### Demo Query 1: Generation Mix with ROLLUP (Domain 1 — Query Q01)
 Demonstrates multi-level hierarchical aggregation in a single query:
 
 ```bash
@@ -141,7 +141,7 @@ docker exec -it sl_grid_warehouse_db psql -U grid_analyst -d sl_grid_warehouse -
 
 ---
 
-### Demo Query 2: SCADA Ramping Derivatives with LAG (Member 2 — Query Q06)
+### Demo Query 2: SCADA Ramping Derivatives with LAG (Domain 2: Dispatch Dynamics — Query Q06)
 Demonstrates window functions calculating 15-minute ramp rates and rate-of-change velocity:
 
 ```bash
@@ -154,7 +154,7 @@ docker exec -it sl_grid_warehouse_db psql -U grid_analyst -d sl_grid_warehouse -
 
 ---
 
-### Demo Query 3: Telemetry-to-Published Reconciliation (Member 2 — Query Q08)
+### Demo Query 3: Telemetry-to-Published Reconciliation (Domain 2: Dispatch Dynamics — Query Q08)
 Demonstrates exact reconciliation of SCADA discrete Riemann integration against audited settlement sheets:
 
 ```bash
@@ -168,7 +168,7 @@ docker exec -it sl_grid_warehouse_db psql -U grid_analyst -d sl_grid_warehouse -
 
 ---
 
-### Demo Query 4: Five-Year Sectoral Shift & Tourism Rebound (Member 3 — Query Q10)
+### Demo Query 4: Five-Year Sectoral Shift & Tourism Rebound (Domain 3: Demand Dynamics — Query Q10)
 Demonstrates multi-year pivot and compound annual growth rate (CAGR):
 
 ```bash
@@ -181,7 +181,7 @@ docker exec -it sl_grid_warehouse_db psql -U grid_analyst -d sl_grid_warehouse -
 
 ---
 
-### Demo Query 5: Wind Resource Coupling via Pearson Correlation (Member 4 — Query Q16)
+### Demo Query 5: Wind Resource Coupling via Pearson Correlation (Domain 4 — Query Q16)
 Demonstrates in-database statistical correlation between NASA 50m wind speed and utility dispatch:
 
 ```bash
@@ -194,7 +194,7 @@ docker exec -it sl_grid_warehouse_db psql -U grid_analyst -d sl_grid_warehouse -
 
 ---
 
-### Demo Query 6: Advanced Multi-Level GROUPING SETS (Member 6 — Query Q21)
+### Demo Query 6: Advanced Multi-Level GROUPING SETS (Domain 6: Grid Efficiency & Quality — Query Q21)
 Demonstrates selective OLAP subtotals across economic consumer classes:
 
 ```bash

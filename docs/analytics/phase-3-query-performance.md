@@ -11,12 +11,12 @@ All 24 analytical queries were executed against the live warehouse database (`sl
 
 | Query Group | Average Execution Time | Fastest Query | Slowest Query | Primary Optimization Feature |
 |---|---|---|---|---|
-| **Member 1: Generation Mix** | 136.7 ms | Q02 (87.6 ms) | Q01 (165.0 ms) | Partition Pruning + HashAgg |
-| **Member 2: Dispatch Dynamics** | 134.6 ms | Q08 (2.7 ms) | Q07 (206.4 ms) | Composite Date-Interval Index |
-| **Member 3: Sectoral Sales** | 4.8 ms | Q10 (2.8 ms) | Q09 (7.4 ms) | Filtered Index + Window LAG |
-| **Member 4: Weather & Climate** | 48.2 ms | Q16 (4.5 ms) | Q13 (102.1 ms) | Node Partitioning + MV Match |
-| **Member 5: Plant Operations** | 131.5 ms | Q20 (74.2 ms) | Q18 (184.8 ms) | Plant Key Bitmap Index Scan |
-| **Member 6: Grid Reliability** | 56.4 ms | Q24 (3.1 ms) | Q23 (118.9 ms) | Date Range Index Pruning |
+| **Domain 1: Generation Mix & Renewables Mix** | 136.7 ms | Q02 (87.6 ms) | Q01 (165.0 ms) | Partition Pruning + HashAgg |
+| **Domain 2: Grid Dispatch Dynamics Dynamics** | 134.6 ms | Q08 (2.7 ms) | Q07 (206.4 ms) | Composite Date-Interval Index |
+| **Domain 3: Sectoral Sales** | 4.8 ms | Q10 (2.8 ms) | Q09 (7.4 ms) | Filtered Index + Window LAG |
+| **Domain 4: Weather & Renewable Coupling & Climate** | 48.2 ms | Q16 (4.5 ms) | Q13 (102.1 ms) | Node Partitioning + MV Match |
+| **Domain 5: Plant Operations & Capacity Operations** | 131.5 ms | Q20 (74.2 ms) | Q18 (184.8 ms) | Plant Key Bitmap Index Scan |
+| **Domain 6: Grid Reliability** | 56.4 ms | Q24 (3.1 ms) | Q23 (118.9 ms) | Date Range Index Pruning |
 
 ---
 

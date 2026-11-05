@@ -55,7 +55,7 @@ GridLens is engineered for dual execution environments:
 ---
 
 ### Page 2: Generation Mix & Renewables (`/generation`)
-* **Lead Researcher**: Member 1
+* **Focus Area**: Generation Mix & Renewables
 * **Demonstrated Queries**: Q01, Q02, Q03, Q04
 * **Academic Highlights**:
   - **Q01 Donut Breakdown**: Lakvijaya Coal represents 42.56% of March 2024 dispatch, thermal oil represents 27.69%, and major hydro represents 22.98%.
@@ -66,7 +66,7 @@ GridLens is engineered for dual execution environments:
 ---
 
 ### Page 3: Dispatch & Grid Dynamics (`/dispatch`)
-* **Lead Researcher**: Member 2
+* **Focus Area**: Grid Dispatch Dynamics
 * **Demonstrated Queries**: Q05, Q06, Q07, Q08
 * **Academic Highlights**:
   - **Q05 96-Interval Diurnal Load Curves**: Compares average weekday demand against weekend demand across the 96 daily 15-minute intervals. Peak national demand consistently occurs at 19:30 (Interval 78).
@@ -77,7 +77,7 @@ GridLens is engineered for dual execution environments:
 ---
 
 ### Page 4: Consumer Demand & Tariff Analytics (`/sales`)
-* **Lead Researcher**: Member 3
+* **Focus Area**: Electricity Demand & Customer Dynamics
 * **Demonstrated Queries**: Q09, Q10, Q11, Q12
 * **Academic Highlights**:
   - **Q09 Sectoral Sales Matrix**: Five-year longitudinal evolution (2020–2024) across industrial, commercial, domestic, and LECO bulk sectors.
@@ -88,7 +88,7 @@ GridLens is engineered for dual execution environments:
 ---
 
 ### Page 5: Weather & Renewable Potential (`/weather`)
-* **Lead Researcher**: Member 4
+* **Focus Area**: Weather & Renewable Coupling
 * **Demonstrated Queries**: Q13, Q14, Q15, Q16
 * **Academic Highlights**:
   - **Q13 Solar Insolation**: Converts NASA POWER all-sky surface irradiance into Peak Sun Hours (PSH/day), comparing Victoria Dam catchment with the Mannar Dry Zone corridor.
@@ -99,7 +99,7 @@ GridLens is engineered for dual execution environments:
 ---
 
 ### Page 6: Plant Performance & Operational Outages (`/plants`)
-* **Lead Researcher**: Member 5
+* **Focus Area**: Plant Operations & Capacity
 * **Demonstrated Queries**: Q17, Q18, Q19, Q20
 * **Academic Highlights**:
   - **Q17 Zero-Dispatch Availability**: Quantifies station availability rates across 2,976 March 2024 intervals. Identifies scheduled maintenance outages vs standby reserve plants.
@@ -110,7 +110,7 @@ GridLens is engineered for dual execution environments:
 ---
 
 ### Page 7: Data Quality & Cross-Source Audit (`/data-quality`)
-* **Lead Researcher**: Member 6
+* **Focus Area**: Grid Efficiency & Quality
 * **Demonstrated Queries**: Q21, Q22, Q23, Q24
 * **Academic Highlights**:
   - **Multi-Tier Reconciliation Rigor (Q22)**:

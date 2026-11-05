@@ -72,12 +72,12 @@ with get_connection(DatabaseConfig.from_env()) as conn:
 
 | Presenter | Role & Domain | Assigned Queries | Key Technical Talking Points |
 | :--- | :--- | :--- | :--- |
-| **Member 1** | Generation Mix & Renewables | **Q01, Q02, Q03, Q04** | `ROLLUP` hierarchy, 7-day centered moving average, capacity factor vs peak utilization, TOU demand slicing. |
-| **Member 2** | Grid Dispatch Dynamics | **Q05, Q06, Q07, Q08** | Diurnal load curves (weekday vs weekend), `LAG` 15-min ramp rate velocity, $CV$ baseload screening, Riemann telemetry reconciliation. |
-| **Member 3** | Electricity Demand Dynamics | **Q09, Q10, Q11, Q12** | 5-year YoY trends, multi-year sector pivot, 16.46% CAGR hotel rebound, avoiding double-counting in LECO bulk supply. |
-| **Member 4** | Weather & Renewable Coupling | **Q13, Q14, Q15, Q16** | Solar irradiance PSH profiles, `CORR` temperature-demand analysis, multi-dimensional `CUBE` rainfall, cubic wind correlation. |
-| **Member 5** | Plant Operations & Capacity | **Q17, Q18, Q19, Q20** | Sentinel vs zero interval filtering, peak dispatch vs nameplate ratings, Lakvijaya baseload continuity, evening peak merit-order. |
-| **Member 6** | Grid Efficiency & Quality | **Q21, Q22, Q23, Q24** | `GROUPING SETS` economic shift, multi-tier transmission loss proxy (8.8–9.6%), quarantine audit reconciliation (100%), pipeline throughput. |
+| **Domain 1** | Generation Mix & Renewables | **Q01, Q02, Q03, Q04** | `ROLLUP` hierarchy, 7-day centered moving average, capacity factor vs peak utilization, TOU demand slicing. |
+| **Domain 2** | Grid Dispatch Dynamics | **Q05, Q06, Q07, Q08** | Diurnal load curves (weekday vs weekend), `LAG` 15-min ramp rate velocity, $CV$ baseload screening, Riemann telemetry reconciliation. |
+| **Domain 3** | Electricity Demand Dynamics | **Q09, Q10, Q11, Q12** | 5-year YoY trends, multi-year sector pivot, 16.46% CAGR hotel rebound, avoiding double-counting in LECO bulk supply. |
+| **Domain 4** | Weather & Renewable Coupling | **Q13, Q14, Q15, Q16** | Solar irradiance PSH profiles, `CORR` temperature-demand analysis, multi-dimensional `CUBE` rainfall, cubic wind correlation. |
+| **Domain 5** | Plant Operations & Capacity | **Q17, Q18, Q19, Q20** | Sentinel vs zero interval filtering, peak dispatch vs nameplate ratings, Lakvijaya baseload continuity, evening peak merit-order. |
+| **Domain 6** | Grid Efficiency & Quality | **Q21, Q22, Q23, Q24** | `GROUPING SETS` economic shift, multi-tier transmission loss proxy (8.8–9.6%), quarantine audit reconciliation (100%), pipeline throughput. |
 
 ---
 
