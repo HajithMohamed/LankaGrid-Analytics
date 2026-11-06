@@ -21,6 +21,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from psycopg import sql  # noqa: E402
+
 from src.common.config import DatabaseConfig  # noqa: E402
 from src.common.db import get_connection  # noqa: E402
 
@@ -83,13 +85,15 @@ def inspect_warehouse_freshness(
             with conn.cursor() as cur:
                 # 1. Last ETL run
                 cur.execute(
-                    """
-                    SELECT pipeline_name, run_status, completed_at
-                    FROM audit.etl_run
-                    WHERE run_status IN ('SUCCEEDED', 'PARTIAL_QUARANTINE')
-                    ORDER BY completed_at DESC NULLS LAST
-                    LIMIT 1;
-                    """
+                    sql.SQL(
+                        """
+                        SELECT pipeline_name, run_status, completed_at
+                        FROM audit.etl_run
+                        WHERE run_status IN ('SUCCEEDED', 'PARTIAL_QUARANTINE')
+                        ORDER BY completed_at DESC NULLS LAST
+                        LIMIT 1;
+                        """
+                    )
                 )
                 etl_row = cur.fetchone()
                 last_pipeline: str | None = None
@@ -110,29 +114,31 @@ def inspect_warehouse_freshness(
 
                 # 2. Source Documents per provider
                 cur.execute(
-                    """
-                    SELECT
-                        s.source_code,
-                        COUNT(d.source_document_id) AS total_docs,
-                        MAX(d.created_at) AS last_acquired,
-                        (
-                            SELECT document_code
-                            FROM raw.source_document d2
-                            WHERE d2.source_system_id = s.source_system_id
-                            ORDER BY d2.reporting_period_end DESC, d2.source_document_id DESC
-                            LIMIT 1
-                        ) AS latest_doc,
-                        (
-                            SELECT reporting_period_end::text
-                            FROM raw.source_document d2
-                            WHERE d2.source_system_id = s.source_system_id
-                            ORDER BY d2.reporting_period_end DESC, d2.source_document_id DESC
-                            LIMIT 1
-                        ) AS latest_period
-                    FROM raw.source_system s
-                    LEFT JOIN raw.source_document d ON s.source_system_id = d.source_system_id
-                    GROUP BY s.source_system_id, s.source_code;
-                    """
+                    sql.SQL(
+                        """
+                        SELECT
+                            s.source_code,
+                            COUNT(d.source_document_id) AS total_docs,
+                            MAX(d.created_at) AS last_acquired,
+                            (
+                                SELECT document_code
+                                FROM raw.source_document d2
+                                WHERE d2.source_system_id = s.source_system_id
+                                ORDER BY d2.reporting_period_end DESC, d2.source_document_id DESC
+                                LIMIT 1
+                            ) AS latest_doc,
+                            (
+                                SELECT reporting_period_end::text
+                                FROM raw.source_document d2
+                                WHERE d2.source_system_id = s.source_system_id
+                                ORDER BY d2.reporting_period_end DESC, d2.source_document_id DESC
+                                LIMIT 1
+                            ) AS latest_period
+                        FROM raw.source_system s
+                        LEFT JOIN raw.source_document d ON s.source_system_id = d.source_system_id
+                        GROUP BY s.source_system_id, s.source_code;
+                        """
+                    )
                 )
                 source_rows = cur.fetchall()
                 sources: list[SourceFreshness] = []
@@ -168,7 +174,7 @@ def inspect_warehouse_freshness(
                     )
 
                 # 3. Quarantined records count
-                cur.execute("SELECT COUNT(*) FROM audit.data_quality_issue;")
+                cur.execute(sql.SQL("SELECT COUNT(*) FROM audit.data_quality_issue;"))
                 quar_row = cur.fetchone()
                 quar_val = _get_field(quar_row, 0, "count")
                 quarantine_count = int(quar_val) if quar_val is not None else 0
@@ -177,15 +183,17 @@ def inspect_warehouse_freshness(
                 table_counts: dict[str, int] = {}
                 try:
                     cur.execute(
-                        """
-                        SELECT
-                            n.nspname || '.' || c.relname AS tbl_key,
-                            COALESCE(NULLIF(c.reltuples, -1)::bigint, 0) AS approx_rows
-                        FROM pg_class c
-                        JOIN pg_namespace n ON n.oid = c.relnamespace
-                        WHERE n.nspname IN ('dw', 'mart')
-                          AND c.relkind IN ('r', 'm', 'p');
-                        """
+                        sql.SQL(
+                            """
+                            SELECT
+                                n.nspname || '.' || c.relname AS tbl_key,
+                                COALESCE(NULLIF(c.reltuples, -1)::bigint, 0) AS approx_rows
+                            FROM pg_class c
+                            JOIN pg_namespace n ON n.oid = c.relnamespace
+                            WHERE n.nspname IN ('dw', 'mart')
+                              AND c.relkind IN ('r', 'm', 'p');
+                            """
+                        )
                     )
                     for r_row in cur.fetchall():
                         r_key = _get_field(r_row, 0, "tbl_key")
