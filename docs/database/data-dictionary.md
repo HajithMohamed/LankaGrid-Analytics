@@ -10,7 +10,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 ## Schema: `public`
 
 ### `public.schema_migrations` (TABLE)
-- **Defined in**: [001_bootstrap.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/001_bootstrap.sql)
+- **Defined in**: [001_bootstrap.sql](database/migrations/001_bootstrap.sql)
 - **Grain**: One row per applied sequential forward SQL migration script.
 - **Supported Business Functionality / Questions**: Which schema migrations have been applied, when were they executed, and do their normalized LF SHA-256 checksums match disk?
 
@@ -25,7 +25,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 ## Schema: `raw`
 
 ### `raw.extracted_record` (TABLE)
-- **Defined in**: [002_raw_source_registry.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/002_raw_source_registry.sql)
+- **Defined in**: [002_raw_source_registry.sql](database/migrations/002_raw_source_registry.sql)
 - **Grain**: One row per immutable JSONB record/row extracted from a source document within an ingestion batch.
 - **Supported Business Functionality / Questions**: What exact raw cell/JSON payload existed at a given page/table/row locator before staging normalization?
 
@@ -40,7 +40,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 7 | `extracted_at` | `TIMESTAMPTZ` | `NOT NULL` | — | ISO-8601 TIMESTAMPTZ (UTC+05:30) | Ingestion Layer (`data/raw/manifest.json` & source file parsers) | Timestamp when the raw record was written. |
 
 ### `raw.ingestion_batch` (TABLE)
-- **Defined in**: [002_raw_source_registry.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/002_raw_source_registry.sql)
+- **Defined in**: [002_raw_source_registry.sql](database/migrations/002_raw_source_registry.sql)
 - **Grain**: One row per parser extraction execution over a registered source document.
 - **Supported Business Functionality / Questions**: When was a raw file parsed, using which parser version, and how many raw records were extracted?
 - **Check Constraints**: `ck_raw_ingestion_batch_records_nonneg`: `CHECK ((records_extracted >= 0))`; `ck_raw_ingestion_batch_status`: `CHECK (((batch_status)::text = ANY ((ARRAY['STARTED'::character varying, 'EXTRACTED'::character varying, 'FAILED'::character varying, 'QUARANTINED'::character varying])::text[])))`
@@ -58,7 +58,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 9 | `records_extracted` | `INTEGER` | `NOT NULL` | — | count (records) | Ingestion Layer (`data/raw/manifest.json` & source file parsers) | Total raw records extracted and persisted into `raw.extracted_record`. |
 
 ### `raw.source_document` (TABLE)
-- **Defined in**: [002_raw_source_registry.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/002_raw_source_registry.sql)
+- **Defined in**: [002_raw_source_registry.sql](database/migrations/002_raw_source_registry.sql)
 - **Grain**: One row per catalogued or downloaded raw source file/API response payload and revision.
 - **Supported Business Functionality / Questions**: Which exact PDF/CSV/XLSX/JSON files in data/raw/ back warehouse facts, what are their SHA-256 hashes, and what reporting period do they cover?
 - **Check Constraints**: `ck_raw_source_document_checksum_nonempty`: `CHECK ((length(btrim((sha256_checksum)::text)) >= 16))`; `ck_raw_source_document_format`: `CHECK (((file_format)::text = ANY ((ARRAY['PDF'::character varying, 'XLSX'::character varying, 'CSV'::character varying, 'JSON'::character varying, 'XML'::character varying, 'HTML'::character varying])::text[])))`; `ck_raw_source_document_period_order`: `CHECK ((reporting_period_end >= reporting_period_start))`; `ck_raw_source_document_period_type`: `CHECK (((reporting_period_type)::text = ANY ((ARRAY['INTERVAL_15MIN'::character varying, 'HOURLY'::character varying, 'DAILY'::character varying, 'MONTHLY'::character varying, 'QUARTERLY'::character varying, 'ANNUAL'::character varying, 'MULTI_YEAR'::character varying])::text[])))`; `ck_raw_source_document_size`: `CHECK (((file_size_bytes IS NULL) OR (file_size_bytes >= 0)))`; `ck_raw_source_document_status`: `CHECK (((acquisition_status)::text = ANY ((ARRAY['CATALOGUED_PENDING_DOWNLOAD'::character varying, 'DOWNLOADED_VERIFIED'::character varying, 'SYNTHETIC_FIXTURE'::character varying, 'QUARANTINED'::character varying, 'SUPERSEDED'::character varying])::text[])))`
@@ -84,7 +84,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 17 | `created_at` | `TIMESTAMPTZ` | `NOT NULL` | — | ISO-8601 TIMESTAMPTZ (UTC+05:30) | Ingestion Layer (`data/raw/manifest.json` & source file parsers) | Audit timestamp when the record was initially created. |
 
 ### `raw.source_system` (TABLE)
-- **Defined in**: [002_raw_source_registry.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/002_raw_source_registry.sql)
+- **Defined in**: [002_raw_source_registry.sql](database/migrations/002_raw_source_registry.sql)
 - **Grain**: One row per authoritative external data provider organization.
 - **Supported Business Functionality / Questions**: Which official agencies provide warehouse data, via what portal/API mechanism, and under which default timezone?
 - **Check Constraints**: `ck_raw_source_system_access`: `CHECK (((access_method)::text = ANY ((ARRAY['PORTAL_PDF'::character varying, 'REST_API_JSON'::character varying, 'PORTAL_XLSX'::character varying, 'PORTAL_CSV'::character varying, 'MANUAL_ARCHIVE'::character varying])::text[])))`
@@ -104,7 +104,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 ## Schema: `ref`
 
 ### `ref.data_quality_rule` (TABLE)
-- **Defined in**: [003_reference_tables.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/003_reference_tables.sql)
+- **Defined in**: [003_reference_tables.sql](database/migrations/003_reference_tables.sql)
 - **Grain**: One row per automated Lecture 6 / domain data quality rule.
 - **Supported Business Functionality / Questions**: Which validation rules block warehouse promotion vs issue warnings across the 13 required DQ issue classifications?
 - **Check Constraints**: `ck_ref_dq_rule_classification`: `CHECK (((issue_classification)::text = ANY ((ARRAY['MISSING_VALUE'::character varying, 'DUPLICATE'::character varying, 'INCORRECT_DATA_TYPE'::character varying, 'INVALID_MEASUREMENT'::character varying, 'STATISTICAL_OUTLIER'::character varying, 'UNIT_INCONSISTENCY'::character varying, 'NAMING_INCONSISTENCY'::character varying, 'MISSING_REPORTING_INTERVAL'::character varying, 'UNMATCHED_DIMENSION'::character varying, 'CONFLICTING_SOURCE_VALUE'::character varying, 'INCOMPATIBLE_REPORTING_GRANULARITY'::character varying, 'UNSUPPORTED_CALCULATION'::character varying, 'PARSING_FAILURE'::character varying])::text[])))`; `ck_ref_dq_rule_severity`: `CHECK (((default_severity)::text = ANY ((ARRAY['CRITICAL'::character varying, 'ERROR'::character varying, 'WARNING'::character varying, 'INFO'::character varying])::text[])))`
@@ -122,7 +122,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 9 | `updated_at` | `TIMESTAMPTZ` | `NOT NULL` | — | ISO-8601 TIMESTAMPTZ (UTC+05:30) | Curated Reference Seed (`scripts/seed_reference.py`) from CEB, PUCSL, NASA POWER & ISO standards | Audit timestamp automatically maintained on `UPDATE` by trigger `etl.fn_trg_touch_updated_at()`. |
 
 ### `ref.energy_source_mapping` (TABLE)
-- **Defined in**: [003_reference_tables.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/003_reference_tables.sql)
+- **Defined in**: [003_reference_tables.sql](database/migrations/003_reference_tables.sql)
 - **Grain**: One row per provider-specific fuel/energy label mapped to a canonical energy source code and effective date.
 - **Supported Business Functionality / Questions**: How do raw labels like 'Major Hydro', 'Thermal-Oil', or 'Mini Hydro (NCRE)' map to dw.dim_energy_source?
 - **Check Constraints**: `ck_ref_esm_dates`: `CHECK (((effective_to IS NULL) OR (effective_to >= effective_from)))`; `ck_ref_esm_verification_status`: `CHECK (((verification_status)::text = ANY ((ARRAY['VERIFIED'::character varying, 'PENDING_EVIDENCE'::character varying, 'REJECTED'::character varying])::text[])))`
@@ -140,7 +140,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 9 | `updated_at` | `TIMESTAMPTZ` | `NOT NULL` | — | ISO-8601 TIMESTAMPTZ (UTC+05:30) | Curated Reference Seed (`scripts/seed_reference.py`) from CEB, PUCSL, NASA POWER & ISO standards | Audit timestamp automatically maintained on `UPDATE` by trigger `etl.fn_trg_touch_updated_at()`. |
 
 ### `ref.metric_mapping` (TABLE)
-- **Defined in**: [003_reference_tables.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/003_reference_tables.sql)
+- **Defined in**: [003_reference_tables.sql](database/migrations/003_reference_tables.sql)
 - **Grain**: One row per upstream source field/parameter name mapped to a canonical warehouse metric.
 - **Supported Business Functionality / Questions**: Which canonical metric and unit correspond to NASA POWER 'ALLSKY_SFC_SW_DWN' or CEB Digest 'Billed Sales (GWh)'?
 - **Check Constraints**: `ck_ref_metric_mapping_status`: `CHECK (((verification_status)::text = ANY ((ARRAY['VERIFIED'::character varying, 'PENDING_EVIDENCE'::character varying, 'REJECTED'::character varying])::text[])))`
@@ -157,7 +157,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 8 | `updated_at` | `TIMESTAMPTZ` | `NOT NULL` | — | ISO-8601 TIMESTAMPTZ (UTC+05:30) | Curated Reference Seed (`scripts/seed_reference.py`) from CEB, PUCSL, NASA POWER & ISO standards | Audit timestamp automatically maintained on `UPDATE` by trigger `etl.fn_trg_touch_updated_at()`. |
 
 ### `ref.plant_alias` (TABLE)
-- **Defined in**: [003_reference_tables.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/003_reference_tables.sql)
+- **Defined in**: [003_reference_tables.sql](database/migrations/003_reference_tables.sql)
 - **Grain**: One row per source-specific power station name/alias and effective start date.
 - **Supported Business Functionality / Questions**: Which station name spellings (e.g. 'Lakvijaya Coal' vs 'Norochcholai') have verified evidence to resolve to the same canonical plant?
 - **Check Constraints**: `ck_ref_plant_alias_dates`: `CHECK (((effective_to IS NULL) OR (effective_to >= effective_from)))`; `ck_ref_plant_alias_status`: `CHECK (((verification_status)::text = ANY ((ARRAY['VERIFIED'::character varying, 'PENDING_EVIDENCE'::character varying, 'REJECTED'::character varying])::text[])))`
@@ -176,7 +176,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 10 | `updated_at` | `TIMESTAMPTZ` | `NOT NULL` | — | ISO-8601 TIMESTAMPTZ (UTC+05:30) | Curated Reference Seed (`scripts/seed_reference.py`) from CEB, PUCSL, NASA POWER & ISO standards | Audit timestamp automatically maintained on `UPDATE` by trigger `etl.fn_trg_touch_updated_at()`. |
 
 ### `ref.region_alias` (TABLE)
-- **Defined in**: [003_reference_tables.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/003_reference_tables.sql)
+- **Defined in**: [003_reference_tables.sql](database/migrations/003_reference_tables.sql)
 - **Grain**: One row per source geographic or CEB distribution division label.
 - **Supported Business Functionality / Questions**: How do source geographic strings map to verified ISO 3166-2:LK provinces or CEB distribution regions?
 - **Check Constraints**: `ck_ref_region_alias_status`: `CHECK (((verification_status)::text = ANY ((ARRAY['VERIFIED'::character varying, 'PENDING_EVIDENCE'::character varying, 'REJECTED'::character varying])::text[])))`
@@ -192,7 +192,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 7 | `updated_at` | `TIMESTAMPTZ` | `NOT NULL` | — | ISO-8601 TIMESTAMPTZ (UTC+05:30) | Curated Reference Seed (`scripts/seed_reference.py`) from CEB, PUCSL, NASA POWER & ISO standards | Audit timestamp automatically maintained on `UPDATE` by trigger `etl.fn_trg_touch_updated_at()`. |
 
 ### `ref.reporting_period_type` (TABLE)
-- **Defined in**: [003_reference_tables.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/003_reference_tables.sql)
+- **Defined in**: [003_reference_tables.sql](database/migrations/003_reference_tables.sql)
 - **Grain**: One row per controlled temporal reporting granularity.
 - **Supported Business Functionality / Questions**: What minimum/maximum day span is valid for DAILY, MONTHLY, QUARTERLY, and ANNUAL records so granularities are never conflated?
 - **Check Constraints**: `ck_ref_period_day_bounds`: `CHECK ((max_days >= min_days))`; `ck_ref_period_min_days`: `CHECK ((min_days >= 0))`; `ck_ref_period_nominal_minutes`: `CHECK (((nominal_minutes IS NULL) OR (nominal_minutes > 0)))`
@@ -209,7 +209,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 8 | `updated_at` | `TIMESTAMPTZ` | `NOT NULL` | — | ISO-8601 TIMESTAMPTZ (UTC+05:30) | Curated Reference Seed (`scripts/seed_reference.py`) from CEB, PUCSL, NASA POWER & ISO standards | Audit timestamp automatically maintained on `UPDATE` by trigger `etl.fn_trg_touch_updated_at()`. |
 
 ### `ref.source_precedence` (TABLE)
-- **Defined in**: [003_reference_tables.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/003_reference_tables.sql)
+- **Defined in**: [003_reference_tables.sql](database/migrations/003_reference_tables.sql)
 - **Grain**: One row per business domain, reporting granularity, and authoritative source ranking.
 - **Supported Business Functionality / Questions**: When CEB Statistical Digests and PUCSL operational reports differ, which source is authoritative for sub-daily vs annual analysis?
 - **Check Constraints**: `ck_ref_source_precedence_rank`: `CHECK ((precedence_rank >= 1))`
@@ -226,7 +226,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 8 | `updated_at` | `TIMESTAMPTZ` | `NOT NULL` | — | ISO-8601 TIMESTAMPTZ (UTC+05:30) | Curated Reference Seed (`scripts/seed_reference.py`) from CEB, PUCSL, NASA POWER & ISO standards | Audit timestamp automatically maintained on `UPDATE` by trigger `etl.fn_trg_touch_updated_at()`. |
 
 ### `ref.unit` (TABLE)
-- **Defined in**: [003_reference_tables.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/003_reference_tables.sql)
+- **Defined in**: [003_reference_tables.sql](database/migrations/003_reference_tables.sql)
 - **Grain**: One row per controlled physical, meteorological, or economic unit of measure.
 - **Supported Business Functionality / Questions**: Which units represent instantaneous power (MW) versus integrated energy (MWh/GWh), and which unit is canonical in the warehouse?
 - **Check Constraints**: `ck_ref_unit_dimension`: `CHECK (((measurement_dimension)::text = ANY ((ARRAY['POWER'::character varying, 'ENERGY'::character varying, 'CAPACITY'::character varying, 'IRRADIANCE_POWER'::character varying, 'IRRADIANCE_ENERGY'::character varying, 'TEMPERATURE'::character varying, 'SPEED'::character varying, 'LENGTH'::character varying, 'VOLUME'::character varying, 'PERCENTAGE'::character varying, 'CURRENCY'::character varying, 'COUNT'::character varying, 'FREQUENCY'::character varying, 'DIMENSIONLESS'::character varying])::text[])))`
@@ -243,7 +243,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 8 | `updated_at` | `TIMESTAMPTZ` | `NOT NULL` | — | ISO-8601 TIMESTAMPTZ (UTC+05:30) | Curated Reference Seed (`scripts/seed_reference.py`) from CEB, PUCSL, NASA POWER & ISO standards | Audit timestamp automatically maintained on `UPDATE` by trigger `etl.fn_trg_touch_updated_at()`. |
 
 ### `ref.unit_conversion` (TABLE)
-- **Defined in**: [003_reference_tables.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/003_reference_tables.sql)
+- **Defined in**: [003_reference_tables.sql](database/migrations/003_reference_tables.sql)
 - **Grain**: One row per directed conversion factor from a source unit to a target unit.
 - **Supported Business Functionality / Questions**: What exact multiplier converts GWh or kWh to MWh, and which conversions require explicit time-interval integration (MW -> MWh)?
 - **Check Constraints**: `ck_ref_unit_conv_multiplier_pos`: `CHECK ((multiplier > (0)::numeric))`
@@ -262,7 +262,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 ## Schema: `audit`
 
 ### `audit.data_quality_issue` (TABLE)
-- **Defined in**: [004_audit_and_quality_tables.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/004_audit_and_quality_tables.sql)
+- **Defined in**: [004_audit_and_quality_tables.sql](database/migrations/004_audit_and_quality_tables.sql)
 - **Grain**: One row per detected data quality violation linked to its staging record and raw source provenance.
 - **Supported Business Functionality / Questions**: Which records were quarantined or flagged under each of the 13 DQ classifications, what were their raw values, and who resolved them?
 - **Check Constraints**: `ck_audit_dq_issue_classification`: `CHECK (((issue_classification)::text = ANY ((ARRAY['MISSING_VALUE'::character varying, 'DUPLICATE'::character varying, 'INCORRECT_DATA_TYPE'::character varying, 'INVALID_MEASUREMENT'::character varying, 'STATISTICAL_OUTLIER'::character varying, 'UNIT_INCONSISTENCY'::character varying, 'NAMING_INCONSISTENCY'::character varying, 'MISSING_REPORTING_INTERVAL'::character varying, 'UNMATCHED_DIMENSION'::character varying, 'CONFLICTING_SOURCE_VALUE'::character varying, 'INCOMPATIBLE_REPORTING_GRANULARITY'::character varying, 'UNSUPPORTED_CALCULATION'::character varying, 'PARSING_FAILURE'::character varying])::text[])))`; `ck_audit_dq_issue_severity`: `CHECK (((severity)::text = ANY ((ARRAY['CRITICAL'::character varying, 'ERROR'::character varying, 'WARNING'::character varying, 'INFO'::character varying])::text[])))`; `ck_audit_dq_issue_status`: `CHECK (((issue_status)::text = ANY ((ARRAY['unresolved'::character varying, 'quarantined'::character varying, 'accepted'::character varying, 'corrected'::character varying])::text[])))`
@@ -287,7 +287,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 16 | `resolution_justification` | `TEXT` | `NULL` | — | N/A (categorical/text) | Automated DQ & Reconciliation Engine (`etl.sp_validate_*`, `etl.sp_record_reconciliation`) | Documented domain rationale for accepting or correcting a flagged record. |
 
 ### `audit.etl_run` (TABLE)
-- **Defined in**: [004_audit_and_quality_tables.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/004_audit_and_quality_tables.sql)
+- **Defined in**: [004_audit_and_quality_tables.sql](database/migrations/004_audit_and_quality_tables.sql)
 - **Grain**: One row per ETL validation, reference promotion, warehouse load, or reconciliation execution.
 - **Supported Business Functionality / Questions**: Did a batch succeed, fail, roll back, or quarantine rows, and how many rows were read/inserted/updated/quarantined?
 - **Check Constraints**: `ck_audit_etl_run_ins`: `CHECK ((rows_inserted >= 0))`; `ck_audit_etl_run_quar`: `CHECK ((rows_quarantined >= 0))`; `ck_audit_etl_run_read`: `CHECK ((rows_read >= 0))`; `ck_audit_etl_run_status`: `CHECK (((run_status)::text = ANY ((ARRAY['RUNNING'::character varying, 'SUCCEEDED'::character varying, 'FAILED'::character varying, 'ROLLED_BACK'::character varying, 'PARTIAL_QUARANTINE'::character varying])::text[])))`; `ck_audit_etl_run_upd`: `CHECK ((rows_updated >= 0))`
@@ -311,7 +311,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 15 | `invoked_by` | `VARCHAR(64)` | `NOT NULL` | — | N/A (categorical/text) | Automated DQ & Reconciliation Engine (`etl.sp_validate_*`, `etl.sp_record_reconciliation`) | PostgreSQL role/user that executed the ETL run. |
 
 ### `audit.reconciliation_case` (TABLE)
-- **Defined in**: [004_audit_and_quality_tables.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/004_audit_and_quality_tables.sql)
+- **Defined in**: [004_audit_and_quality_tables.sql](database/migrations/004_audit_and_quality_tables.sql)
 - **Grain**: One row per cross-source comparison of a compatible metric, entity scope, unit, and reporting period.
 - **Supported Business Functionality / Questions**: What is the exact MWh and percentage variance between CEB and PUCSL for the same reporting period, and is it within tolerance (<=1%)?
 - **Check Constraints**: `ck_audit_reconciliation_dates`: `CHECK ((period_end_date >= period_start_date))`; `ck_audit_reconciliation_distinct_sources`: `CHECK (((primary_source_code)::text <> (secondary_source_code)::text))`; `ck_audit_reconciliation_status`: `CHECK (((reconciliation_status)::text = ANY ((ARRAY['OPEN'::character varying, 'WITHIN_TOLERANCE'::character varying, 'CONFLICT_FLAGGED'::character varying, 'RESOLVED_PRIMARY'::character varying, 'RESOLVED_SECONDARY'::character varying])::text[])))`
@@ -338,7 +338,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 18 | `created_at` | `TIMESTAMPTZ` | `NOT NULL` | — | ISO-8601 TIMESTAMPTZ (UTC+05:30) | Automated DQ & Reconciliation Engine (`etl.sp_validate_*`, `etl.sp_record_reconciliation`) | Audit timestamp when the record was initially created. |
 
 ### `audit.record_lineage` (TABLE)
-- **Defined in**: [004_audit_and_quality_tables.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/004_audit_and_quality_tables.sql)
+- **Defined in**: [004_audit_and_quality_tables.sql](database/migrations/004_audit_and_quality_tables.sql)
 - **Grain**: One row per promoted warehouse fact record linked back to staging and raw source locators.
 - **Supported Business Functionality / Questions**: Which exact staging row ID and raw PDF/JSON record produced a given warehouse fact primary key?
 
@@ -358,7 +358,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 ## Schema: `dw`
 
 ### `dw.dim_consumption_sector` (TABLE)
-- **Defined in**: [005_dimensions.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/005_dimensions.sql)
+- **Defined in**: [005_dimensions.sql](database/migrations/005_dimensions.sql)
 - **Grain**: One row per official CEB/PUCSL electricity tariff consumer category (9 verified categories).
 - **Supported Business Functionality / Questions**: Supports electricity demand/sales breakdown across Domestic, Industrial, General Purpose, Hotel, Government, Religious, Street Lighting, LECO, and All Sectors.
 
@@ -372,7 +372,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 6 | `source_classification` | `VARCHAR(64)` | `NOT NULL` | — | N/A (categorical/text) | Conformed Reference Seed (`scripts/seed_reference.py`) & Verified Source Metadata | Publishing tariff classification authority. |
 
 ### `dw.dim_date` (TABLE)
-- **Defined in**: [005_dimensions.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/005_dimensions.sql)
+- **Defined in**: [005_dimensions.sql](database/migrations/005_dimensions.sql)
 - **Grain**: One row per calendar day (2019-01-01 through 2026-12-31 seeded; 2,922 days).
 - **Supported Business Functionality / Questions**: Enables calendar rollups by ISO week, month, quarter, year, weekend vs weekday, and Sri Lanka's four meteorological monsoon seasons.
 - **Check Constraints**: `ck_dim_date_dom`: `CHECK (((day_of_month >= 1) AND (day_of_month <= 31)))`; `ck_dim_date_dow`: `CHECK (((day_of_week_iso >= 1) AND (day_of_week_iso <= 7)))`; `ck_dim_date_doy`: `CHECK (((day_of_year >= 1) AND (day_of_year <= 366)))`; `ck_dim_date_monsoon`: `CHECK (((sl_monsoon_season)::text = ANY ((ARRAY['NORTHEAST_MONSOON'::character varying, 'FIRST_INTER_MONSOON'::character varying, 'SOUTHWEST_MONSOON'::character varying, 'SECOND_INTER_MONSOON'::character varying])::text[])))`; `ck_dim_date_month`: `CHECK (((month_number >= 1) AND (month_number <= 12)))`; `ck_dim_date_quarter`: `CHECK (((quarter_number >= 1) AND (quarter_number <= 4)))`; `ck_dim_date_woy`: `CHECK (((week_of_year_iso >= 1) AND (week_of_year_iso <= 53)))`; `ck_dim_date_year`: `CHECK (((calendar_year >= 1990) AND (calendar_year <= 2100)))`
@@ -396,7 +396,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 15 | `sl_monsoon_season` | `VARCHAR(32)` | `NOT NULL` | — | N/A (categorical/text) | Deterministic ISO-8601 Calendar + Dept. of Meteorology SL Monsoon Classification | Sri Lanka meteorological hydro-climate season (`NORTHEAST_MONSOON`, `FIRST_INTER_MONSOON`, `SOUTHWEST_MONSOON`, `SECOND_INTER_MONSOON`). |
 
 ### `dw.dim_energy_source` (TABLE)
-- **Defined in**: [005_dimensions.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/005_dimensions.sql)
+- **Defined in**: [005_dimensions.sql](database/migrations/005_dimensions.sql)
 - **Grain**: One row per standardized electricity generation technology / fuel category (9 verified categories).
 - **Supported Business Functionality / Questions**: Supports renewable vs thermal share, Major Hydro vs NCRE breakdown, indigenous vs imported fuel dependence, and dispatchable mix.
 
@@ -412,7 +412,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 8 | `is_indigenous` | `BOOLEAN` | `NOT NULL` | — | Boolean flag | Conformed Reference Seed (`scripts/seed_reference.py`) & Verified Source Metadata | `TRUE` for domestic primary energy resources (water, solar, wind, local biomass); `FALSE` for imported coal/oil. |
 
 ### `dw.dim_interval` (TABLE)
-- **Defined in**: [005_dimensions.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/005_dimensions.sql)
+- **Defined in**: [005_dimensions.sql](database/migrations/005_dimensions.sql)
 - **Grain**: One row per sub-daily dispatch slot (96 x 15-minute slots + 24 x 60-minute slots = 120 rows).
 - **Supported Business Functionality / Questions**: Enables intraday load-curve profiling and Sri Lanka Time-of-Use (TOU) tariff block analysis (OFF_PEAK, DAY, PEAK).
 - **Check Constraints**: `ck_dim_interval_duration`: `CHECK ((duration_minutes = ANY (ARRAY[15, 60])))`; `ck_dim_interval_hour`: `CHECK (((hour_of_day >= 0) AND (hour_of_day <= 23)))`; `ck_dim_interval_index`: `CHECK (((interval_index >= 1) AND (interval_index <= 96)))`; `ck_dim_interval_tou_block`: `CHECK (((tariff_time_block)::text = ANY ((ARRAY['OFF_PEAK'::character varying, 'DAY'::character varying, 'PEAK'::character varying])::text[])))`; `ck_dim_interval_type`: `CHECK (((interval_type)::text = ANY ((ARRAY['15MIN'::character varying, 'HOURLY'::character varying])::text[])))`
@@ -429,7 +429,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 8 | `tariff_time_block` | `VARCHAR(20)` | `NOT NULL` | — | N/A (categorical/text) | Deterministic Sub-Daily Clock Grid + PUCSL/CEB TOU Tariff Schedule | Sri Lanka PUCSL/CEB Time-of-Use tariff block (`OFF_PEAK` 22:30–05:30, `DAY` 05:30–18:30, `PEAK` 18:30–22:30). |
 
 ### `dw.dim_metric` (TABLE)
-- **Defined in**: [005_dimensions.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/005_dimensions.sql)
+- **Defined in**: [005_dimensions.sql](database/migrations/005_dimensions.sql)
 - **Grain**: One row per canonical physical/economic metric definition (14 seeded metrics).
 - **Supported Business Functionality / Questions**: Governs metric semantics, canonical units, gross vs net boundaries, additivity across time/entities, and comparability groups.
 - **Check Constraints**: `ck_dim_metric_agg`: `CHECK (((aggregation_behavior)::text = ANY ((ARRAY['SUM'::character varying, 'AVG'::character varying, 'MIN'::character varying, 'MAX'::character varying, 'NON_ADDITIVE'::character varying, 'SEMI_ADDITIVE_PERIOD_END'::character varying])::text[])))`; `ck_dim_metric_boundary`: `CHECK (((generation_boundary)::text = ANY ((ARRAY['GROSS'::character varying, 'NET'::character varying, 'AUXILIARY'::character varying, 'NOT_APPLICABLE'::character varying])::text[])))`; `ck_dim_metric_class`: `CHECK (((measurement_class)::text = ANY ((ARRAY['POWER'::character varying, 'ENERGY'::character varying, 'CAPACITY'::character varying, 'COUNT'::character varying, 'CURRENCY'::character varying, 'PERCENTAGE'::character varying, 'METEOROLOGICAL'::character varying, 'STORAGE'::character varying, 'RATIO'::character varying])::text[])))`; `ck_dim_metric_nature`: `CHECK (((value_nature)::text = ANY ((ARRAY['REPORTED'::character varying, 'ESTIMATED'::character varying, 'DERIVED'::character varying, 'AUDITED_FINAL'::character varying, 'PROVISIONAL'::character varying])::text[])))`
@@ -451,7 +451,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 13 | `definition_notes` | `TEXT` | `NOT NULL` | — | N/A (categorical/text) | Conformed Reference Seed (`scripts/seed_reference.py`) & Verified Source Metadata | Authoritative engineering definition and aggregation caveats. |
 
 ### `dw.dim_power_plant` (TABLE)
-- **Defined in**: [005_dimensions.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/005_dimensions.sql)
+- **Defined in**: [005_dimensions.sql](database/migrations/005_dimensions.sql)
 - **Grain**: One row per SCD Type 2 version of a verified power station, hydro complex, or reported NCRE aggregate category (32 seeded entities).
 - **Supported Business Functionality / Questions**: Supports plant-level generation, dispatch, complex-level hydro analysis (Mahaweli, Laxapana, Samanala), CEB vs IPP/SPP ownership, and historical plant attribute changes.
 - **Check Constraints**: `ck_dim_power_plant_effective_dates`: `CHECK (((effective_to IS NULL) OR (effective_to >= effective_from)))`; `ck_dim_power_plant_lat`: `CHECK (((latitude_deg IS NULL) OR ((latitude_deg >= 5.80000) AND (latitude_deg <= 10.00000))))`; `ck_dim_power_plant_level`: `CHECK (((entity_level)::text = ANY ((ARRAY['PLANT'::character varying, 'UNIT'::character varying, 'COMPLEX'::character varying, 'AGGREGATE_CATEGORY'::character varying])::text[])))`; `ck_dim_power_plant_lon`: `CHECK (((longitude_deg IS NULL) OR ((longitude_deg >= 79.40000) AND (longitude_deg <= 82.00000))))`; `ck_dim_power_plant_operator`: `CHECK (((operator_type)::text = ANY ((ARRAY['CEB'::character varying, 'IPP'::character varying, 'SPP'::character varying, 'AGGREGATE'::character varying, 'MIXED'::character varying])::text[])))`; `ck_dim_power_plant_verification`: `CHECK (((verification_status)::text = ANY ((ARRAY['VERIFIED'::character varying, 'AGGREGATE_REPORTED'::character varying])::text[])))`
@@ -474,7 +474,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 14 | `is_current` | `BOOLEAN` | `NOT NULL` | — | Boolean flag | Conformed Reference Seed (`scripts/seed_reference.py`) & Verified Source Metadata | `TRUE` for the active SCD Type 2 row of `plant_code` (enforced via partial unique index). |
 
 ### `dw.dim_region` (TABLE)
-- **Defined in**: [005_dimensions.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/005_dimensions.sql)
+- **Defined in**: [005_dimensions.sql](database/migrations/005_dimensions.sql)
 - **Grain**: One row per verified geographic/distribution region (National LK, 9 ISO provinces, 4 CEB distribution regions = 14 rows).
 - **Supported Business Functionality / Questions**: Supports national and verified provincial/distribution-region rollups without unverified locations.
 - **Check Constraints**: `ck_dim_region_level`: `CHECK (((region_level)::text = ANY ((ARRAY['NATIONAL'::character varying, 'PROVINCE'::character varying, 'DISTRICT'::character varying, 'CEB_DISTRIBUTION_REGION'::character varying])::text[])))`
@@ -490,7 +490,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 7 | `source_standard` | `VARCHAR(64)` | `NOT NULL` | — | N/A (categorical/text) | Conformed Reference Seed (`scripts/seed_reference.py`) & Verified Source Metadata | Authoritative standard defining this region (`ISO 3166-2:LK` or `CEB Distribution Division Structure`). |
 
 ### `dw.dim_source_system` (TABLE)
-- **Defined in**: [005_dimensions.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/005_dimensions.sql)
+- **Defined in**: [005_dimensions.sql](database/migrations/005_dimensions.sql)
 - **Grain**: One row per upstream source system in the dimensional layer (CEB, PUCSL, NASA_POWER).
 - **Supported Business Functionality / Questions**: Slices warehouse facts by regulatory vs utility vs satellite meteorological provider.
 - **Check Constraints**: `ck_dim_source_system_cat`: `CHECK (((source_category)::text = ANY ((ARRAY['UTILITY_STATISTICAL'::character varying, 'REGULATORY_OPERATIONAL'::character varying, 'SATELLITE_METEOROLOGICAL'::character varying])::text[])))`
@@ -508,7 +508,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 9 | `is_active` | `BOOLEAN` | `NOT NULL` | — | Boolean flag | Conformed Reference Seed (`scripts/seed_reference.py`) & Verified Source Metadata | `TRUE` when this record/rule is active for current ETL runs. |
 
 ### `dw.dim_weather_location` (TABLE)
-- **Defined in**: [005_dimensions.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/005_dimensions.sql)
+- **Defined in**: [005_dimensions.sql](database/migrations/005_dimensions.sql)
 - **Grain**: One row per verified Sri Lanka meteorological grid sampling point bounded to island coordinates (6 seeded energy zones).
 - **Supported Business Functionality / Questions**: Links hydro catchments (Victoria, Laxapana), wind corridors (Mannar, Puttalam), solar hubs (Hambantota), and Colombo load center to NASA POWER weather.
 - **Check Constraints**: `ck_dim_weather_location_lat`: `CHECK (((latitude_deg >= 5.80000) AND (latitude_deg <= 10.00000)))`; `ck_dim_weather_location_lon`: `CHECK (((longitude_deg >= 79.40000) AND (longitude_deg <= 82.00000)))`; `ck_dim_weather_location_res`: `CHECK ((spatial_resolution_deg > (0)::numeric))`; `ck_dim_weather_location_zone`: `CHECK (((energy_zone_type)::text = ANY ((ARRAY['HYDRO_CATCHMENT'::character varying, 'WIND_CORRIDOR'::character varying, 'SOLAR_HUB'::character varying, 'THERMAL_HUB'::character varying, 'LOAD_CENTER'::character varying])::text[])))`
@@ -527,7 +527,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 10 | `source_provider` | `VARCHAR(32)` | `NOT NULL` | — | N/A (categorical/text) | NASA POWER Grid Coordinates + CEB Hydro/Renewable Zone Definitions | Meteorological data provider (`NASA_POWER`). |
 
 ### `dw.fact_capacity_period` (TABLE)
-- **Defined in**: [007_facts_capacity_and_sales.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/007_facts_capacity_and_sales.sql)
+- **Defined in**: [007_facts_capacity_and_sales.sql](database/migrations/007_facts_capacity_and_sales.sql)
 - **Grain**: One installed/dependable capacity record per plant/category, metric, effective reporting period, source system, and dataset revision (semi-additive).
 - **Supported Business Functionality / Questions**: Answers: Installed vs dependable capacity evolution (MW) over time; renewable capacity additions; verified plant capacity factors ONLY when joined on matching reporting periods and boundaries.
 - **Check Constraints**: `ck_fact_capacity_dates`: `CHECK ((effective_end_date_key >= effective_start_date_key))`; `ck_fact_capacity_dependable_le_installed`: `CHECK (((installed_capacity_mw IS NULL) OR (dependable_capacity_mw IS NULL) OR (dependable_capacity_mw <= installed_capacity_mw)))`; `ck_fact_capacity_nonneg`: `CHECK ((((installed_capacity_mw IS NULL) OR (installed_capacity_mw >= (0)::numeric)) AND ((dependable_capacity_mw IS NULL) OR (dependable_capacity_mw >= (0)::numeric)) AND ((unit_count IS NULL) OR (unit_count >= 0))))`
@@ -555,7 +555,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 19 | `loaded_at` | `TIMESTAMPTZ` | `NOT NULL` | — | ISO-8601 TIMESTAMPTZ (UTC+05:30) | ETL Runtime (`etl` procedures / `src/etl/batch_loader.py`) | Timezone-aware timestamp when the fact row was promoted into `dw`. |
 
 ### `dw.fact_dispatch_interval` (PARTITIONED TABLE)
-- **Defined in**: [006_facts_generation_and_dispatch.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/006_facts_generation_and_dispatch.sql)
+- **Defined in**: [006_facts_generation_and_dispatch.sql](database/migrations/006_facts_generation_and_dispatch.sql)
 - **Grain**: One verified sub-daily dispatch/demand observation per reporting entity, date, interval slot, metric, source system, and dataset revision (range-partitioned by date_key).
 - **Supported Business Functionality / Questions**: Answers: What is the 15-minute intraday dispatch curve by plant/fuel? How does evening peak (18:30-22:30) compare to daytime solar trough? What is integrated MWh from 15-min MW?
 - **Check Constraints**: `ck_fact_dispatch_derived_energy_physics`: `CHECK (((is_energy_derived = false) OR (active_power_mw IS NULL) OR (derived_energy_mwh IS NULL) OR (abs((derived_energy_mwh - (active_power_mw * ((interval_duration_minutes)::numeric / 60.0)))) <= 0.01)))`; `ck_fact_dispatch_duration`: `CHECK ((interval_duration_minutes = ANY (ARRAY[15, 30, 60])))`; `ck_fact_dispatch_missing_is_null`: `CHECK ((((value_status)::text <> 'MISSING'::text) OR ((active_power_mw IS NULL) AND (derived_energy_mwh IS NULL))))`; `ck_fact_dispatch_power_nonneg`: `CHECK ((((value_status)::text = 'PUMPING_LOAD'::text) OR (((active_power_mw IS NULL) OR (active_power_mw >= (0)::numeric)) AND ((derived_energy_mwh IS NULL) OR (derived_energy_mwh >= (0)::numeric)))))`; `ck_fact_dispatch_value_status`: `CHECK (((value_status)::text = ANY ((ARRAY['REPORTED'::character varying, 'ESTIMATED'::character varying, 'DERIVED'::character varying, 'MISSING'::character varying, 'PUMPING_LOAD'::character varying])::text[])))`
@@ -586,7 +586,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 22 | `loaded_at` | `TIMESTAMPTZ` | `NOT NULL` | — | ISO-8601 TIMESTAMPTZ (UTC+05:30) | ETL Runtime (`etl` procedures / `src/etl/batch_loader.py`) | Timezone-aware timestamp when the fact row was promoted into `dw`. |
 
 ### `dw.fact_electricity_sales` (TABLE)
-- **Defined in**: [007_facts_capacity_and_sales.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/007_facts_capacity_and_sales.sql)
+- **Defined in**: [007_facts_capacity_and_sales.sql](database/migrations/007_facts_capacity_and_sales.sql)
 - **Grain**: One billed electricity sales/consumption record per region, tariff sector, metric, reporting period, source system, and dataset revision.
 - **Supported Business Functionality / Questions**: Answers: Sectoral electricity consumption shares (MWh), consumer account growth, tariff revenue (LKR), and average consumption per account.
 - **Check Constraints**: `ck_fact_sales_dates`: `CHECK ((period_end_date_key >= period_start_date_key))`; `ck_fact_sales_missing_null`: `CHECK ((((value_nature)::text <> 'MISSING'::text) OR (energy_sold_mwh IS NULL)))`; `ck_fact_sales_nature`: `CHECK (((value_nature)::text = ANY ((ARRAY['REPORTED'::character varying, 'ESTIMATED'::character varying, 'PROVISIONAL'::character varying, 'AUDITED_FINAL'::character varying, 'MISSING'::character varying])::text[])))`; `ck_fact_sales_nonneg`: `CHECK ((((energy_sold_mwh IS NULL) OR (energy_sold_mwh >= (0)::numeric)) AND ((consumer_account_count IS NULL) OR (consumer_account_count >= 0)) AND ((revenue_lkr IS NULL) OR (revenue_lkr >= (0)::numeric))))`
@@ -615,7 +615,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 20 | `loaded_at` | `TIMESTAMPTZ` | `NOT NULL` | — | ISO-8601 TIMESTAMPTZ (UTC+05:30) | ETL Runtime (`etl` procedures / `src/etl/batch_loader.py`) | Timezone-aware timestamp when the fact row was promoted into `dw`. |
 
 ### `dw.fact_generation_period` (TABLE)
-- **Defined in**: [006_facts_generation_and_dispatch.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/006_facts_generation_and_dispatch.sql)
+- **Defined in**: [006_facts_generation_and_dispatch.sql](database/migrations/006_facts_generation_and_dispatch.sql)
 - **Grain**: One periodic electricity generation measurement per plant/category, metric, explicit period_type_code (DAILY/MONTHLY/ANNUAL), start/end dates, source system, and dataset revision.
 - **Supported Business Functionality / Questions**: Answers: Monthly/annual generation mix (MWh) by fuel and plant; hydro vs thermal seasonal shifts across monsoon seasons; year-over-year generation growth without conflating daily and annual rows.
 - **Check Constraints**: `ck_fact_gen_period_boundary`: `CHECK (((generation_boundary)::text = ANY ((ARRAY['GROSS'::character varying, 'NET'::character varying, 'AUXILIARY'::character varying])::text[])))`; `ck_fact_gen_period_daily_exact`: `CHECK ((((period_type_code)::text <> 'DAILY'::text) OR (period_start_date_key = period_end_date_key)))`; `ck_fact_gen_period_date_order`: `CHECK ((period_end_date_key >= period_start_date_key))`; `ck_fact_gen_period_missing_null`: `CHECK ((((value_nature)::text <> 'MISSING'::text) OR (generation_mwh IS NULL)))`; `ck_fact_gen_period_nature`: `CHECK (((value_nature)::text = ANY ((ARRAY['REPORTED'::character varying, 'ESTIMATED'::character varying, 'PROVISIONAL'::character varying, 'AUDITED_FINAL'::character varying, 'MISSING'::character varying])::text[])))`; `ck_fact_gen_period_non_negative`: `CHECK (((((generation_boundary)::text = 'AUXILIARY'::text) OR (generation_mwh IS NULL) OR (generation_mwh >= (0)::numeric)) AND ((peak_generation_mw IS NULL) OR (peak_generation_mw >= (0)::numeric))))`
@@ -644,7 +644,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 20 | `loaded_at` | `TIMESTAMPTZ` | `NOT NULL` | — | ISO-8601 TIMESTAMPTZ (UTC+05:30) | ETL Runtime (`etl` procedures / `src/etl/batch_loader.py`) | Timezone-aware timestamp when the fact row was promoted into `dw`. |
 
 ### `dw.fact_published_metric` (TABLE)
-- **Defined in**: [008_facts_weather_and_published.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/008_facts_weather_and_published.sql)
+- **Defined in**: [008_facts_weather_and_published.sql](database/migrations/008_facts_weather_and_published.sql)
 - **Grain**: One officially published aggregate headline statistic per metric, period, optional scope (region/energy source/sector), source system, and dataset revision.
 - **Supported Business Functionality / Questions**: Answers: Official historical system peak demand (MW), transmission/distribution loss %, annual CEB vs PUCSL headline totals, and revision history — strictly isolated from bottom-up plant sums.
 - **Check Constraints**: `ck_fact_pub_dates`: `CHECK ((period_end_date_key >= period_start_date_key))`; `ck_fact_pub_nature`: `CHECK (((value_nature)::text = ANY ((ARRAY['REPORTED'::character varying, 'ESTIMATED'::character varying, 'PROVISIONAL'::character varying, 'AUDITED_FINAL'::character varying, 'REVISED'::character varying, 'MISSING'::character varying])::text[])))`; `ck_fact_pub_standalone_guard`: `CHECK ((is_standalone_published_aggregate = true))`
@@ -675,7 +675,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 22 | `loaded_at` | `TIMESTAMPTZ` | `NOT NULL` | — | ISO-8601 TIMESTAMPTZ (UTC+05:30) | ETL Runtime (`etl` procedures / `src/etl/batch_loader.py`) | Timezone-aware timestamp when the fact row was promoted into `dw`. |
 
 ### `dw.fact_weather_daily` (TABLE)
-- **Defined in**: [008_facts_weather_and_published.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/008_facts_weather_and_published.sql)
+- **Defined in**: [008_facts_weather_and_published.sql](database/migrations/008_facts_weather_and_published.sql)
 - **Grain**: One daily meteorological parameter observation per weather sampling location, calendar date, metric, source system, and dataset revision.
 - **Supported Business Functionality / Questions**: Answers: How does catchment rainfall (mm/day) drive hydro output? How does Mannar/Puttalam wind speed (m/s) or Hambantota GHI (kWh/m2/day) correlate with renewable generation?
 - **Check Constraints**: `ck_fact_weather_missing_null`: `CHECK ((((is_missing = true) AND (standardized_value IS NULL)) OR (is_missing = false)))`; `ck_fact_weather_physical_bounds`: `CHECK (((standardized_value IS NULL) OR ((((source_variable_name)::text = ANY ((ARRAY['ALLSKY_SFC_SW_DWN'::character varying, 'CLRSKY_SFC_SW_DWN'::character varying, 'PRECTOTCORR'::character varying, 'WS10M'::character varying, 'WS50M'::character varying])::text[])) AND (standardized_value >= (0)::numeric)) OR (((source_variable_name)::text = 'RH2M'::text) AND ((standardized_value >= (0)::numeric) AND (standardized_value <= (100)::numeric))) OR (((source_variable_name)::text ~~ 'T2M%'::text) AND ((standardized_value >= ('-20'::integer)::numeric) AND (standardized_value <= (60)::numeric))) OR (((source_variable_name)::text <> ALL ((ARRAY['ALLSKY_SFC_SW_DWN'::character varying, 'CLRSKY_SFC_SW_DWN'::character varying, 'PRECTOTCORR'::character varying, 'WS10M'::character varying, 'WS50M'::character varying, 'RH2M'::character varying])::text[])) AND ((source_variable_name)::text !~~ 'T2M%'::text)))))`
@@ -705,7 +705,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 ## Schema: `staging`
 
 ### `staging.stg_dispatch_observation` (TABLE)
-- **Defined in**: [009_staging_tables.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/009_staging_tables.sql)
+- **Defined in**: [009_staging_tables.sql](database/migrations/009_staging_tables.sql)
 - **Grain**: One staged sub-daily dispatch record extracted from a raw batch prior to validation/promotion.
 - **Supported Business Functionality / Questions**: Holds raw text and parsed MW/timestamp values for dispatch observations, retaining quarantined rows with validation notes.
 - **Check Constraints**: `ck_stg_dispatch_status`: `CHECK (((validation_status)::text = ANY ((ARRAY['pending'::character varying, 'valid'::character varying, 'quarantined'::character varying, 'loaded'::character varying])::text[])))`
@@ -731,7 +731,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 17 | `staged_at` | `TIMESTAMPTZ` | `NOT NULL` | — | ISO-8601 TIMESTAMPTZ (UTC+05:30) | Source Extraction Parsers (PUCSL PDF/CSV, CEB Digest tables, NASA POWER JSON) | Timestamp when the row was inserted into staging. |
 
 ### `staging.stg_electricity_sales` (TABLE)
-- **Defined in**: [009_staging_tables.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/009_staging_tables.sql)
+- **Defined in**: [009_staging_tables.sql](database/migrations/009_staging_tables.sql)
 - **Grain**: One staged electricity sales/consumption record extracted from CEB/PUCSL tables.
 - **Supported Business Functionality / Questions**: Holds raw sector/region labels, energy sold, consumer counts, and revenue prior to warehouse promotion.
 - **Check Constraints**: `ck_stg_sales_status`: `CHECK (((validation_status)::text = ANY ((ARRAY['pending'::character varying, 'valid'::character varying, 'quarantined'::character varying, 'loaded'::character varying])::text[])))`
@@ -759,7 +759,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 19 | `staged_at` | `TIMESTAMPTZ` | `NOT NULL` | — | ISO-8601 TIMESTAMPTZ (UTC+05:30) | Source Extraction Parsers (PUCSL PDF/CSV, CEB Digest tables, NASA POWER JSON) | Timestamp when the row was inserted into staging. |
 
 ### `staging.stg_generation_report` (TABLE)
-- **Defined in**: [009_staging_tables.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/009_staging_tables.sql)
+- **Defined in**: [009_staging_tables.sql](database/migrations/009_staging_tables.sql)
 - **Grain**: One staged periodic generation record extracted from PUCSL or CEB reports.
 - **Supported Business Functionality / Questions**: Holds raw plant/category labels, period dates, and reported energy values (MWh/GWh) before alias resolution and unit normalization.
 - **Check Constraints**: `ck_stg_gen_status`: `CHECK (((validation_status)::text = ANY ((ARRAY['pending'::character varying, 'valid'::character varying, 'quarantined'::character varying, 'loaded'::character varying])::text[])))`
@@ -789,7 +789,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 21 | `staged_at` | `TIMESTAMPTZ` | `NOT NULL` | — | ISO-8601 TIMESTAMPTZ (UTC+05:30) | Source Extraction Parsers (PUCSL PDF/CSV, CEB Digest tables, NASA POWER JSON) | Timestamp when the row was inserted into staging. |
 
 ### `staging.stg_plant_capacity` (TABLE)
-- **Defined in**: [009_staging_tables.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/009_staging_tables.sql)
+- **Defined in**: [009_staging_tables.sql](database/migrations/009_staging_tables.sql)
 - **Grain**: One staged power plant installed/dependable capacity record.
 - **Supported Business Functionality / Questions**: Holds raw plant capacity strings and parsed MW/unit counts prior to check-constraint validation.
 - **Check Constraints**: `ck_stg_cap_status`: `CHECK (((validation_status)::text = ANY ((ARRAY['pending'::character varying, 'valid'::character varying, 'quarantined'::character varying, 'loaded'::character varying])::text[])))`
@@ -816,7 +816,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 18 | `staged_at` | `TIMESTAMPTZ` | `NOT NULL` | — | ISO-8601 TIMESTAMPTZ (UTC+05:30) | Source Extraction Parsers (PUCSL PDF/CSV, CEB Digest tables, NASA POWER JSON) | Timestamp when the row was inserted into staging. |
 
 ### `staging.stg_published_statistic` (TABLE)
-- **Defined in**: [009_staging_tables.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/009_staging_tables.sql)
+- **Defined in**: [009_staging_tables.sql](database/migrations/009_staging_tables.sql)
 - **Grain**: One staged standalone published aggregate statistic from official digests/reports.
 - **Supported Business Functionality / Questions**: Stages headline annual/monthly published totals and table references for dw.fact_published_metric and cross-source reconciliation.
 - **Check Constraints**: `ck_stg_pub_status`: `CHECK (((validation_status)::text = ANY ((ARRAY['pending'::character varying, 'valid'::character varying, 'quarantined'::character varying, 'loaded'::character varying])::text[])))`
@@ -846,7 +846,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 | 21 | `staged_at` | `TIMESTAMPTZ` | `NOT NULL` | — | ISO-8601 TIMESTAMPTZ (UTC+05:30) | Source Extraction Parsers (PUCSL PDF/CSV, CEB Digest tables, NASA POWER JSON) | Timestamp when the row was inserted into staging. |
 
 ### `staging.stg_weather_observation` (TABLE)
-- **Defined in**: [009_staging_tables.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/009_staging_tables.sql)
+- **Defined in**: [009_staging_tables.sql](database/migrations/009_staging_tables.sql)
 - **Grain**: One staged daily meteorological parameter observation from NASA POWER JSON/CSV extracts.
 - **Supported Business Functionality / Questions**: Preserves raw parameter values including NASA missing-value sentinels (-999) before NULL normalization.
 - **Check Constraints**: `ck_stg_weather_status`: `CHECK (((validation_status)::text = ANY ((ARRAY['pending'::character varying, 'valid'::character varying, 'quarantined'::character varying, 'loaded'::character varying])::text[])))`
@@ -873,7 +873,7 @@ Generated and verified directly against the live **PostgreSQL 18.6** catalog (`s
 ## Schema: `etl`
 
 ### `etl.scheduled_job_registry` (TABLE)
-- **Defined in**: [017_scheduler_metadata.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/017_scheduler_metadata.sql)
+- **Defined in**: [017_scheduler_metadata.sql](database/migrations/017_scheduler_metadata.sql)
 - **Grain**: One row per declarative scheduled maintenance/refresh job.
 - **Supported Business Functionality / Questions**: Documents cron schedule, SQL command, and optional execution mode (manual, external scheduler, or pg_cron) without MySQL CREATE EVENT syntax.
 - **Check Constraints**: `ck_etl_sched_mechanism`: `CHECK (((execution_mechanism)::text = ANY ((ARRAY['EXTERNAL_OR_PG_CRON'::character varying, 'MANUAL_ONLY'::character varying, 'PG_CRON'::character varying])::text[])))`

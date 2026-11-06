@@ -1,15 +1,15 @@
 [
   {
     "analysis_scope": "March 2024 Paired Empirical Correlation",
-    "sample_days": 31,
-    "min_daily_wind_ms": 2.9,
-    "mean_daily_wind_ms": 5.37,
-    "max_daily_wind_ms": 7.73,
-    "min_daily_gen_mwh": 215.25,
-    "mean_daily_gen_mwh": 640.26,
-    "max_daily_gen_mwh": 1472.5,
-    "corr_wind_speed_vs_energy": 0.7143,
-    "corr_v_cubed_vs_energy": 0.7132,
-    "physical_interpretation": "Strong positive correlation (r = 0.714) demonstrates statistical alignment between NASA POWER 50m wind speed at Mannar and utility-scale grid dispatch"
+    "sample_days": 0,
+    "min_daily_wind_ms": null,
+    "mean_daily_wind_ms": null,
+    "max_daily_wind_ms": null,
+    "min_daily_gen_mwh": null,
+    "mean_daily_gen_mwh": null,
+    "max_daily_gen_mwh": null,
+    "corr_wind_speed_vs_energy": null,
+    "corr_v_cubed_vs_energy": null,
+    "physical_interpretation": null
   }
 ]

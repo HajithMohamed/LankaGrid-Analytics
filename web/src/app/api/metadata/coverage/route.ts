@@ -82,7 +82,7 @@ export async function GET() {
     project: "GridLens — Sri Lanka National Electricity Grid Analytics Data Warehouse",
     institution: "University of Ruhuna, Faculty of Technology, Department of ICT",
     dataPeriod: "2020–2024",
-    schemas: ["dw", "audit", "mart", "staging", "ref", "raw"],
+    schemas: ["audit", "dw", "etl", "mart", "raw", "ref", "staging"],
     dimensions: [
       {
         name: "dim_date",
@@ -123,8 +123,8 @@ export async function GET() {
         name: "dim_weather_location",
         schema: "dw",
         type: "Meteorological Stations",
-        rows: liveTableCounts["dw.dim_weather_location"]?.approxRows || 2,
-        grain: "Victoria Dam (Hydro catchment) and Mannar (Wind corridor)",
+        rows: liveTableCounts["dw.dim_weather_location"]?.approxRows || 6,
+        grain: "Victoria, Laxapana, Mannar, Puttalam, Hambantota, and Colombo grid nodes",
       },
       {
         name: "dim_region",

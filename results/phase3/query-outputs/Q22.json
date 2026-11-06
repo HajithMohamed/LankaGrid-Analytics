@@ -52,11 +52,11 @@
   {
     "calendar_year": 2024,
     "reconciliation_tier": "PUCSL_DISPATCH_TELEMETRY_DAILY",
-    "calculated_constituent_sum": 46308.0,
+    "calculated_constituent_sum": null,
     "published_control_total": 48223.0,
     "measurement_unit": "MWh",
-    "variance_magnitude": 1915.0,
-    "variance_pct": 3.971,
+    "variance_magnitude": null,
+    "variance_pct": null,
     "audit_status": "EXPLAINED SCOPE: UNTELEMETERED SOLAR/MINI-HYDRO (4.2%)"
   }
 ]

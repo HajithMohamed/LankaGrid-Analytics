@@ -2,145 +2,145 @@
   {
     "query_id": "Q01",
     "title": "Generation Mix by Energy Source",
-    "row_count": 14,
-    "execution_time_ms": 600.3
+    "row_count": 1,
+    "execution_time_ms": 406.08
   },
   {
     "query_id": "Q02",
     "title": "Renewable vs Non-Renewable Daily Share",
-    "row_count": 31,
-    "execution_time_ms": 48.1
+    "row_count": 0,
+    "execution_time_ms": 321.55
   },
   {
     "query_id": "Q03",
     "title": "Plant Capacity Factor Analysis",
-    "row_count": 20,
-    "execution_time_ms": 133.75
+    "row_count": 0,
+    "execution_time_ms": 174.87
   },
   {
     "query_id": "Q04",
     "title": "Peak Daytime Off-Peak Contribution",
-    "row_count": 7,
-    "execution_time_ms": 112.97
+    "row_count": 0,
+    "execution_time_ms": 300.02
   },
   {
     "query_id": "Q05",
     "title": "Daily Dispatch Curves Weekday vs Weekend",
-    "row_count": 96,
-    "execution_time_ms": 95.7
+    "row_count": 0,
+    "execution_time_ms": 206.51
   },
   {
     "query_id": "Q06",
     "title": "Dispatch Ramp Rate Analysis",
-    "row_count": 25,
-    "execution_time_ms": 110.35
+    "row_count": 0,
+    "execution_time_ms": 196.49
   },
   {
     "query_id": "Q07",
     "title": "Baseload vs Peaking Plant Behavior",
-    "row_count": 30,
-    "execution_time_ms": 143.24
+    "row_count": 0,
+    "execution_time_ms": 472.55
   },
   {
     "query_id": "Q08",
     "title": "Telemetry to Published Energy Reconciliation",
     "row_count": 8,
-    "execution_time_ms": 13.25
+    "execution_time_ms": 383.47
   },
   {
     "query_id": "Q09",
     "title": "Five-Year Sectoral Electricity Sales Trends",
     "row_count": 44,
-    "execution_time_ms": 13.65
+    "execution_time_ms": 195.04
   },
   {
     "query_id": "Q10",
     "title": "Sectoral Consumption Shifts Across Historical Periods",
     "row_count": 9,
-    "execution_time_ms": 5.45
+    "execution_time_ms": 141.58
   },
   {
     "query_id": "Q11",
     "title": "Average Consumption per Customer Account",
     "row_count": 39,
-    "execution_time_ms": 3.1
+    "execution_time_ms": 170.66
   },
   {
     "query_id": "Q12",
     "title": "LECO Bulk Supply vs Direct CEB Sales",
     "row_count": 5,
-    "execution_time_ms": 1.82
+    "execution_time_ms": 162.11
   },
   {
     "query_id": "Q13",
     "title": "Five-Year Solar Irradiance Profiles",
-    "row_count": 10,
-    "execution_time_ms": 40.1
+    "row_count": 0,
+    "execution_time_ms": 157.55
   },
   {
     "query_id": "Q14",
     "title": "Temperature and Grid Demand Correlation",
     "row_count": 1,
-    "execution_time_ms": 84.82
+    "execution_time_ms": 166.7
   },
   {
     "query_id": "Q15",
     "title": "Rainfall and Solar Monsoon Seasonality",
-    "row_count": 15,
-    "execution_time_ms": 13.59
+    "row_count": 1,
+    "execution_time_ms": 160.22
   },
   {
     "query_id": "Q16",
     "title": "Wind Resource Distribution and Generation Relationship",
     "row_count": 1,
-    "execution_time_ms": 11.15
+    "execution_time_ms": 180.06
   },
   {
     "query_id": "Q17",
     "title": "Zero-Generation Interval Analysis",
-    "row_count": 36,
-    "execution_time_ms": 364.32
+    "row_count": 0,
+    "execution_time_ms": 165.92
   },
   {
     "query_id": "Q18",
     "title": "Installed Capacity Utilization Ratio",
-    "row_count": 22,
-    "execution_time_ms": 80.25
+    "row_count": 0,
+    "execution_time_ms": 162.49
   },
   {
     "query_id": "Q19",
     "title": "Lakvijaya Coal Unit Dispatch Continuity",
-    "row_count": 4,
-    "execution_time_ms": 40.52
+    "row_count": 1,
+    "execution_time_ms": 194.16
   },
   {
     "query_id": "Q20",
     "title": "Evening Peak Generation Contribution",
-    "row_count": 7,
-    "execution_time_ms": 110.24
+    "row_count": 0,
+    "execution_time_ms": 166.12
   },
   {
     "query_id": "Q21",
     "title": "Five-Year Grid Sales Efficiency Trends",
     "row_count": 26,
-    "execution_time_ms": 2.4
+    "execution_time_ms": 194.01
   },
   {
     "query_id": "Q22",
     "title": "Cross-Source Multi-Tier Reconciliation",
     "row_count": 6,
-    "execution_time_ms": 3.66
+    "execution_time_ms": 340.4
   },
   {
     "query_id": "Q23",
     "title": "Data Quality Quarantine Audit Trail",
-    "row_count": 5,
-    "execution_time_ms": 19.26
+    "row_count": 3,
+    "execution_time_ms": 238.11
   },
   {
     "query_id": "Q24",
     "title": "ETL Execution Performance and Lineage",
-    "row_count": 4,
-    "execution_time_ms": 192.63
+    "row_count": 1,
+    "execution_time_ms": 238.46
   }
 ]

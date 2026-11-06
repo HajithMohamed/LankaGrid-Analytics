@@ -54,7 +54,7 @@ flowchart TD
     P4["Audit Ledger & Quarantine<br/>(audit.data_quality_issue, audit.etl_run)"]:::pipe
 
     %% Warehouse Core
-    W1["9 Conformed Dimensions (dw.dim_*)<br/>Date, Time, Plant (SCD2), Fuel, Substation..."]:::wh
+    W1["9 Conformed Dimensions (dw.dim_*)<br/>Date, Interval, Plant (SCD2), Energy Source..."]:::wh
     W2["6 Kimball Fact Tables (dw.fact_*)<br/>Dispatch (107k+), Sales, Weather (21k+)..."]:::wh
     W3["Analytical Marts (mart.mv_*)<br/>Pre-aggregated Materialized Views"]:::wh
 
@@ -99,15 +99,15 @@ Detailed fact table definitions, additivity rules, and partition designs are doc
 
 Nine conformed dimensions provide uniform analytical drill-down and slicing across all fact tables:
 
-1. **`dw.dim_date`**: Calendar hierarchy (Day &rarr; Month &rarr; Quarter &rarr; Year), day-of-week, statutory holidays, and Sri Lankan monsoon regimes (*Northeast*, *First Inter-Monsoon*, *Southwest*, *Second Inter-Monsoon*).
-2. **`dw.dim_time_of_day`**: 96 discrete 15-minute intervals mapped to official CEB Time-of-Use (TOU) tariff bands (*Day Peak: 18:30–22:30*, *Day Off-Peak: 05:30–18:30*, *Night Off-Peak: 22:30–05:30*).
-3. **`dw.dim_power_plant`**: Generation facilities with geographic coordinates, rated capacities, grid connection voltage, and **Kimball Slowly Changing Dimension (SCD) Type 2** historical tracking (`effective_from`, `effective_to`, `is_current`).
-4. **`dw.dim_generation_unit`**: Granular turbine-generator units within multi-unit complexes (e.g. Lakvijaya Units 1–3, Victoria Units 1–3).
-5. **`dw.dim_fuel_type`**: Primary and secondary fuel taxonomies (*Major Hydro, Coal, Auto Diesel, Heavy Fuel Oil, Naphtha, Solar, Wind, Biomass*) with IPCC carbon intensity factors.
-6. **`dw.dim_grid_substation`**: High-voltage transmission nodes (220 kV and 132 kV) mapped to geographic coordinates for weather matching.
-7. **`dw.dim_transmission_line`**: High-voltage corridor circuits, route lengths ($km$), nominal voltages ($kV$), and thermal ratings ($MVA$).
-8. **`dw.dim_tariff_customer_class`**: Gazette tariff classes (*Domestic, Religious, Industrial, Hotel, General Purpose, Government, Street Lighting*).
-9. **`dw.dim_administrative_area`**: 9 administrative provinces, 25 districts, and CEB Distribution Divisions (*DD1, DD2, DD3, DD4, LECO*).
+1. **`dw.dim_date`**: Calendar hierarchy (Date &rarr; Month &rarr; Quarter &rarr; Year), day-of-week, statutory holidays, and Sri Lankan monsoon regimes (*Northeast*, *First Inter-Monsoon*, *Southwest*, *Second Inter-Monsoon*).
+2. **`dw.dim_interval`**: 96 discrete daily 15-minute intervals mapped to official CEB Time-of-Use (TOU) tariff bands (*Day Peak: 18:30–22:30*, *Day Off-Peak: 05:30–18:30*, *Night Off-Peak: 22:30–05:30*).
+3. **`dw.dim_source_system`**: Authoritative provenance registry identifying upstream providers (*CEB, PUCSL, NASA POWER*).
+4. **`dw.dim_energy_source`**: Primary and secondary fuel taxonomies (*Major Hydro, Coal, Auto Diesel, Heavy Fuel Oil, Naphtha, Solar, Wind, Biomass*) with IPCC emission factors.
+5. **`dw.dim_region`**: Sri Lanka administrative provinces and CEB distribution divisions (*DD1, DD2, DD3, DD4, LECO*).
+6. **`dw.dim_consumption_sector`**: Official Gazette customer tariff sectors (*Domestic, Industrial, General Purpose, Hotel, Street Lighting, Bulk*).
+7. **`dw.dim_power_plant`**: Generation facilities with geographic coordinates, rated capacities ($MW$), connection voltage, and **Kimball Slowly Changing Dimension (SCD) Type 2** tracking (`effective_from`, `effective_to`, `is_current`).
+8. **`dw.dim_weather_location`**: 6 verified Sri Lanka meteorological nodes across key energy catchments (*Victoria, Laxapana, Mannar, Puttalam, Hambantota, Colombo*).
+9. **`dw.dim_metric`**: Canonical metric dictionary establishing physical dimensions, units ($MW$, $MWh$, $GWh$, $kW\cdot h/m^2/day$), additivity rules, and measurement domains.
 
 Full dimensional attribute catalogs and hierarchy maps are available in [docs/database/dimension-tables.md](docs/database/dimension-tables.md) and [docs/architecture/fact-constellation.md](docs/architecture/fact-constellation.md).
 

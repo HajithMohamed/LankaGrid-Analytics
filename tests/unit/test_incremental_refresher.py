@@ -83,3 +83,32 @@ def test_dry_run_performs_zero_database_mutations() -> None:
         assert r.status == "SUCCEEDED"
         assert r.duration_seconds >= 0.0
         assert r.marts_refreshed is True  # Dry run marks simulated success
+
+
+@pytest.mark.unit
+def test_refresh_marts_invokes_both_materialized_view_procedures() -> None:
+    """Verify refresh_marts executes both etl.sp_refresh_mart_views and mart.sp_refresh_analytical_marts."""
+    from unittest.mock import MagicMock, patch
+
+    cfg = DatabaseConfig(
+        host="localhost",
+        port=5432,
+        dbname="sl_grid_warehouse",
+        user="grid_etl",
+        password="dummy_password",
+    )
+    refresher = IncrementalWarehouseRefresher(config=cfg)
+
+    mock_cur = MagicMock()
+    mock_conn = MagicMock()
+    mock_conn.cursor.return_value.__enter__.return_value = mock_cur
+    mock_conn.__enter__.return_value = mock_conn
+
+    with patch("src.etl.incremental_refresher.get_connection", return_value=mock_conn):
+        ok = refresher.refresh_marts(dry_run=False)
+        assert ok is True
+
+        # Verify exact calls to both procedures
+        executed_sqls = [call_args[0][0] for call_args in mock_cur.execute.call_args_list]
+        assert "CALL etl.sp_refresh_mart_views(FALSE);" in executed_sqls
+        assert "CALL mart.sp_refresh_analytical_marts();" in executed_sqls

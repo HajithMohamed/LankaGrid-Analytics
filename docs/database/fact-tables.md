@@ -12,12 +12,12 @@ Rather than forcing disparate business processes into a single monolithic struct
 
 | Table Name | Schema | Grain | Additivity | Source System | Current Warehouse Rows |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `fact_dispatch_interval` | `dw` | 15-minute interval per power plant / generation unit | Semi-additive (MW power) / Additive (MWh energy) | PUCSL Sub-Daily Dispatch Curves | **107,115** (March 2024 partition) |
-| `fact_generation_period` | `dw` | Periodic gross/net generation per station/fuel | Fully additive (MWh) | CEB Statistical Digest / PUCSL Daily Reports | Structured for periodic loads |
-| `fact_capacity_period` | `dw` | Rated nameplate and peak availability per station per period | Semi-additive (MW over time) | CEB Long Term Generation Expansion Plans | Structured for periodic loads |
-| `fact_electricity_sales` | `dw` | Annual / monthly billed sales per province per tariff class | Additive (MWh units, LKR revenue, accounts) | CEB Statistical Digest (Sales & Accounts) | **49** (2020–2024 audited history) |
-| `fact_weather_daily` | `dw` | Daily meteorological observations per grid transmission node | Semi-additive / intensive physical rates | NASA POWER API (7 Grid Nodes) | **21,924** (2020–2024 daily history) |
-| `fact_published_metric` | `dw` | Periodic macroeconomic and system-wide published KPI | Non-additive / intensive rates and percentages | CEB Audited Annual Reports & PUCSL Reviews | Structured for periodic loads |
+| `dw.fact_dispatch_interval` | `dw` | 15-minute interval per power plant | Semi-additive ($MW$) / Additive ($MWh$) | PUCSL Sub-Daily Dispatch Curves | **107,115** (March 2024 partition) |
+| `dw.fact_generation_period` | `dw` | Periodic gross/net generation per station/fuel | Fully additive ($MWh$) | CEB Statistical Digest / PUCSL Daily Reports | Structured for periodic loads |
+| `dw.fact_capacity_period` | `dw` | Rated nameplate and dependable capacity per station per period | Semi-additive ($MW$ over time) | CEB Long Term Generation Expansion Plans | Structured for periodic loads |
+| `dw.fact_electricity_sales` | `dw` | Annual / monthly billed sales per province per tariff class | Additive ($MWh$ units, $LKR$ revenue, accounts) | CEB Statistical Digest (Sales & Accounts) | **49** (2020–2024 audited history) |
+| `dw.fact_weather_daily` | `dw` | Daily meteorological observations per grid node | Semi-additive / intensive physical rates | NASA POWER API (6 Grid Nodes) | **21,924** (2020–2024 daily history) |
+| `dw.fact_published_metric` | `dw` | Periodic national benchmark KPI | Non-additive / intensive rates and percentages | CEB Audited Annual Reports & PUCSL Reviews | Structured for periodic loads |
 
 ---
 
@@ -27,33 +27,34 @@ Rather than forcing disparate business processes into a single monolithic struct
 Captures high-resolution SCADA telemetry and operational dispatch instructions across Sri Lanka's generation fleet at 15-minute intervals. Enables deep analysis of diurnal load curves, unit ramp rates, spinning reserves, merit-order dispatch adherence, and renewable intermittency.
 
 ### Fact Grain
-**One row per 15-minute telemetry interval per generation unit or dispatchable power station.**
+**One row per 15-minute interval per dispatchable power station.**
 
 ### Primary & Foreign Keys
-- **Primary Key:** Composite `(dispatch_interval_id, interval_timestamp_utc)` (enforces declarative PostgreSQL partitioning).
+- **Primary Key:** Composite `(dispatch_fact_id, date_key)` (enforces declarative PostgreSQL range partitioning by year).
 - **Foreign Keys:**
-  - `date_id` &rarr; `dw.dim_date(date_id)`
-  - `time_id` &rarr; `dw.dim_time_of_day(time_id)`
-  - `plant_id` &rarr; `dw.dim_power_plant(plant_id)`
-  - `unit_id` &rarr; `dw.dim_generation_unit(unit_id)` (nullable for station-level aggregations)
-  - `fuel_type_id` &rarr; `dw.dim_fuel_type(fuel_type_id)`
-  - `grid_substation_id` &rarr; `dw.dim_grid_substation(grid_substation_id)`
+  - `date_key` &rarr; `dw.dim_date(date_key)`
+  - `interval_key` &rarr; `dw.dim_interval(interval_key)`
+  - `plant_key` &rarr; `dw.dim_power_plant(plant_key)`
+  - `energy_source_key` &rarr; `dw.dim_energy_source(energy_source_key)`
+  - `metric_key` &rarr; `dw.dim_metric(metric_key)`
+  - `source_system_key` &rarr; `dw.dim_source_system(source_system_key)`
+  - `source_document_id` &rarr; `raw.source_document(source_document_id)`
+  - `etl_run_id` &rarr; `audit.etl_run(etl_run_id)`
 
 ### Measures & Additivity
-- `active_power_mw` (`NUMERIC(10,3)`): Instantaneous power generation rate in Megawatts. **Semi-additive:** Cannot be summed across time; must be averaged over time or evaluated at specific time slices. Can be summed across plants at a single time slice to obtain total grid instantaneous demand.
-- `dispatch_energy_mwh` (`NUMERIC(12,4)`): Integrated energy output over the 15-minute slot ($\text{MWh} = \text{MW} \times 0.25\text{ hours}$). **Fully additive:** Can be summed across both plants and time horizons.
-- `unit_frequency_hz` (`NUMERIC(5,2)`): Grid frequency at interval. **Non-additive:** Intensive state variable.
-- `spinning_reserve_mw` (`NUMERIC(10,3)`): Headroom capacity available within 10 minutes. **Semi-additive.**
+- `active_power_mw` (`NUMERIC(12,4)`): Instantaneous power generation rate in Megawatts. **Semi-additive:** Cannot be summed across time; must be averaged over time or evaluated at specific time slices. Can be summed across plants at a single time slice to obtain total grid instantaneous demand.
+- `derived_energy_mwh` (`NUMERIC(12,4)`): Integrated energy output over the 15-minute slot ($\text{MWh} = \text{MW} \times 0.25\text{ hours}$). **Fully additive:** Can be summed across both plants and time horizons.
+- `reported_value` (`NUMERIC(14,4)`): Original numeric observation reported in source workbook.
 
 ### Declarative Range Partitioning
-The table is partitioned by `RANGE (interval_timestamp_utc)` by calendar year:
-- `dw.fact_dispatch_interval_y2020`
-- `dw.fact_dispatch_interval_y2021`
-- `dw.fact_dispatch_interval_y2022`
-- `dw.fact_dispatch_interval_y2023`
-- `dw.fact_dispatch_interval_y2024` (Currently populated with **107,115** validated telemetry records)
-- `dw.fact_dispatch_interval_y2025`
-- `dw.fact_dispatch_interval_y2026`
+The table is partitioned by `RANGE (date_key)` by calendar year:
+- `dw.fact_dispatch_interval_y2020` (`20200101` to `20210101`)
+- `dw.fact_dispatch_interval_y2021` (`20210101` to `20220101`)
+- `dw.fact_dispatch_interval_y2022` (`20220101` to `20230101`)
+- `dw.fact_dispatch_interval_y2023` (`20230101` to `20240101`)
+- `dw.fact_dispatch_interval_y2024` (`20240101` to `20250101`) — currently populated with **107,115** validated telemetry records
+- `dw.fact_dispatch_interval_y2025` (`20250101` to `20260101`)
+- `dw.fact_dispatch_interval_y2026` (`20260101` to `20270101`)
 - `dw.fact_dispatch_interval_default`
 
 ---
@@ -67,17 +68,19 @@ Records official periodic energy generation (gross generation, net generation se
 **One row per reporting period per power plant per fuel category.**
 
 ### Primary & Foreign Keys
-- **Primary Key:** `generation_period_id` (`BIGINT GENERATED ALWAYS AS IDENTITY`).
+- **Primary Key:** `generation_fact_id` (`BIGINT GENERATED ALWAYS AS IDENTITY`).
 - **Foreign Keys:**
-  - `date_id` &rarr; `dw.dim_date(date_id)`
-  - `plant_id` &rarr; `dw.dim_power_plant(plant_id)`
-  - `fuel_type_id` &rarr; `dw.dim_fuel_type(fuel_type_id)`
+  - `period_start_date_key` &rarr; `dw.dim_date(date_key)`
+  - `period_end_date_key` &rarr; `dw.dim_date(date_key)`
+  - `plant_key` &rarr; `dw.dim_power_plant(plant_key)`
+  - `energy_source_key` &rarr; `dw.dim_energy_source(energy_source_key)`
+  - `metric_key` &rarr; `dw.dim_metric(metric_key)`
+  - `source_system_key` &rarr; `dw.dim_source_system(source_system_key)`
 
 ### Measures & Additivity
 - `gross_generation_mwh` (`NUMERIC(14,4)`): Total electrical energy produced at generator terminals. **Fully additive.**
 - `net_generation_mwh` (`NUMERIC(14,4)`): Electrical energy injected into the high-voltage transmission grid. **Fully additive.**
-- `auxiliary_consumption_mwh` (`NUMERIC(12,4)`): Internal parasitic consumption of power plant equipment. **Fully additive.**
-- `auxiliary_consumption_pct` (`NUMERIC(5,2)`): Calculated parasitic ratio ($\frac{\text{aux}}{\text{gross}} \times 100$). **Non-additive.**
+- `auxiliary_energy_mwh` (`NUMERIC(12,4)`): Internal parasitic consumption of power plant equipment. **Fully additive.**
 
 ---
 
@@ -87,21 +90,22 @@ Records official periodic energy generation (gross generation, net generation se
 Tracks installed nameplate capacity, dependable capacity, seasonal hydro capability deratings, and scheduled/forced outage allocations across the national generation fleet.
 
 ### Fact Grain
-**One row per reporting period per generation unit / plant.**
+**One row per effective reporting period per power plant / category.**
 
 ### Primary & Foreign Keys
-- **Primary Key:** `capacity_period_id` (`BIGINT GENERATED ALWAYS AS IDENTITY`).
+- **Primary Key:** `capacity_fact_id` (`BIGINT GENERATED ALWAYS AS IDENTITY`).
 - **Foreign Keys:**
-  - `date_id` &rarr; `dw.dim_date(date_id)`
-  - `plant_id` &rarr; `dw.dim_power_plant(plant_id)`
-  - `unit_id` &rarr; `dw.dim_generation_unit(unit_id)`
-  - `fuel_type_id` &rarr; `dw.dim_fuel_type(fuel_type_id)`
+  - `plant_key` &rarr; `dw.dim_power_plant(plant_key)`
+  - `energy_source_key` &rarr; `dw.dim_energy_source(energy_source_key)`
+  - `metric_key` &rarr; `dw.dim_metric(metric_key)`
+  - `source_system_key` &rarr; `dw.dim_source_system(source_system_key)`
+  - `effective_start_date_key` &rarr; `dw.dim_date(date_key)`
+  - `effective_end_date_key` &rarr; `dw.dim_date(date_key)`
 
 ### Measures & Additivity
-- `nameplate_capacity_mw` (`NUMERIC(10,3)`): Manufacturer rated physical capability. **Semi-additive:** Cannot be summed across time (a 300 MW plant in January and February is still a 300 MW plant, not 600 MW). Additive across plants at any given point in time.
-- `dependable_capacity_mw` (`NUMERIC(10,3)`): Realizable capacity under ambient temperature and water head conditions. **Semi-additive.**
-- `planned_outage_mw` (`NUMERIC(10,3)`): Capacity undergoing scheduled maintenance. **Semi-additive.**
-- `forced_outage_mw` (`NUMERIC(10,3)`): Capacity unavailable due to unscheduled breakdowns. **Semi-additive.**
+- `installed_capacity_mw` (`NUMERIC(12,4)`): Total manufacturer-rated nameplate capability in MW. **Semi-additive:** Additive across plants at a given point in time; never summed across time.
+- `dependable_capacity_mw` (`NUMERIC(12,4)`): Realizable capacity under prevailing hydrological and thermal ambient conditions. **Semi-additive.**
+- `unit_count` (`SMALLINT`): Number of physical generating units.
 
 ---
 
@@ -111,20 +115,22 @@ Tracks installed nameplate capacity, dependable capacity, seasonal hydro capabil
 Maintains audited commercial retail consumption, billing revenue, customer counts, and average effective tariffs across provincial administration boundaries and consumer tariff classes.
 
 ### Fact Grain
-**One row per calendar year per administrative province / area per tariff customer class.**
+**One row per reporting period per geographic region per tariff consumption sector.**
 
 ### Primary & Foreign Keys
-- **Primary Key:** `sales_id` (`BIGINT GENERATED ALWAYS AS IDENTITY`).
+- **Primary Key:** `sales_fact_id` (`BIGINT GENERATED ALWAYS AS IDENTITY`).
 - **Foreign Keys:**
-  - `date_id` &rarr; `dw.dim_date(date_id)`
-  - `customer_class_id` &rarr; `dw.dim_tariff_customer_class(customer_class_id)`
-  - `area_id` &rarr; `dw.dim_administrative_area(area_id)`
+  - `region_key` &rarr; `dw.dim_region(region_key)`
+  - `sector_key` &rarr; `dw.dim_consumption_sector(sector_key)`
+  - `metric_key` &rarr; `dw.dim_metric(metric_key)`
+  - `source_system_key` &rarr; `dw.dim_source_system(source_system_key)`
+  - `period_start_date_key` &rarr; `dw.dim_date(date_key)`
+  - `period_end_date_key` &rarr; `dw.dim_date(date_key)`
 
 ### Measures & Additivity
-- `billed_units_mwh` (`NUMERIC(14,4)`): Total metered energy sold to retail end consumers. **Fully additive.**
-- `billed_revenue_lkr` (`NUMERIC(16,2)`): Total billed financial revenue in Sri Lankan Rupees. **Fully additive.**
-- `customer_count` (`INTEGER`): Active registered customer utility accounts. **Semi-additive across time, additive across customer classes.**
-- `average_tariff_lkr_per_kwh` (`NUMERIC(8,2)`): Unit economic realization ($\frac{\text{Revenue LKR}}{\text{Billed kWh}}$). **Non-additive:** Must always be calculated from underlying additive totals.
+- `energy_sold_mwh` (`NUMERIC(14,4)`): Total metered energy sold to retail end consumers. **Fully additive.**
+- `consumer_account_count` (`BIGINT`): Active registered customer utility accounts. **Semi-additive across time, additive across sectors.**
+- `revenue_lkr` (`NUMERIC(18,2)`): Total billed financial revenue in Sri Lankan Rupees. **Fully additive.**
 
 ### Verified History
 Contains **49** audited rows spanning the 5-year historical horizon (2020–2024) extracted directly from official CEB Statistical Digest accounts.
@@ -134,43 +140,46 @@ Contains **49** audited rows spanning the 5-year historical horizon (2020–2024
 ## 5. `dw.fact_weather_daily`
 
 ### Business Purpose
-Correlates macro weather variables (solar irradiance, rainfall, ambient temperature, wind speeds) with electricity generation and demand across seven strategic grid transmission node locations in Sri Lanka.
+Correlates meteorological variables (solar irradiance, rainfall, ambient temperature, wind speeds) with electricity generation and demand across 6 strategic energy node locations in Sri Lanka.
 
 ### Fact Grain
-**One row per calendar day per grid transmission node location.**
+**One row per calendar day per meteorological node location per weather variable.**
 
 ### Primary & Foreign Keys
-- **Primary Key:** `weather_daily_id` (`BIGINT GENERATED ALWAYS AS IDENTITY`).
+- **Primary Key:** `weather_fact_id` (`BIGINT GENERATED ALWAYS AS IDENTITY`).
 - **Foreign Keys:**
-  - `date_id` &rarr; `dw.dim_date(date_id)`
-  - `grid_substation_id` &rarr; `dw.dim_grid_substation(grid_substation_id)`
+  - `date_key` &rarr; `dw.dim_date(date_key)`
+  - `weather_location_key` &rarr; `dw.dim_weather_location(weather_location_key)`
+  - `metric_key` &rarr; `dw.dim_metric(metric_key)`
+  - `source_system_key` &rarr; `dw.dim_source_system(source_system_key)`
 
 ### Measures & Additivity
-- `solar_irradiance_all_sky_kwh_m2` (`NUMERIC(8,4)`): Daily all-sky surface solar insolation. Equivalent to Peak Sun Hours (PSH). **Non-additive across space, averaged over time.**
-- `precipitation_mm` (`NUMERIC(8,2)`): Daily total liquid precipitation. **Fully additive over time for a given node.**
-- `temp_max_c` / `temp_min_c` / `temp_avg_c` (`NUMERIC(5,2)`): Daily ambient temperatures in Celsius. **Non-additive intensive states.**
-- `wind_speed_10m_mps` (`NUMERIC(6,2)`): Daily mean wind speed at 10-meter elevation in meters per second. **Non-additive.**
+- `standardized_value` (`NUMERIC(14,5)`): Standardized observation in canonical warehouse units ($kW\cdot h/m^2/day$ for irradiance, $^{\circ}C$ for temperature, $\%$ for humidity, $m/s$ for wind speed, $mm/day$ for precipitation).
+- `original_reported_value` (`NUMERIC(14,5)`): Raw reported value before transformation.
+- **Sentinel Rule:** Missing observations (`-999.0` in NASA POWER) are strictly preserved as `NULL` with `is_missing = TRUE` and `missing_value_code = 'NASA_FILL_VALUE_-999'` (never coerced to 0).
 
 ### Verified History
-Contains **21,924** verified meteorological observations spanning all 7 national transmission grid nodes continuously across 2020 to 2024 retrieved from NASA POWER.
+Contains **21,924** verified meteorological observations spanning 6 national grid energy nodes continuously across 2020 to 2024 retrieved from NASA POWER.
 
 ---
 
 ## 6. `dw.fact_published_metric`
 
 ### Business Purpose
-Maintains audited national macroeconomic and grid reliability benchmark figures published annually or quarterly by CEB, PUCSL, and the Central Bank of Sri Lanka (CBSL).
+Maintains audited national macroeconomic and grid reliability benchmark figures published annually or quarterly by CEB, PUCSL, and CBSL.
 
 ### Fact Grain
-**One row per reporting period per published metric code.**
+**One row per reporting period per published metric code per region.**
 
 ### Primary & Foreign Keys
-- **Primary Key:** `metric_fact_id` (`BIGINT GENERATED ALWAYS AS IDENTITY`).
+- **Primary Key:** `published_metric_fact_id` (`BIGINT GENERATED ALWAYS AS IDENTITY`).
 - **Foreign Keys:**
-  - `date_id` &rarr; `dw.dim_date(date_id)`
-  - `metric_id` &rarr; `ref.published_metric_definition(metric_id)`
+  - `period_start_date_key` &rarr; `dw.dim_date(date_key)`
+  - `period_end_date_key` &rarr; `dw.dim_date(date_key)`
+  - `metric_key` &rarr; `dw.dim_metric(metric_key)`
+  - `region_key` &rarr; `dw.dim_region(region_key)`
+  - `source_system_key` &rarr; `dw.dim_source_system(source_system_key)`
 
 ### Measures & Additivity
-- `metric_value` (`NUMERIC(16,4)`): Reported scalar value (e.g., System Maximum Peak Demand MW, Transmission Loss %, Distribution Loss %, Per Capita Consumption kWh/person).
-- **Additivity:** Dependent on the specific metric; loss percentages and peak MW figures are non-additive and must be treated as intensive performance indicators.
-
+- `metric_value` (`NUMERIC(18,6)`): Reported scalar benchmark value (e.g., System Maximum Peak Demand MW, Transmission Loss %, Distribution Loss %).
+- **Additivity:** Dependent on the specific metric; loss percentages and peak MW figures are non-additive intensive indicators.

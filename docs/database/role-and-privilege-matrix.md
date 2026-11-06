@@ -1,6 +1,6 @@
 # Database Role & Least-Privilege Access Matrix
 
-Implemented in [016_roles_and_privileges.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/016_roles_and_privileges.sql) and credential-bound from environment variables via `MigrationRunner.configure_role_passwords_from_env()` in [migrate.py](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/scripts/migrate.py). **Zero passwords or secrets exist in SQL files or Git.**
+Implemented in [016_roles_and_privileges.sql](database/migrations/016_roles_and_privileges.sql) and credential-bound from environment variables via `MigrationRunner.configure_role_passwords_from_env()` in [migrate.py](scripts/migrate.py). **Zero passwords or secrets exist in SQL files or Git.**
 
 ---
 
@@ -31,7 +31,7 @@ Implemented in [016_roles_and_privileges.sql](file:///c:/Fullstack%20development
 ---
 
 ## 3. Verification Evidence
-Verified by `test_least_privilege_database_roles` in [test_phase1_advanced_objects.py](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/tests/integration/test_phase1_advanced_objects.py):
+Verified by `test_least_privilege_database_roles` in [test_phase1_advanced_objects.py](tests/integration/test_phase1_advanced_objects.py):
 - `grid_analyst` succeeds on `SELECT` from `dw.dim_energy_source`, `mart.vw_generation_by_energy_source`, and `mart.mv_monthly_generation_summary`, and raises `psycopg.errors.InsufficientPrivilege` on `DELETE FROM dw.dim_energy_source` and `DELETE FROM dw.fact_generation_period`.
 - `grid_etl` raises `psycopg.errors.InsufficientPrivilege` when attempting `DROP TABLE dw.fact_capacity_period`.
 

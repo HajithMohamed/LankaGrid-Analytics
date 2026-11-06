@@ -1,6 +1,6 @@
 # Data-Quality Rules & Cross-Source Reconciliation Catalogue
 
-Implemented in [003_reference_tables.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/003_reference_tables.sql), [004_audit_and_quality_tables.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/004_audit_and_quality_tables.sql), and seeded via [seed_reference.py](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/scripts/seed_reference.py).
+Implemented in [003_reference_tables.sql](database/migrations/003_reference_tables.sql), [004_audit_and_quality_tables.sql](database/migrations/004_audit_and_quality_tables.sql), and seeded via [seed_reference.py](scripts/seed_reference.py).
 
 ---
 

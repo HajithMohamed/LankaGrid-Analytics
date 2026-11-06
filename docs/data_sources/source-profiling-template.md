@@ -49,7 +49,7 @@ Use this template whenever auditing or onboarding a new data source or file rele
 ## 5. Kimball Warehouse Mapping Proposal
 - **Target Fact Table**: `[e.g., fact_daily_generation / fact_grid_dispatch_15min]`
 - **Target Grain**: `[e.g., One record per plant per day]`
-- **Referenced Dimensions**: `[dim_date, dim_power_plant, dim_fuel_type, dim_location]`
+- **Referenced Dimensions**: `[dim_date, dim_power_plant, dim_energy_source, dim_weather_location]`
 - **Primary Business Key**: `[e.g., (plant_code, report_date)]`
 
 ---

@@ -2,7 +2,7 @@
 
 ## 1. Three-Boundary Transaction Pattern
 
-Implemented in [batch_loader.py](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/src/etl/batch_loader.py) and [012_procedures.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/012_procedures.sql), batch loads separate **audit envelope persistence** from **atomic data promotion** so that rollbacks leave zero partial warehouse rows while preserving full failure forensics:
+Implemented in [batch_loader.py](src/etl/batch_loader.py) and [012_procedures.sql](database/migrations/012_procedures.sql), batch loads separate **audit envelope persistence** from **atomic data promotion** so that rollbacks leave zero partial warehouse rows while preserving full failure forensics:
 
 ```mermaid
 sequenceDiagram
@@ -34,7 +34,7 @@ sequenceDiagram
 
 ## 2. Guarantees Verified by Automated Tests
 
-Tested in [test_phase1_etl_transactions.py](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/tests/integration/test_phase1_etl_transactions.py):
+Tested in [test_phase1_etl_transactions.py](tests/integration/test_phase1_etl_transactions.py):
 1. **All-or-Nothing Fact Promotion**: When item 2 of a 2-row batch violates `ck_fact_gen_period_non_negative` (`-999.0 MWh`), item 1 (`1100.0 MWh`) is rolled back completely — `SELECT COUNT(*) FROM dw.fact_generation_period` for that document is `0`.
 2. **Audit Evidence Survival**: Because `Boundary A` and `Boundary C` commit independently on an `autocommit=True` connection outside `Boundary B`, `audit.etl_run` retains `run_status = 'ROLLED_BACK'` and the exact PostgreSQL constraint diagnostic message.
 3. **Strict Re-Execution Idempotency**: Re-running the same valid batch hits `ON CONFLICT ON CONSTRAINT uq_fact_generation_period_grain DO UPDATE`, updating timestamps/run IDs cleanly with zero duplicate fact rows.

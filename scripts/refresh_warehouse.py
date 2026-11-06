@@ -40,6 +40,11 @@ def main(argv: list[str] | None = None) -> int:
         help="Specify which dataset to incrementally ingest and refresh (default: all).",
     )
     parser.add_argument(
+        "--acquire",
+        action="store_true",
+        help="Perform automated online source acquisition (NASA REST API, PUCSL/CEB discovery) before loading.",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Simulate ingestion and refresh without persisting database mutations.",
@@ -76,6 +81,7 @@ def main(argv: list[str] | None = None) -> int:
         dataset=args.dataset,
         dry_run=args.dry_run,
         force=args.force,
+        acquire=args.acquire,
     )
 
     print("\n" + "=" * 65)

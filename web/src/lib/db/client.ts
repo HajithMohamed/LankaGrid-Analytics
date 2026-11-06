@@ -66,16 +66,40 @@ export function getDbPool(): Pool {
       host.includes("supabase.co") ||
       host.includes("supabase.com");
 
+    let finalConnectionString = connectionString;
+    if (connectionString && connectionString.includes("db.") && connectionString.includes(".supabase.co")) {
+      try {
+        const parsed = new URL(connectionString);
+        const refMatch = parsed.hostname.match(/^db\.([a-z0-9]+)\.supabase\.co$/);
+        if (refMatch) {
+          const projectRef = refMatch[1];
+          const poolerHost = process.env.SUPABASE_POOLER_HOST || "aws-0-ap-northeast-2.pooler.supabase.com";
+          parsed.hostname = poolerHost;
+          if (parsed.username && !parsed.username.includes(".")) {
+            parsed.username = `${parsed.username}.${projectRef}`;
+          }
+          finalConnectionString = parsed.toString();
+        }
+      } catch {
+        // Fall back to original connection string
+      }
+    }
+
     const useSsl = isSupabase || process.env.POSTGRES_SSLMODE === "require" || process.env.NODE_ENV === "production";
+    const sslConfig = useSsl
+      ? process.env.PGSSLROOTCERT
+        ? { ca: process.env.PGSSLROOTCERT, rejectUnauthorized: true }
+        : { rejectUnauthorized: false }
+      : undefined;
 
     pool = new Pool({
-      connectionString: connectionString || undefined,
-      host: connectionString ? undefined : host,
-      port: connectionString ? undefined : port,
-      database: connectionString ? undefined : database,
-      user: connectionString ? undefined : user,
-      password: connectionString ? undefined : password,
-      ssl: useSsl ? { rejectUnauthorized: false } : undefined,
+      connectionString: finalConnectionString || undefined,
+      host: finalConnectionString ? undefined : host,
+      port: finalConnectionString ? undefined : port,
+      database: finalConnectionString ? undefined : database,
+      user: finalConnectionString ? undefined : user,
+      password: finalConnectionString ? undefined : password,
+      ssl: sslConfig,
       connectionTimeoutMillis: isSupabase ? 10000 : 2000,
       idleTimeoutMillis: 10000,
       max: 10,

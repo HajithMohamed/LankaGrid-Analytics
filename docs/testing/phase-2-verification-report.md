@@ -12,7 +12,7 @@
 
 Phase 2 transitions the National Electricity Grid Analytics Data Warehouse from foundational DDL schemas and synthetic test fixtures to **authentic official datasets** from Sri Lanka's power sector authorities and international earth observation platforms.
 
-In accordance with [AGENTS.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/AGENTS.md) and [architecture.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/.agents/rules/architecture.md):
+In accordance with [AGENTS.md](AGENTS.md) and [architecture.md](.agents/rules/architecture.md):
 - **Zero Fabrication**: Only authentic, verifiable datasets downloaded directly from official sources (Ceylon Electricity Board, Public Utilities Commission of Sri Lanka, and NASA POWER) were acquired, profiled, and loaded.
 - **Physical Consistency**: Units of instantaneous power (`MW`) and integrated energy (`MWh`, `GWh`) are strictly decoupled. 15-minute dispatch values are integrated as $\text{MWh} = \text{MW} \times 0.25\text{ hours}$. Missing measurements are preserved as `NULL` and distinguished from operational zero generation ($0.0\text{ MW}$).
 - **3-Boundary ACID Ingestion**: A robust transactional loader pattern ensures full source-to-target provenance across `raw` $\to$ `staging` $\to$ `dw` with automatic dead-letter quarantine and audit logging.
@@ -23,7 +23,7 @@ All Phase 2 milestones have been achieved with **100% green automated test execu
 
 ## 2. Authentic Datasets Acquired & Verified
 
-All authentic source files are archived immutably in `data/raw/` with their original filenames and cryptographically verified SHA-256 digests in [manifest.json](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/data/raw/manifest.json).
+All authentic source files are archived immutably in `data/raw/` with their original filenames and cryptographically verified SHA-256 digests in [manifest.json](data/raw/manifest.json).
 
 | Source ID | Provider | Document Title | File Format | File Size | SHA-256 Checksum | Reporting Grain |
 |---|---|---|---|---:|---|---|
@@ -33,10 +33,10 @@ All authentic source files are archived immutably in `data/raw/` with their orig
 | `NASA-POWER-DAILY-2024` | NASA Langley Research Center (POWER) | *Meteorological and Solar Radiation Sri Lanka Grid Nodes 2024* | JSON | 14,177 bytes | `9574ed078fa4941c0e5cf1ec7a261448c0d7d90b042734a6b153066972d1be8b` | Daily Point Observations (Jan 2024, 2 grid nodes) |
 
 Detailed source profiling documents:
-- [ceb-statistical-digest-2024-profiling.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/data_sources/ceb-statistical-digest-2024-profiling.md)
-- [pucsl-dispatch-15min-2024-profiling.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/data_sources/pucsl-dispatch-15min-2024-profiling.md)
-- [pucsl-generation-report-2024-profiling.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/data_sources/pucsl-generation-report-2024-profiling.md)
-- [nasa-power-meteorological-2024-profiling.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/data_sources/nasa-power-meteorological-2024-profiling.md)
+- [ceb-statistical-digest-2024-profiling.md](docs/data_sources/ceb-statistical-digest-2024-profiling.md)
+- [pucsl-dispatch-15min-2024-profiling.md](docs/data_sources/pucsl-dispatch-15min-2024-profiling.md)
+- [pucsl-generation-report-2024-profiling.md](docs/data_sources/pucsl-generation-report-2024-profiling.md)
+- [nasa-power-meteorological-2024-profiling.md](docs/data_sources/nasa-power-meteorological-2024-profiling.md)
 
 ---
 
@@ -45,16 +45,16 @@ Detailed source profiling documents:
 Data profiling followed university Lecture 6 Data Preprocessing methodologies:
 
 ### A. Missing Value Detection & Sentinel Preservation
-- **NASA POWER Fill Sentinel**: Identified $-999.0$ fill value for missing satellite/model readings. In [nasa_power_parser.py](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/src/ingestion/nasa_power_parser.py), $-999.0$ is converted to Python `None` / SQL `NULL`, `is_missing = TRUE`, and audited with `missing_value_code = 'NASA_FILL_VALUE_-999'`.
+- **NASA POWER Fill Sentinel**: Identified $-999.0$ fill value for missing satellite/model readings. In [nasa_power_parser.py](src/ingestion/nasa_power_parser.py), $-999.0$ is converted to Python `None` / SQL `NULL`, `is_missing = TRUE`, and audited with `missing_value_code = 'NASA_FILL_VALUE_-999'`.
 - **PUCSL Zero vs Missing Distinction**: Physical $0.0\text{ MW}$ readings (e.g. idle thermal peakers, shutdown hydro units) are strictly preserved as numeric zero, while unrecorded cells are parsed as `NULL`.
 
 ### B. Outlier & Physical Boundary Checks
-- **Power Range Bounds**: Implemented [dispatch_cleaner.py](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/src/preprocessing/dispatch_cleaner.py) to validate plant dispatch against rated nameplate capacity ($0 \le P \le 1.15 \times P_{\text{nameplate}}$).
+- **Power Range Bounds**: Implemented [dispatch_cleaner.py](src/preprocessing/dispatch_cleaner.py) to validate plant dispatch against rated nameplate capacity ($0 \le P \le 1.15 \times P_{\text{nameplate}}$).
 - **Negative Generation Resolution**: Identified two auxiliary power consumption readings ($-0.01\text{ MWh}$ on idle units) which trigger `DQ_GEN_NEGATIVE_OUTPUT` quarantine rather than silent truncation.
-- **Meteorological Boundaries**: Implemented [weather_cleaner.py](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/src/preprocessing/weather_cleaner.py) asserting Sri Lanka tropical climate limits (temperature $-20^\circ\text{C}$ to $60^\circ\text{C}$, relative humidity $0\%$ to $100\%$, solar irradiance $\ge 0$, wind speed $\ge 0$).
+- **Meteorological Boundaries**: Implemented [weather_cleaner.py](src/preprocessing/weather_cleaner.py) asserting Sri Lanka tropical climate limits (temperature $-20^\circ\text{C}$ to $60^\circ\text{C}$, relative humidity $0\%$ to $100\%$, solar irradiance $\ge 0$, wind speed $\ge 0$).
 
 ### C. Name Standardization & Fuzzy Alias Resolution
-- Source acronyms and naming variations in PUCSL reports (e.g. `'Wimalasurendra'`, `'KCCP'`, `'KPS(GT7)'`, `'SPS'`, `'BARGE'`, `'WPS'`) were resolved to canonical plant entities in `dw.dim_power_plant` using the expanded [seed_reference.py](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/scripts/seed_reference.py) alias registry with evidence citations.
+- Source acronyms and naming variations in PUCSL reports (e.g. `'Wimalasurendra'`, `'KCCP'`, `'KPS(GT7)'`, `'SPS'`, `'BARGE'`, `'WPS'`) were resolved to canonical plant entities in `dw.dim_power_plant` using the expanded [seed_reference.py](scripts/seed_reference.py) alias registry with evidence citations.
 - Unmatched entity aggregates (such as `'Small Hydro(CEB)'` or private IPP aggregates) are cleanly quarantined into `audit.data_quality_issue` with rule `DQ_DIM_UNMATCHED_ENTITY`.
 
 ### D. Timezone & Timestamp Normalization
@@ -65,7 +65,7 @@ Data profiling followed university Lecture 6 Data Preprocessing methodologies:
 
 ## 4. ETL Architecture & 3-Boundary Transaction Protocol
 
-The production loader [real_data_loader.py](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/src/etl/real_data_loader.py) and PostgreSQL stored procedures in [018_real_data_etl_procedures.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/018_real_data_etl_procedures.sql) enforce the 3-Boundary ACID Transaction Protocol:
+The production loader [real_data_loader.py](src/etl/real_data_loader.py) and PostgreSQL stored procedures in [018_real_data_etl_procedures.sql](database/migrations/018_real_data_etl_procedures.sql) enforce the 3-Boundary ACID Transaction Protocol:
 
 ```mermaid
 sequenceDiagram
@@ -149,7 +149,7 @@ Actual verified row counts across `sl_grid_warehouse` following Phase 2 ETL pipe
   - Street Lighting: $96.00\text{ GWh}$ ($0.7\%$)
   - Religious: $75.00\text{ GWh}$ ($0.6\%$)
   - Agriculture: $3.50\text{ GWh}$ ($0.03\%$)
-- **Double-Counting Safeguard**: In [sp_load_electricity_sales](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/018_real_data_etl_procedures.sql), the summary row (`TOTAL`) is assigned canonical sector `ALL_SECTORS` (`sector_id = 9`). Analytical queries filtering `sector_code != 'ALL_SECTORS'` aggregate granular sectors without summing the grand total twice.
+- **Double-Counting Safeguard**: In [sp_load_electricity_sales](database/migrations/018_real_data_etl_procedures.sql), the summary row (`TOTAL`) is assigned canonical sector `ALL_SECTORS` (`sector_id = 9`). Analytical queries filtering `sector_code != 'ALL_SECTORS'` aggregate granular sectors without summing the grand total twice.
 
 ### D. NASA POWER Meteorological Reconciliation (January 2024)
 - **Stations Monitored**: Victoria Catchment (`LOC_VICTORIA_CATCHMENT`, $7.24^\circ\text{N}, 80.79^\circ\text{E}$) and Mannar Wind Corridor (`LOC_MANNAR_WIND`, $9.03^\circ\text{N}, 79.88^\circ\text{E}$).
@@ -239,7 +239,7 @@ Static analysis verification:
 
 ## 8. CI/CD Integration & GitHub Actions Workflow
 
-The continuous integration pipeline is defined in [.github/workflows/ci.yml](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/.github/workflows/ci.yml):
+The continuous integration pipeline is defined in [.github/workflows/ci.yml](.github/workflows/ci.yml):
 - **Lint & Static Typing Job**: Executes `ruff check`, `ruff format --check`, and `mypy src scripts`.
 - **Unit & Data Quality Test Job**: Executes `pytest tests/unit tests/data_quality`.
 - **PostgreSQL Integration Test Job**: Spins up a containerized PostgreSQL 17/18 service, migrates and seeds both primary and secondary test databases, and executes the complete integration test suite.

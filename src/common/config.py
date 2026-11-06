@@ -111,7 +111,7 @@ class DatabaseConfig:
 
         if host.startswith("db.") and host.endswith(".supabase.co"):
             project_ref = host.split(".")[1]
-            host = "aws-0-ap-northeast-2.pooler.supabase.com"
+            host = os.getenv("SUPABASE_POOLER_HOST") or "aws-0-ap-northeast-2.pooler.supabase.com"
             if "." not in user:
                 user = f"{user}.{project_ref}"
 

@@ -5,7 +5,7 @@
 - **Provider / Agency**: NASA Langley Research Center (NASA POWER Project)
 - **Official URL / Endpoint**: `https://power.larc.nasa.gov/api/temporal/daily/point`
 - **Retrieval Date & Time**: `2026-10-30T17:21:30+05:30`
-- **Local Immutable Filepath**: [nasa_power_sl_nodes_2024.json](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/data/raw/nasa/2024/nasa_power_sl_nodes_2024.json)
+- **Local Immutable Filepath**: [nasa_power_sl_nodes_2024.json](data/raw/nasa/2024/nasa_power_sl_nodes_2024.json)
 - **Cryptographic Hash (SHA-256)**: `9574ed078fa4941c0e5cf1ec7a261448c0d7d90b042734a6b153066972d1be8b`
 - **File Format & MIME Type**: JSON (`application/json`)
 - **File Size**: 14,177 bytes
@@ -52,8 +52,8 @@
 ---
 
 ## 5. Kimball Warehouse Mapping Proposal
-- **Target Staging Table**: [stg_weather_observation](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/009_staging_tables.sql#L118-L140)
-- **Target Fact Table**: [dw.fact_weather_daily](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/008_facts_weather_and_published.sql#L10-L65)
+- **Target Staging Table**: [stg_weather_observation](database/migrations/009_staging_tables.sql#L118-L140)
+- **Target Fact Table**: [dw.fact_weather_daily](database/migrations/008_facts_weather_and_published.sql#L10-L65)
 - **Conformed Dimensions**:
   - `dw.dim_date` (`date_key = YYYYMMDD`)
   - `dw.dim_weather_location` (`weather_location_key`)

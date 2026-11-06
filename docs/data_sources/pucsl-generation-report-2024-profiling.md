@@ -5,7 +5,7 @@
 - **Provider / Agency**: Public Utilities Commission of Sri Lanka (PUCSL)
 - **Official URL / Endpoint**: `https://www.pucsl.gov.lk/wp-content/uploads/2024/12/Generation-Report-29th-Dec.pdf`
 - **Retrieval Date & Time**: `2026-10-30T17:21:30+05:30`
-- **Local Immutable Filepath**: [Generation-Report-29th-Dec-2024.pdf](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/data/raw/pucsl/2024/Generation-Report-29th-Dec-2024.pdf)
+- **Local Immutable Filepath**: [Generation-Report-29th-Dec-2024.pdf](data/raw/pucsl/2024/Generation-Report-29th-Dec-2024.pdf)
 - **Cryptographic Hash (SHA-256)**: `bb10974c344b80f8795c4150153a6f2a823702cd81fade3d72899886a237ee3e`
 - **File Format & MIME Type**: PDF (`application/pdf`, version 1.7)
 - **File Size**: 808,269 bytes
@@ -57,11 +57,11 @@
 
 ## 5. Kimball Warehouse Mapping Proposal
 - **Target Staging Tables**:
-  - [stg_generation_report](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/009_staging_tables.sql#L36-L63)
-  - [stg_plant_capacity](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/009_staging_tables.sql#L92-L116)
+  - [stg_generation_report](database/migrations/009_staging_tables.sql#L36-L63)
+  - [stg_plant_capacity](database/migrations/009_staging_tables.sql#L92-L116)
 - **Target Fact Tables**:
-  - [dw.fact_generation_period](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/006_facts_generation_and_dispatch.sql#L99-L159)
-  - [dw.fact_capacity_period](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/007_facts_capacity_and_sales.sql#L10-L67)
+  - [dw.fact_generation_period](database/migrations/006_facts_generation_and_dispatch.sql#L99-L159)
+  - [dw.fact_capacity_period](database/migrations/007_facts_capacity_and_sales.sql#L10-L67)
 - **Conformed Dimensions**:
   - `dw.dim_date` (`date_key = 20241229`)
   - `dw.dim_power_plant` (`plant_key`)
