@@ -5,7 +5,6 @@ Following TDD protocol and .agents/rules/testing.md.
 
 from __future__ import annotations
 
-import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -49,7 +48,9 @@ class TestSourceDocumentIdentity:
         mock_cur = MagicMock()
         mock_cur.fetchone.return_value = None
 
-        status, doc_id = SourceDocumentIdentity.check_existing_document(mock_cur, "PUCSL-DISPATCH-15MIN-2025-M01")
+        status, doc_id = SourceDocumentIdentity.check_existing_document(
+            mock_cur, "PUCSL-DISPATCH-15MIN-2025-M01"
+        )
         assert status == DocumentSyncStatus.NEW
         assert doc_id is None
 

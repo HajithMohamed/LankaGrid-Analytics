@@ -14,14 +14,12 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.acquisition.ceb_discovery import CebDiscoveryClient, DiscoveredDocument
+from src.acquisition.ceb_discovery import CebDiscoveryClient
 from src.acquisition.nasa_power_client import (
     SRI_LANKA_WEATHER_NODES,
     NasaPowerClient,
-    NasaSyncResult,
 )
 from src.acquisition.pucsl_discovery import PucslDiscoveryClient
-from src.common.source_identity import DocumentSyncStatus
 
 
 @pytest.mark.unit
@@ -44,13 +42,19 @@ class TestNasaPowerClient:
         for node_id, node in SRI_LANKA_WEATHER_NODES.items():
             assert "location_code" in node
             assert node["location_code"].startswith("LOC_")
-            assert 5.80 <= node["lat"] <= 10.00, f"Latitude {node['lat']} outside Sri Lanka for {node_id}"
-            assert 79.40 <= node["lon"] <= 82.00, f"Longitude {node['lon']} outside Sri Lanka for {node_id}"
+            assert 5.80 <= node["lat"] <= 10.00, (
+                f"Latitude {node['lat']} outside Sri Lanka for {node_id}"
+            )
+            assert 79.40 <= node["lon"] <= 82.00, (
+                f"Longitude {node['lon']} outside Sri Lanka for {node_id}"
+            )
 
     def test_build_url_parameters(self) -> None:
         """Verify URL query parameters comply with NASA POWER daily point API specs."""
         client = NasaPowerClient()
-        url = client.build_url(lat=7.24, lon=80.785, start_date=date(2024, 1, 1), end_date=date(2024, 1, 31))
+        url = client.build_url(
+            lat=7.24, lon=80.785, start_date=date(2024, 1, 1), end_date=date(2024, 1, 31)
+        )
 
         assert "https://power.larc.nasa.gov/api/temporal/daily/point?" in url
         assert "community=RE" in url
@@ -100,7 +104,11 @@ class TestNasaPowerClient:
         client = NasaPowerClient(max_retries=3, retry_delay_sec=0.01)
 
         err_503 = urllib.error.HTTPError(
-            url="http://dummy", code=503, msg="Service Unavailable", hdrs=MagicMock(), fp=io.BytesIO(b"error")
+            url="http://dummy",
+            code=503,
+            msg="Service Unavailable",
+            hdrs=MagicMock(),
+            fp=io.BytesIO(b"error"),
         )
 
         with patch("urllib.request.urlopen") as mock_urlopen:

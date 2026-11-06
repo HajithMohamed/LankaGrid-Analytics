@@ -7,12 +7,21 @@ to evaluate current warehouse freshness, sync status, and data quality metrics.
 
 from __future__ import annotations
 
+import argparse
+import json
 import logging
-from dataclasses import asdict, dataclass
+import sys
+from dataclasses import asdict, dataclass, replace
 from datetime import UTC, datetime
+from pathlib import Path
 
-from src.common.config import DatabaseConfig
-from src.common.db import get_connection
+# Ensure repository root is in sys.path for direct CLI execution
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from src.common.config import DatabaseConfig  # noqa: E402
+from src.common.db import get_connection  # noqa: E402
 
 logger = logging.getLogger("gridlens.analytics.freshness")
 
@@ -37,11 +46,16 @@ class WarehouseFreshnessReport:
     total_quarantined_records: int
     sources: list[SourceFreshness]
     table_counts: dict[str, int]
+    error_message: str | None = None
 
 
-def inspect_warehouse_freshness(config: DatabaseConfig | None = None) -> WarehouseFreshnessReport:
+def inspect_warehouse_freshness(
+    config: DatabaseConfig | None = None,
+    connect_timeout_sec: int = 10,
+) -> WarehouseFreshnessReport:
     """Audit live database to construct warehouse freshness and provenance report."""
-    cfg = config or DatabaseConfig.from_env()
+    base_cfg = config or DatabaseConfig.from_env()
+    cfg = replace(base_cfg, connect_timeout=connect_timeout_sec)
     now_iso = datetime.now(UTC).isoformat()
 
     try:
@@ -58,9 +72,15 @@ def inspect_warehouse_freshness(config: DatabaseConfig | None = None) -> Warehou
                     """
                 )
                 etl_row = cur.fetchone()
-                last_pipeline = etl_row[0] if etl_row else None
-                last_status = etl_row[1] if etl_row else None
-                last_completed = etl_row[2].isoformat() if etl_row and etl_row[2] else None
+                last_pipeline = str(etl_row[0]) if etl_row and etl_row[0] else None
+                last_status = str(etl_row[1]) if etl_row and etl_row[1] else None
+                last_completed = (
+                    etl_row[2].isoformat()
+                    if etl_row and hasattr(etl_row[2], "isoformat")
+                    else str(etl_row[2])
+                    if etl_row and etl_row[2] is not None
+                    else None
+                )
 
                 # 2. Source Documents per provider
                 cur.execute(
@@ -93,11 +113,17 @@ def inspect_warehouse_freshness(config: DatabaseConfig | None = None) -> Warehou
                 for s_row in source_rows:
                     sources.append(
                         SourceFreshness(
-                            source_code=s_row[0],
-                            total_documents=s_row[1],
-                            last_acquired_at=s_row[2].isoformat() if s_row[2] else None,
-                            latest_document_code=s_row[3],
-                            latest_reporting_period=s_row[4],
+                            source_code=str(s_row[0]),
+                            total_documents=int(s_row[1]),
+                            last_acquired_at=(
+                                s_row[2].isoformat()
+                                if hasattr(s_row[2], "isoformat")
+                                else str(s_row[2])
+                                if s_row[2] is not None
+                                else None
+                            ),
+                            latest_document_code=str(s_row[3]) if s_row[3] is not None else None,
+                            latest_reporting_period=str(s_row[4]) if s_row[4] is not None else None,
                         )
                     )
 
@@ -106,38 +132,61 @@ def inspect_warehouse_freshness(config: DatabaseConfig | None = None) -> Warehou
                 quar_row = cur.fetchone()
                 quarantine_count = int(quar_row[0]) if quar_row else 0
 
-                # 4. Table counts across facts and marts
+                # 4. Table counts across facts and marts via high-performance catalog lookup
                 table_counts: dict[str, int] = {}
-                tables_to_check = [
-                    ("dw", "fact_dispatch_interval"),
-                    ("dw", "fact_generation_period"),
-                    ("dw", "fact_capacity_period"),
-                    ("dw", "fact_electricity_sales"),
-                    ("dw", "fact_weather_daily"),
-                    ("dw", "fact_published_metric"),
-                    ("mart", "mv_monthly_generation_summary"),
-                    ("mart", "mv_annual_energy_mix"),
-                    ("mart", "mv_monthly_sales_summary"),
-                    ("mart", "mv_daily_dispatch_by_source"),
-                    ("mart", "mv_monthly_weather_summary"),
-                ]
-                for schema, tbl in tables_to_check:
-                    try:
-                        cur.execute(f"SELECT COUNT(*) FROM {schema}.{tbl};")
-                        cnt_row = cur.fetchone()
-                        table_counts[f"{schema}.{tbl}"] = int(cnt_row[0]) if cnt_row else 0
-                    except Exception:
-                        table_counts[f"{schema}.{tbl}"] = 0
+                try:
+                    cur.execute(
+                        """
+                        SELECT
+                            n.nspname || '.' || c.relname AS tbl_key,
+                            COALESCE(NULLIF(c.reltuples, -1)::bigint, 0) AS approx_rows
+                        FROM pg_class c
+                        JOIN pg_namespace n ON n.oid = c.relnamespace
+                        WHERE n.nspname IN ('dw', 'mart')
+                          AND c.relkind IN ('r', 'm', 'p');
+                        """
+                    )
+                    for r_key, r_count in cur.fetchall():
+                        table_counts[str(r_key)] = max(0, int(r_count))
+                except Exception as cat_err:
+                    logger.warning(f"Catalog table count query failed, falling back: {cat_err}")
 
-                # Determine overall status
+                # Ensure canonical fact tables are represented
+                canonical_tables = [
+                    "dw.fact_dispatch_interval",
+                    "dw.fact_generation_period",
+                    "dw.fact_capacity_period",
+                    "dw.fact_electricity_sales",
+                    "dw.fact_weather_daily",
+                    "dw.fact_published_metric",
+                    "mart.mv_monthly_generation_summary",
+                    "mart.mv_annual_energy_mix",
+                    "mart.mv_monthly_sales_summary",
+                    "mart.mv_daily_dispatch_by_source",
+                    "mart.mv_monthly_weather_summary",
+                ]
+                for tbl_name in canonical_tables:
+                    if tbl_name not in table_counts:
+                        table_counts[tbl_name] = 0
+
+                # Determine overall freshness status
                 overall = "HEALTHY"
                 if last_completed:
-                    completed_dt = datetime.fromisoformat(last_completed)
-                    delta_days = (datetime.now(UTC) - completed_dt).days
-                    if delta_days <= 1:
-                        overall = "FRESH"
-                    elif delta_days > 30:
-                        overall = "STALE"
+                    try:
+                        clean_ts = last_completed.replace("Z", "+00:00")
+                        completed_dt = datetime.fromisoformat(clean_ts)
+                        if completed_dt.tzinfo is None:
+                            completed_dt = completed_dt.replace(tzinfo=UTC)
+                        delta_days = (datetime.now(UTC) - completed_dt).total_seconds() / 86400.0
+                        if delta_days <= 1.0:
+                            overall = "FRESH"
+                        elif delta_days > 30.0:
+                            overall = "STALE"
+                    except Exception as parse_err:
+                        logger.warning(
+                            f"Could not parse last_completed timestamp {last_completed}: {parse_err}"
+                        )
+                        overall = "HEALTHY"
 
                 return WarehouseFreshnessReport(
                     timestamp=now_iso,
@@ -149,10 +198,12 @@ def inspect_warehouse_freshness(config: DatabaseConfig | None = None) -> Warehou
                     total_quarantined_records=quarantine_count,
                     sources=sources,
                     table_counts=table_counts,
+                    error_message=None,
                 )
 
     except Exception as e:
-        logger.error(f"Failed to inspect warehouse freshness: {e}")
+        err_msg = str(e)
+        logger.error(f"Failed to inspect warehouse freshness: {err_msg}")
         return WarehouseFreshnessReport(
             timestamp=now_iso,
             is_connected=False,
@@ -163,11 +214,26 @@ def inspect_warehouse_freshness(config: DatabaseConfig | None = None) -> Warehou
             total_quarantined_records=0,
             sources=[],
             table_counts={},
+            error_message=err_msg,
         )
 
 
-if __name__ == "__main__":
-    import json
+def main() -> int:
+    """CLI entrypoint for warehouse freshness audit."""
+    parser = argparse.ArgumentParser(description="GridLens Warehouse Freshness & Lineage Monitor.")
+    parser.add_argument(
+        "--timeout", type=int, default=10, help="Database connection timeout in seconds."
+    )
+    parser.add_argument(
+        "--test-db", action="store_true", help="Audit test database instead of primary."
+    )
+    args = parser.parse_args()
 
-    report = inspect_warehouse_freshness()
+    cfg = DatabaseConfig.from_env(use_test_db=args.test_db)
+    report = inspect_warehouse_freshness(cfg, connect_timeout_sec=args.timeout)
     print(json.dumps(asdict(report), indent=2))
+    return 0 if report.is_connected else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
