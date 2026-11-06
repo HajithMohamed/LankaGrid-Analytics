@@ -14,6 +14,7 @@ import sys
 from dataclasses import asdict, dataclass, replace
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 # Ensure repository root is in sys.path for direct CLI execution
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -26,13 +27,32 @@ from src.common.db import get_connection  # noqa: E402
 logger = logging.getLogger("gridlens.analytics.freshness")
 
 
+def _get_field(row: Any, idx: int, name: str) -> Any:
+    """Safely extract a column by index or name from tuple, list, dict, or row object."""
+    if row is None:
+        return None
+    if isinstance(row, dict):
+        return row.get(name)
+    if isinstance(row, (tuple, list)):
+        return row[idx] if 0 <= idx < len(row) else None
+    if hasattr(row, name):
+        return getattr(row, name)
+    try:
+        return row[idx]
+    except Exception:
+        try:
+            return row[name]
+        except Exception:
+            return None
+
+
 @dataclass
 class SourceFreshness:
     source_code: str
-    latest_document_code: str | None
-    latest_reporting_period: str | None
-    last_acquired_at: str | None
-    total_documents: int
+    latest_document_code: str | None = None
+    latest_reporting_period: str | None = None
+    last_acquired_at: str | None = None
+    total_documents: int = 0
 
 
 @dataclass
@@ -72,15 +92,21 @@ def inspect_warehouse_freshness(
                     """
                 )
                 etl_row = cur.fetchone()
-                last_pipeline = str(etl_row[0]) if etl_row and etl_row[0] else None
-                last_status = str(etl_row[1]) if etl_row and etl_row[1] else None
-                last_completed = (
-                    etl_row[2].isoformat()
-                    if etl_row and hasattr(etl_row[2], "isoformat")
-                    else str(etl_row[2])
-                    if etl_row and etl_row[2] is not None
-                    else None
-                )
+                last_pipeline: str | None = None
+                last_status: str | None = None
+                last_completed: str | None = None
+
+                if etl_row:
+                    pipe_val = _get_field(etl_row, 0, "pipeline_name")
+                    last_pipeline = str(pipe_val) if pipe_val is not None else None
+                    stat_val = _get_field(etl_row, 1, "run_status")
+                    last_status = str(stat_val) if stat_val is not None else None
+                    comp_val = _get_field(etl_row, 2, "completed_at")
+                    if comp_val is not None:
+                        if hasattr(comp_val, "isoformat"):
+                            last_completed = comp_val.isoformat()
+                        else:
+                            last_completed = str(comp_val)
 
                 # 2. Source Documents per provider
                 cur.execute(
@@ -111,26 +137,41 @@ def inspect_warehouse_freshness(
                 source_rows = cur.fetchall()
                 sources: list[SourceFreshness] = []
                 for s_row in source_rows:
+                    code_val = _get_field(s_row, 0, "source_code")
+                    s_code = str(code_val) if code_val is not None else ""
+
+                    docs_val = _get_field(s_row, 1, "total_docs")
+                    total_docs = int(docs_val) if docs_val is not None else 0
+
+                    acq_val = _get_field(s_row, 2, "last_acquired")
+                    last_acq: str | None = None
+                    if acq_val is not None:
+                        if hasattr(acq_val, "isoformat"):
+                            last_acq = acq_val.isoformat()
+                        else:
+                            last_acq = str(acq_val)
+
+                    doc_val = _get_field(s_row, 3, "latest_doc")
+                    latest_doc = str(doc_val) if doc_val is not None else None
+
+                    period_val = _get_field(s_row, 4, "latest_period")
+                    latest_period = str(period_val) if period_val is not None else None
+
                     sources.append(
                         SourceFreshness(
-                            source_code=str(s_row[0]),
-                            total_documents=int(s_row[1]),
-                            last_acquired_at=(
-                                s_row[2].isoformat()
-                                if hasattr(s_row[2], "isoformat")
-                                else str(s_row[2])
-                                if s_row[2] is not None
-                                else None
-                            ),
-                            latest_document_code=str(s_row[3]) if s_row[3] is not None else None,
-                            latest_reporting_period=str(s_row[4]) if s_row[4] is not None else None,
+                            source_code=s_code,
+                            latest_document_code=latest_doc,
+                            latest_reporting_period=latest_period,
+                            last_acquired_at=last_acq,
+                            total_documents=total_docs,
                         )
                     )
 
                 # 3. Quarantined records count
                 cur.execute("SELECT COUNT(*) FROM audit.data_quality_issue;")
                 quar_row = cur.fetchone()
-                quarantine_count = int(quar_row[0]) if quar_row else 0
+                quar_val = _get_field(quar_row, 0, "count")
+                quarantine_count = int(quar_val) if quar_val is not None else 0
 
                 # 4. Table counts across facts and marts via high-performance catalog lookup
                 table_counts: dict[str, int] = {}
@@ -146,8 +187,11 @@ def inspect_warehouse_freshness(
                           AND c.relkind IN ('r', 'm', 'p');
                         """
                     )
-                    for r_key, r_count in cur.fetchall():
-                        table_counts[str(r_key)] = max(0, int(r_count))
+                    for r_row in cur.fetchall():
+                        r_key = _get_field(r_row, 0, "tbl_key")
+                        r_count = _get_field(r_row, 1, "approx_rows")
+                        if r_key is not None:
+                            table_counts[str(r_key)] = max(0, int(r_count or 0))
                 except Exception as cat_err:
                     logger.warning(f"Catalog table count query failed, falling back: {cat_err}")
 

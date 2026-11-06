@@ -177,6 +177,44 @@ def test_inspect_warehouse_freshness_offline_fallback() -> None:
 
 
 @pytest.mark.unit
+def test_inspect_warehouse_freshness_dict_rows() -> None:
+    """Validate inspect_warehouse_freshness when cursor returns dict rows."""
+    mock_conn = MagicMock()
+    mock_cur = MagicMock()
+    mock_conn.cursor.return_value.__enter__.return_value = mock_cur
+
+    now = datetime.now(UTC)
+    mock_cur.fetchone.side_effect = [
+        {"pipeline_name": "pipeline_daily_refresh", "run_status": "SUCCEEDED", "completed_at": now},
+        {"count": 0},
+    ]
+    mock_cur.fetchall.side_effect = [
+        [
+            {
+                "source_code": "CEB",
+                "total_docs": 10,
+                "last_acquired": now,
+                "latest_doc": "CEB_DOC_2024",
+                "latest_period": "2024-12-31",
+            }
+        ],
+        [{"tbl_key": "dw.fact_electricity_sales", "approx_rows": 500}],
+    ]
+
+    with patch("src.analytics.freshness.get_connection") as mock_get_conn:
+        mock_get_conn.return_value.__enter__.return_value = mock_conn
+
+        report = inspect_warehouse_freshness()
+
+        assert report.is_connected is True
+        assert report.overall_status == "FRESH"
+        assert len(report.sources) == 1
+        assert report.sources[0].source_code == "CEB"
+        assert report.sources[0].latest_reporting_period == "2024-12-31"
+        assert report.table_counts["dw.fact_electricity_sales"] == 500
+
+
+@pytest.mark.unit
 def test_inspect_warehouse_freshness_cli_main(monkeypatch: pytest.MonkeyPatch) -> None:
     """Validate CLI entrypoint returns exit code 0 when connected, 1 when offline."""
     # Online case
