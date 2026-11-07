@@ -15,7 +15,7 @@ Create or edit your local `.env` file in the repository root:
 
 ```bash
 # Managed Supabase Cloud Connection String
-DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.leormbswimbnpixkkbbu.supabase.co:5432/postgres
+DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.<project-ref>.supabase.co:5432/postgres
 
 # Mandatory Transport Security
 POSTGRES_SSLMODE=require
@@ -34,7 +34,7 @@ Create or edit `web/.env.local`:
 
 ```bash
 # Managed Supabase Connection
-DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.leormbswimbnpixkkbbu.supabase.co:5432/postgres
+DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.<project-ref>.supabase.co:5432/postgres
 
 # Dashboard Data Source Mode:
 # 'hybrid'   - Queries Supabase live; falls back to snapshots if offline.

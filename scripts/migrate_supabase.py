@@ -445,7 +445,7 @@ def main(argv: list[str] | None = None) -> int:
             print("To target Supabase, set DATABASE_URL in .env or pass --database-url:")
             print(
                 "  python scripts/migrate_supabase.py --database-url "
-                '"postgresql://postgres:[PASSWORD]@db.leormbswimbnpixkkbbu.supabase.co:5432/postgres"\n'
+                '"postgresql://postgres:[PASSWORD]@db.<project-ref>.supabase.co:5432/postgres"\n'
             )
 
     # Step 1: Connectivity check
