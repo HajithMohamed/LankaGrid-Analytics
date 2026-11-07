@@ -4,6 +4,7 @@ Verifies all 24 query snapshots, query registry coverage, and unit integrity rul
 """
 
 import json
+import re
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -80,8 +81,10 @@ def test_security_zero_hardcoded_credentials_in_web():
     with open(client_path, encoding="utf-8") as f:
         content = f.read()
 
-    # Disallow fallback password assignments
-    assert "HAzi@" not in content, "Exposed credential signature detected in client.ts"
+    # Disallow hard-coded password literals and fallback password assignments
+    assert not re.search(r"password\s*:\s*['\"]", content), (
+        "Hard-coded password literal detected in client.ts"
+    )
     assert 'password: process.env.POSTGRES_PASSWORD || "' not in content, (
         "Hardcoded fallback password string detected in client.ts"
     )
@@ -90,7 +93,12 @@ def test_security_zero_hardcoded_credentials_in_web():
     assert env_example.exists(), "web/.env.example must exist"
     with open(env_example, encoding="utf-8") as f:
         example_content = f.read()
-    assert "HAzi@" not in example_content, "Exposed password in .env.example"
+    for line in example_content.splitlines():
+        if line.startswith("POSTGRES_PASSWORD="):
+            value = line.split("=", 1)[1].strip().strip("\"'").lower()
+            assert value == "" or value.startswith(("change", "replace", "your", "<")), (
+                "web/.env.example must hold a placeholder password, not a real one"
+            )
     assert "grid_analyst" in example_content, "web/.env.example must specify grid_analyst"
 
 
