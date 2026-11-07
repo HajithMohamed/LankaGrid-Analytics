@@ -5,7 +5,7 @@
 - **Provider / Agency**: Ceylon Electricity Board (CEB)
 - **Official URL / Endpoint**: `https://ceb.lk/front_img/img_reports/1751344341Statistical_Digest_2024.pdf`
 - **Retrieval Date & Time**: `2026-10-30T17:21:30+05:30`
-- **Local Immutable Filepath**: [Statistical_Digest_2024.pdf](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/data/raw/ceb/2024/Statistical_Digest_2024.pdf)
+- **Local Immutable Filepath**: [Statistical_Digest_2024.pdf](../../data/raw/ceb/2024/Statistical_Digest_2024.pdf)
 - **Cryptographic Hash (SHA-256)**: `b0af3107c2eb4847e1b67cc7487e960f8c05e5d4501d0138b4c516e479d6905b`
 - **File Format & MIME Type**: PDF (`application/pdf`, version 1.5)
 - **File Size**: 675,770 bytes
@@ -54,8 +54,8 @@
 ---
 
 ## 5. Kimball Warehouse Mapping Proposal
-- **Target Staging Table**: [stg_electricity_sales](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/009_staging_tables.sql#L65-L90)
-- **Target Fact Table**: [dw.fact_electricity_sales](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/007_facts_capacity_and_sales.sql#L69-L126)
+- **Target Staging Table**: [stg_electricity_sales](../../database/migrations/009_staging_tables.sql#L65-L90)
+- **Target Fact Table**: [dw.fact_electricity_sales](../../database/migrations/007_facts_capacity_and_sales.sql#L69-L126)
 - **Conformed Dimensions**:
   - `dw.dim_date` (`date_key = 20241231` for annual period `2024-01-01` to `2024-12-31`)
   - `dw.dim_region` (`region_key` via `ref.region_alias`)
