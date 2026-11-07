@@ -26,7 +26,7 @@ This audit establishes the baseline findings and remediation plan prioritized in
 ### 2.1 Critical Security Problems
 1. **Hardcoded Database Credentials in Database Pool Fallback**:
    - **Location:** `web/src/lib/db/client.ts` (line 14).
-   - **Finding:** `password: process.env.POSTGRES_PASSWORD || "HAzi@1915"`. A real credential was committed to the repository as a fallback.
+   - **Finding:** `password: process.env.POSTGRES_PASSWORD || "<redacted>"`. A real credential was committed to the repository as a fallback.
    - **Severity:** CRITICAL.
    - **Remediation:** Remove the fallback string immediately. Read credentials strictly from server environment variables. Provide a sanitized `web/.env.example`. Ensure `.env` is Git-ignored. Validate required variables at runtime. Document credential rotation guidelines.
 2. **Absence of Dedicated Read-Only Database Role for Dashboard**:

@@ -30,7 +30,7 @@ All commit messages must follow the standard:
   - `test(quality): add unit tests for missing value and outlier filters`
 
 ## Code Review & Merge Standards
-- All changes must enter `development` through a Pull Request (PR) referencing [PULL_REQUEST_TEMPLATE.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/.github/PULL_REQUEST_TEMPLATE.md).
+- All changes must enter `development` through a Pull Request (PR) referencing [PULL_REQUEST_TEMPLATE.md](../../.github/PULL_REQUEST_TEMPLATE.md).
 - At least one peer review approval is required before merging.
 - CI pipeline (lint, unit tests, integration tests) must pass with zero failures.
 - Merge conflict resolution must be done on the feature branch via rebase or merge from `development` before merging into `development`.

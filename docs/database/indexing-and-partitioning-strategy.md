@@ -2,7 +2,7 @@
 
 ## 1. Declarative Range Partitioning Evaluation & Design
 
-Implemented in [006_facts_generation_and_dispatch.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/006_facts_generation_and_dispatch.sql):
+Implemented in [006_facts_generation_and_dispatch.sql](../../database/migrations/006_facts_generation_and_dispatch.sql):
 
 ### Why `dw.fact_dispatch_interval` Is Partitioned
 - **Volume Calculation**: $96\text{ intervals/day} \times 365\text{ days} = 35{,}040\text{ intervals/year}$ per entity. Across $40\text{–}80$ generating units and dispatch categories, a 4-year archive spans **$5.6\text{M–}11.2\text{M}$ rows**.
@@ -14,7 +14,7 @@ Implemented in [006_facts_generation_and_dispatch.sql](file:///c:/Fullstack%20de
 
 ---
 
-## 2. Indexing Architecture ([010_indexes_and_partition_tuning.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/010_indexes_and_partition_tuning.sql))
+## 2. Indexing Architecture ([010_indexes_and_partition_tuning.sql](../../database/migrations/010_indexes_and_partition_tuning.sql))
 
 | Index Family | Representative Indexes | Rationale |
 |---|---|---|
@@ -27,7 +27,7 @@ Implemented in [006_facts_generation_and_dispatch.sql](file:///c:/Fullstack%20de
 
 ## 3. Measured `EXPLAIN (ANALYZE, BUFFERS)` Verification on PostgreSQL 18.6
 
-Captured via [verify_database.py](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/scripts/verify_database.py) over a rolled-back 2,880-row 15-minute dispatch benchmark in `sl_grid_warehouse_test`:
+Captured via [verify_database.py](../../scripts/verify_database.py) over a rolled-back 2,880-row 15-minute dispatch benchmark in `sl_grid_warehouse_test`:
 
 ### Query 1: TOU Block Dispatch Aggregation with Partition Pruning + Partitioned B-Tree Index Scan
 ```sql
