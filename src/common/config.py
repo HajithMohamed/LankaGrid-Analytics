@@ -67,6 +67,8 @@ def parse_database_url(url: str) -> dict[str, Any]:
     else:
         sslmode = qs.get("sslmode", [os.getenv("POSTGRES_SSLMODE", "disable")])[0]
 
+    sslrootcert = qs.get("sslrootcert", [os.getenv("PGSSLROOTCERT", "")])[0] or None
+
     return {
         "host": hostname,
         "hostaddr": None,
@@ -75,8 +77,51 @@ def parse_database_url(url: str) -> dict[str, Any]:
         "user": username or ("postgres" if is_supabase else "grid_admin"),
         "password": password or "",
         "sslmode": sslmode,
+        "sslrootcert": sslrootcert,
         "is_supabase": is_supabase,
     }
+
+
+def validate_production_database_url(url: str | None) -> str:
+    """Validate that a production/scheduled DATABASE_URL secret is present and safe.
+
+    Raises ValueError with an actionable, credential-safe error message when
+    the secret is missing, empty, uses placeholder values, or targets localhost.
+    """
+    if not url or not url.strip():
+        raise ValueError(
+            "DATABASE_URL is missing or empty. Configure the protected GitHub Actions "
+            "secret 'DATABASE_URL' (or environment variable) with a valid Supabase "
+            "PostgreSQL connection string before running scheduled ingestion."
+        )
+
+    cleaned = url.strip()
+    if (
+        "[YOUR-PASSWORD]" in cleaned
+        or "<project-ref>" in cleaned
+        or "<region>" in cleaned
+        or "change_me" in cleaned.lower()
+    ):
+        raise ValueError(
+            "DATABASE_URL contains an unreplaced placeholder ([YOUR-PASSWORD], <project-ref>, "
+            "<region>, or change_me). Provide the actual authorized Supabase connection string."
+        )
+
+    params = parse_database_url(cleaned)
+    host = str(params["host"]).lower()
+    if host in {"localhost", "127.0.0.1", "::1", "0.0.0.0"}:
+        raise ValueError(
+            f"Scheduled production runs cannot target local host '{host}'. "
+            "Configure DATABASE_URL to point to the authorized remote Supabase PostgreSQL endpoint."
+        )
+
+    if not params["password"]:
+        raise ValueError(
+            "DATABASE_URL does not include a database password. "
+            "Verify the connection string format: postgresql://<user>:<password>@<host>:<port>/<db>"
+        )
+
+    return cleaned
 
 
 @dataclass(frozen=True)
@@ -91,6 +136,7 @@ class DatabaseConfig:
     sslmode: str = "disable"
     connect_timeout: int = 30
     hostaddr: str | None = None
+    sslrootcert: str | None = None
 
     def __repr__(self) -> str:
         return (
@@ -103,15 +149,59 @@ class DatabaseConfig:
     def __str__(self) -> str:
         return self.__repr__()
 
+    @property
+    def is_supabase(self) -> bool:
+        """Return True if the host belongs to Supabase managed PostgreSQL."""
+        host_lower = self.host.lower()
+        return "supabase.co" in host_lower or "supabase.com" in host_lower
+
+    @property
+    def connection_mode(self) -> str:
+        """Classify the connection mode (direct, session_pooler, transaction_pooler, local)."""
+        host_lower = self.host.lower()
+        if host_lower in {"localhost", "127.0.0.1", "::1"}:
+            return "local"
+        if "pooler.supabase.com" in host_lower:
+            return "transaction_pooler" if self.port == 6543 else "session_pooler"
+        if host_lower.startswith("db.") and host_lower.endswith(".supabase.co"):
+            return "direct"
+        return "standard"
+
+    def validate_for_production(self) -> None:
+        """Ensure this configuration is valid for remote production/scheduled execution."""
+        host_lower = self.host.lower()
+        if host_lower in {"localhost", "127.0.0.1", "::1", "0.0.0.0"}:
+            raise ValueError(
+                f"Production database configuration cannot use local host {self.host!r}. "
+                "Set DATABASE_URL to a remote Supabase PostgreSQL connection string."
+            )
+        if "<project-ref>" in host_lower or "<region>" in host_lower:
+            raise ValueError(
+                f"Database host {self.host!r} contains a template placeholder. "
+                "Configure the actual Supabase endpoint."
+            )
+        if not self.password or self.password == "[YOUR-PASSWORD]":
+            raise ValueError("Database password is missing or uses placeholder '[YOUR-PASSWORD]'.")
+        if self.sslmode in {"disable", "allow"}:
+            raise ValueError(
+                f"Production database connection requires TLS (sslmode='require', 'verify-ca', "
+                f"or 'verify-full'), got sslmode={self.sslmode!r}."
+            )
+
     def to_conn_kwargs(self) -> dict[str, Any]:
-        """Return keyword arguments suitable for psycopg.connect()."""
+        """Return keyword arguments suitable for psycopg.connect().
+
+        Does not rewrite direct endpoints into guessed regional poolers unless an explicit
+        SUPABASE_POOLER_HOST override is provided in the environment.
+        """
         host = self.host
         user = self.user
         hostaddr = self.hostaddr
 
-        if host.startswith("db.") and host.endswith(".supabase.co"):
+        explicit_pooler_host = os.getenv("SUPABASE_POOLER_HOST", "").strip()
+        if explicit_pooler_host and host.startswith("db.") and host.endswith(".supabase.co"):
             project_ref = host.split(".")[1]
-            host = "aws-0-ap-northeast-2.pooler.supabase.com"
+            host = explicit_pooler_host
             if "." not in user:
                 user = f"{user}.{project_ref}"
 
@@ -130,6 +220,8 @@ class DatabaseConfig:
         }
         if hostaddr:
             kwargs["hostaddr"] = hostaddr
+        if self.sslrootcert:
+            kwargs["sslrootcert"] = self.sslrootcert
         return kwargs
 
     def with_dbname(self, dbname: str) -> DatabaseConfig:
@@ -143,6 +235,7 @@ class DatabaseConfig:
             sslmode=self.sslmode,
             connect_timeout=self.connect_timeout,
             hostaddr=self.hostaddr,
+            sslrootcert=self.sslrootcert,
         )
 
     def with_credentials(self, user: str, password: str) -> DatabaseConfig:
@@ -156,6 +249,7 @@ class DatabaseConfig:
             sslmode=self.sslmode,
             connect_timeout=self.connect_timeout,
             hostaddr=self.hostaddr,
+            sslrootcert=self.sslrootcert,
         )
 
     @classmethod
@@ -171,18 +265,61 @@ class DatabaseConfig:
             sslmode=params["sslmode"],
             connect_timeout=int(os.getenv("DB_TIMEOUT_SECONDS", "30")),
             hostaddr=params.get("hostaddr"),
+            sslrootcert=params.get("sslrootcert"),
         )
 
     @classmethod
-    def from_env(cls, use_test_db: bool = False) -> DatabaseConfig:
+    def from_env(
+        cls,
+        use_test_db: bool = False,
+        role: str = "default",
+        require_remote_url: bool = False,
+    ) -> DatabaseConfig:
         """Load database configuration from environment variables (and local .env if unset).
 
-        Supports both granular POSTGRES_* parameters and unified DATABASE_URL connection strings
-        (e.g., Supabase transaction/session poolers).
+        Supports separated credentials by role:
+        - role='admin': checks MIGRATION_DATABASE_URL, ADMIN_DATABASE_URL, then DATABASE_URL
+        - role='etl': checks ETL_DATABASE_URL, then DATABASE_URL
+        - role='analyst': checks ANALYST_DATABASE_URL, READONLY_DATABASE_URL, then DATABASE_URL
+        - role='default': checks DATABASE_URL, then SUPABASE_DB_URL
+
+        When require_remote_url=True (used by scheduled production ingestion), fails
+        immediately if no valid remote connection URL is configured rather than falling
+        back to localhost:5432.
         """
         load_dotenv(override=False)
 
-        db_url = os.getenv("DATABASE_URL") or os.getenv("SUPABASE_DB_URL")
+        role_env_keys: dict[str, tuple[str, ...]] = {
+            "admin": (
+                "MIGRATION_DATABASE_URL",
+                "ADMIN_DATABASE_URL",
+                "DATABASE_URL",
+                "SUPABASE_DB_URL",
+            ),
+            "etl": ("ETL_DATABASE_URL", "DATABASE_URL", "SUPABASE_DB_URL"),
+            "analyst": (
+                "ANALYST_DATABASE_URL",
+                "READONLY_DATABASE_URL",
+                "DATABASE_URL",
+                "SUPABASE_DB_URL",
+            ),
+            "default": ("DATABASE_URL", "SUPABASE_DB_URL"),
+        }
+        candidate_keys = role_env_keys.get(role, role_env_keys["default"])
+
+        db_url: str | None = None
+        for key in candidate_keys:
+            val = os.getenv(key)
+            if val and val.strip():
+                db_url = val.strip()
+                break
+
+        if require_remote_url and not use_test_db:
+            validated_url = validate_production_database_url(db_url)
+            cfg = cls.from_url(validated_url)
+            cfg.validate_for_production()
+            return cfg
+
         if db_url and not use_test_db:
             return cls.from_url(db_url)
 
@@ -197,14 +334,37 @@ class DatabaseConfig:
         else:
             port = int(port_env) if port_env else 5432
 
+        role_user_env = {
+            "admin": "POSTGRES_ADMIN_USER",
+            "etl": "POSTGRES_ETL_USER",
+            "analyst": "POSTGRES_ANALYST_USER",
+        }.get(role)
+        role_pass_env = {
+            "admin": "POSTGRES_ADMIN_PASSWORD",
+            "etl": "POSTGRES_ETL_PASSWORD",
+            "analyst": "POSTGRES_ANALYST_PASSWORD",
+        }.get(role)
+
+        user = (
+            (os.getenv(role_user_env) if role_user_env else None)
+            or os.getenv("POSTGRES_USER")
+            or ("postgres" if is_supabase else "grid_admin")
+        )
+        password = (
+            (os.getenv(role_pass_env) if role_pass_env else None)
+            or os.getenv("POSTGRES_PASSWORD")
+            or ""
+        )
+
         return cls(
             host=host,
             port=port,
-            dbname=os.getenv(db_key, "postgres" if is_supabase else default_db),
-            user=os.getenv("POSTGRES_USER", "postgres" if is_supabase else "grid_admin"),
-            password=os.getenv("POSTGRES_PASSWORD", ""),
-            sslmode="require" if is_supabase else os.getenv("POSTGRES_SSLMODE", "disable"),
+            dbname=os.getenv(db_key) or ("postgres" if is_supabase else default_db),
+            user=user,
+            password=password,
+            sslmode="require" if is_supabase else (os.getenv("POSTGRES_SSLMODE") or "disable"),
             connect_timeout=int(os.getenv("DB_TIMEOUT_SECONDS", "30")),
+            sslrootcert=os.getenv("PGSSLROOTCERT") or None,
         )
 
 

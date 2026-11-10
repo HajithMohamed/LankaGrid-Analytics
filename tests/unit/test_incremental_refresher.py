@@ -18,11 +18,11 @@ def test_supabase_database_config_parsing(monkeypatch: pytest.MonkeyPatch) -> No
     """Verify DATABASE_URL for Supabase is correctly parsed with SSL require and dbname postgres."""
     monkeypatch.setenv(
         "DATABASE_URL",
-        "postgresql://postgres:mysecretpass@db.leormbswimbnpixkkbbu.supabase.co:5432/postgres",
+        "postgresql://postgres:mysecretpass@db.abcdefghijklmnopqrst.supabase.co:5432/postgres",
     )
     cfg = DatabaseConfig.from_env()
 
-    assert cfg.host == "db.leormbswimbnpixkkbbu.supabase.co"
+    assert cfg.host == "db.abcdefghijklmnopqrst.supabase.co"
     assert cfg.port == 5432
     assert cfg.dbname == "postgres"
     assert cfg.user == "postgres"
@@ -83,3 +83,41 @@ def test_dry_run_performs_zero_database_mutations() -> None:
         assert r.status == "SUCCEEDED"
         assert r.duration_seconds >= 0.0
         assert r.marts_refreshed is True  # Dry run marks simulated success
+
+
+@pytest.mark.unit
+def test_mart_refresh_failure_marks_run_failed() -> None:
+    """Verify that a materialized view refresh failure propagates and marks the refresh FAILED."""
+    from unittest.mock import patch
+
+    cfg = DatabaseConfig(
+        host="localhost",
+        port=5432,
+        dbname="sl_grid_warehouse",
+        user="grid_etl",
+        password="dummy_password",
+    )
+    refresher = IncrementalWarehouseRefresher(config=cfg)
+
+    fake_res = RefreshResult(
+        dataset="NASA",
+        files_scanned=1,
+        files_processed=1,
+        rows_inserted=100,
+        status="SUCCEEDED",
+    )
+
+    with (
+        patch.object(refresher, "refresh_nasa_weather", return_value=fake_res),
+        patch.object(
+            refresher,
+            "refresh_marts",
+            return_value=(False, "Database connection dropped during MV refresh"),
+        ),
+    ):
+        results = refresher.run_refresh(dataset="nasa", dry_run=False, acquire=False)
+
+    assert len(results) == 1
+    assert results[0].status == "FAILED"
+    assert results[0].marts_refreshed is False
+    assert any("Database connection dropped during MV refresh" in e for e in results[0].errors)

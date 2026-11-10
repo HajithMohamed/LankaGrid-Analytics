@@ -16,7 +16,7 @@ description: Documentation maintenance rules, requirements matrix tracking, and 
    - `docs/testing/`: Test strategy, verification checklists, phase test reports.
    - `docs/team/`: Task allocations, member responsibilities, meeting decisions.
 3. **Markdown Hyperlinking Standards**:
-   - All internal code references, schemas, scripts, and documentation must use clickable file links: `[filename](file:///absolute/path/to/file)`.
+   - All internal code references, schemas, scripts, and documentation must use clickable repository-relative links: `[filename](relative/path/to/file)`. Never use absolute `file:///` links; they only work on one machine and break on GitHub.
    - Use forward slashes for all file links across platforms.
 4. **Data Dictionary Completeness**:
    - Every column in every dimension and fact table must have an explicit description, data type, nullability, unit of measure (if numeric), and source lineage.

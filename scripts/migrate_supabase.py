@@ -335,19 +335,12 @@ class SupabaseMigrator:
         t0 = time.time()
         with get_connection(self.config, autocommit=True) as conn:
             with conn.cursor() as cur:
-                try:
-                    cur.execute("CALL etl.sp_refresh_mart_views(FALSE);")
-                    print(
-                        "  - Refreshed monthly generation, annual energy mix, and monthly sales marts."
-                    )
-                except Exception as e:
-                    print(f"  - Notice refreshing etl.sp_refresh_mart_views: {e}")
-                try:
-                    cur.execute("REFRESH MATERIALIZED VIEW mart.mv_daily_dispatch_by_source;")
-                    cur.execute("REFRESH MATERIALIZED VIEW mart.mv_monthly_weather_summary;")
-                    print("  - Refreshed daily dispatch by source and monthly weather marts.")
-                except Exception as e:
-                    print(f"  - Notice refreshing mart analytical views: {e}")
+                cur.execute("CALL etl.sp_refresh_mart_views(FALSE);")
+                print(
+                    "  - Refreshed monthly generation, annual energy mix, and monthly sales marts."
+                )
+                cur.execute("CALL mart.sp_refresh_analytical_marts();")
+                print("  - Refreshed daily dispatch by source and monthly weather marts.")
         print(f"Materialized views refresh sequence completed in {time.time() - t0:.2f}s.")
 
 
@@ -432,7 +425,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.database_url:
         config = DatabaseConfig.from_url(args.database_url)
     else:
-        config = DatabaseConfig.from_env(use_test_db=False)
+        config = DatabaseConfig.from_env(use_test_db=False, role="admin")
 
     migrator = SupabaseMigrator(config=config)
 
@@ -445,7 +438,7 @@ def main(argv: list[str] | None = None) -> int:
             print("To target Supabase, set DATABASE_URL in .env or pass --database-url:")
             print(
                 "  python scripts/migrate_supabase.py --database-url "
-                '"postgresql://postgres:[PASSWORD]@db.leormbswimbnpixkkbbu.supabase.co:5432/postgres"\n'
+                '"postgresql://postgres:[PASSWORD]@db.<project-ref>.supabase.co:5432/postgres"\n'
             )
 
     # Step 1: Connectivity check

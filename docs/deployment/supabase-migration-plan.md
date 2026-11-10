@@ -14,13 +14,13 @@ Migrating to Supabase provides:
 
 ## 2. Target Cloud Environment
 
-- **Host:** `db.leormbswimbnpixkkbbu.supabase.co`
+- **Host:** `db.<project-ref>.supabase.co`
 - **Default Database:** `postgres`
 - **Admin User:** `postgres`
 - **Standard Direct Port:** `5432` (Session Mode / DDL Migrations)
 - **Transaction Pooler Port:** `6543` (Prepared statements disabled / high concurrency)
 - **Transport Security:** Mandatory TLS/SSL (`sslmode=require`)
-- **Node.js TLS Certificate Handling:** `rejectUnauthorized: false` for managed cloud certificates.
+- **Node.js TLS Certificate Handling:** `rejectUnauthorized: true` (with optional `SUPABASE_CA_CERT` / `PGSSLROOTCERT` CA bundle) for verified cloud TLS certificates.
 
 ---
 
@@ -29,7 +29,7 @@ Migrating to Supabase provides:
 ### Stage 1 — Configuration & Authentication
 1. Configure environment variables in `.env` and `web/.env.local`:
    ```bash
-   DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.leormbswimbnpixkkbbu.supabase.co:5432/postgres
+   DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.<project-ref>.supabase.co:5432/postgres
    ```
 2. Verify network connectivity via `python scripts/migrate_supabase.py --verify-only`.
 

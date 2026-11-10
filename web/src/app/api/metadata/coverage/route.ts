@@ -1,7 +1,27 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { executeQuery, getDbConfigSummary } from "@/lib/db/client";
 
-export async function GET() {
+function isAuthorized(req: NextRequest): boolean {
+  const configuredToken = process.env.MONITORING_API_TOKEN?.trim();
+  if (!configuredToken) {
+    return true;
+  }
+  const authHeader = req.headers.get("authorization") || "";
+  const customHeader = req.headers.get("x-monitoring-token") || "";
+  return (
+    authHeader === `Bearer ${configuredToken}` ||
+    customHeader === configuredToken
+  );
+}
+
+export async function GET(req: NextRequest) {
+  if (!isAuthorized(req)) {
+    return NextResponse.json(
+      { status: "error", error: "Unauthorized monitoring endpoint request." },
+      { status: 401 }
+    );
+  }
+
   const startTime = Date.now();
   let dbStatus: "connected" | "offline" = "offline";
   let countSource: "live_postgresql" | "verified_snapshot_manifest" = "verified_snapshot_manifest";
@@ -63,45 +83,45 @@ export async function GET() {
   };
 
   const dbSummary = getDbConfigSummary();
+  const queryExecutionTimeMs = Date.now() - startTime;
 
   const payload = {
     status: "ok",
     connected: dbStatus === "connected",
     dbStatus,
+    dataSourceMode: dbStatus === "connected" ? "live_sql" : "offline_snapshot",
     countSource,
     countType: dbStatus === "connected" ? "catalog_statistical_estimate" : "verified_historical_audit",
     connectionTarget: {
-      host: dbSummary.host,
-      port: dbSummary.port,
       database: dbSummary.database,
-      user: dbSummary.user,
       ssl: dbSummary.ssl,
     },
     connectionErrorDiagnostic: connectionError ? "PostgreSQL database offline or unreachable; using verified snapshot manifest." : null,
-    executionTimeMs: Date.now() - startTime,
+    executionTimeMs: queryExecutionTimeMs,
+    queryExecutionTimeMs,
     project: "GridLens — Sri Lanka National Electricity Grid Analytics Data Warehouse",
     institution: "University of Ruhuna, Faculty of Technology, Department of ICT",
-    dataPeriod: "2020–2024",
-    schemas: ["dw", "audit", "mart", "staging", "ref", "raw"],
+    dataPeriod: "2020–2024+",
+    schemas: ["audit", "dw", "etl", "mart", "raw", "ref", "staging"],
     dimensions: [
       {
         name: "dim_date",
         schema: "dw",
         type: "Calendar Date",
-        rows: liveTableCounts["dw.dim_date"]?.approxRows || 1827,
-        grain: "Daily calendar dates (2020–2024)",
+        rows: liveTableCounts["dw.dim_date"]?.approxRows || 4383,
+        grain: "Daily calendar dates (2019–2030)",
       },
       {
         name: "dim_interval",
         schema: "dw",
         type: "15-Minute TOU Interval",
-        rows: liveTableCounts["dw.dim_interval"]?.approxRows || 96,
-        grain: "96 daily 15-minute intervals with Day/Peak/Off-Peak TOU buckets",
+        rows: liveTableCounts["dw.dim_interval"]?.approxRows || 120,
+        grain: "96 daily 15-minute and 24 hourly intervals with Day/Peak/Off-Peak TOU buckets",
       },
       {
         name: "dim_power_plant",
         schema: "dw",
-        type: "Generating Stations",
+        type: "Generating Stations (SCD Type 2)",
         rows: liveTableCounts["dw.dim_power_plant"]?.approxRows || 54,
         grain: "Licensed CEB and IPP power plants with nameplate MW ratings",
       },
@@ -123,8 +143,8 @@ export async function GET() {
         name: "dim_weather_location",
         schema: "dw",
         type: "Meteorological Stations",
-        rows: liveTableCounts["dw.dim_weather_location"]?.approxRows || 2,
-        grain: "Victoria Dam (Hydro catchment) and Mannar (Wind corridor)",
+        rows: liveTableCounts["dw.dim_weather_location"]?.approxRows || 6,
+        grain: "Victoria, Laxapana, Mannar, Puttalam, Hambantota, and Colombo grid nodes",
       },
       {
         name: "dim_region",
@@ -152,38 +172,61 @@ export async function GET() {
       {
         name: "fact_dispatch_interval",
         schema: "dw",
+        primaryKey: "(dispatch_fact_id, date_key)",
         grain: "15-minute generation per power plant",
         rows: getDispatchRowCount(),
-        period: "March 2024 (PUCSL)",
+        period: "March 2024+ (PUCSL)",
         isPartitioned: true,
       },
       {
         name: "fact_weather_daily",
         schema: "dw",
-        grain: "Daily meteorological observations",
+        primaryKey: "weather_fact_id",
+        grain: "Daily meteorological observations per grid node",
         rows: liveTableCounts["dw.fact_weather_daily"]?.approxRows || 21924,
-        period: "2020–2024 (NASA POWER)",
+        period: "2020–2024+ (NASA POWER)",
         isPartitioned: false,
       },
       {
         name: "fact_electricity_sales",
         schema: "dw",
-        grain: "Annual sector billing",
+        primaryKey: "sales_fact_id",
+        grain: "Annual / periodic billed electricity sales per tariff class",
         rows: liveTableCounts["dw.fact_electricity_sales"]?.approxRows || 49,
-        period: "2020–2024 (CEB Audited)",
+        period: "2020–2024+ (CEB Audited)",
         isPartitioned: false,
       },
       {
         name: "fact_generation_period",
         schema: "dw",
-        grain: "Annual utility generation summary",
+        primaryKey: "generation_fact_id",
+        grain: "Periodic gross/net generation per power station",
         rows: liveTableCounts["dw.fact_generation_period"]?.approxRows || 18,
-        period: "2020–2024 (CEB Digest)",
+        period: "2020–2024+ (CEB / PUCSL)",
+        isPartitioned: false,
+      },
+      {
+        name: "fact_capacity_period",
+        schema: "dw",
+        primaryKey: "capacity_fact_id",
+        grain: "Rated nameplate and dependable capacity per station per period",
+        rows: liveTableCounts["dw.fact_capacity_period"]?.approxRows || 0,
+        period: "Periodic Capacity Ledger",
+        isPartitioned: false,
+      },
+      {
+        name: "fact_published_metric",
+        schema: "dw",
+        primaryKey: "published_fact_id",
+        grain: "Periodic national benchmark KPI",
+        rows: liveTableCounts["dw.fact_published_metric"]?.approxRows || 0,
+        period: "CEB / PUCSL Published KPIs",
         isPartitioned: false,
       },
       {
         name: "data_quality_issue",
         schema: "audit",
+        primaryKey: "issue_id",
         grain: "Row-level data quality quarantine & issue ledger",
         rows: liveTableCounts["audit.data_quality_issue"]?.approxRows || 926,
         period: "Pipeline Cleanliness Audit",
@@ -192,6 +235,7 @@ export async function GET() {
       {
         name: "record_lineage",
         schema: "audit",
+        primaryKey: "lineage_id",
         grain: "End-to-end fact promotion provenance lineage",
         rows: liveTableCounts["audit.record_lineage"]?.approxRows || 272526,
         period: "Audit Traceability Trail",

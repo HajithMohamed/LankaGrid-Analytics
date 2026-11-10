@@ -177,10 +177,18 @@ class CebDigestParser:
                     )
                 return records
 
-            # Format 3: 2024 Digest (Table 1 has 25 rows, Col 2 = 2023, Col 3 = 2024)
+            # Format 3: 2024+ Digest (Table 1 has >= 20 rows, Col 2 = prior year, Col 3 = publication year)
             if len(tables) > 1 and len(tables[1]) >= 20:
                 t = tables[1]
-                col = 3 if year == 2024 else 2
+                # Dynamically inspect header rows (0..2) for an explicit column matching `year`
+                col = 3 if year == self.reporting_year else 2
+                for hdr_row in t[:3]:
+                    if not hdr_row:
+                        continue
+                    for c_idx, cell in enumerate(hdr_row):
+                        if cell is not None and str(year) in str(cell):
+                            col = c_idx
+                            break
                 for idx, row in enumerate(t[3:], start=3):
                     if not row or len(row) <= col:
                         continue

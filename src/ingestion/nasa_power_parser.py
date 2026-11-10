@@ -14,7 +14,11 @@ from typing import Any
 
 NODE_LOCATION_MAPPING = {
     "victoria_hydro": "LOC_VICTORIA_CATCHMENT",
+    "laxapana_catchment": "LOC_LAXAPANA_CATCHMENT",
     "mannar_wind": "LOC_MANNAR_WIND",
+    "puttalam_coal": "LOC_PUTTALAM_COAL",
+    "hambantota_solar": "LOC_HAMBANTOTA_SOLAR",
+    "colombo_load": "LOC_COLOMBO_LOAD",
 }
 
 PARAMETER_UNIT_MAPPING = {

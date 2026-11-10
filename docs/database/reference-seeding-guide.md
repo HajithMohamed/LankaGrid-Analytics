@@ -2,11 +2,11 @@
 
 ## 1. Seeding Governance & Strict Separation Policy
 
-Implemented in [seed_reference.py](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/scripts/seed_reference.py) and [001_static_reference_seed.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/seeds/001_static_reference_seed.sql), the project enforces a strict three-way separation:
+Implemented in [seed_reference.py](../../scripts/seed_reference.py) and [001_static_reference_seed.sql](../../database/seeds/001_static_reference_seed.sql), the project enforces a strict three-way separation:
 
 | Data Category | Storage / Script Location | Permitted in Production Database? | Contents |
 |---|---|:---:|---|
-| **1. Verified Static Reference Data** | [seed_reference.py](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/scripts/seed_reference.py), [001_static_reference_seed.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/seeds/001_static_reference_seed.sql) | **YES** | Physical units & conversions, calendar dates (`2019`–`2026`), SLST `15-min` & hourly intervals, ISO-3166-2:LK provinces, CEB divisions `DD1`–`DD4`, official tariff sectors, verified Sri Lankan power plants & documented aliases, NASA POWER grid sampling points, canonical metric definitions, DQ rules, and source precedence. |
+| **1. Verified Static Reference Data** | [seed_reference.py](../../scripts/seed_reference.py), [001_static_reference_seed.sql](../../database/seeds/001_static_reference_seed.sql) | **YES** | Physical units & conversions, calendar dates (`2019`–`2026`), SLST `15-min` & hourly intervals, ISO-3166-2:LK provinces, CEB divisions `DD1`–`DD4`, official tariff sectors, verified Sri Lankan power plants & documented aliases, NASA POWER grid sampling points, canonical metric definitions, DQ rules, and source precedence. |
 | **2. Authentic Source-Derived Fact Data** | Future Phase 2 ETL loaders reading `data/raw/` | **YES** *(once raw files are downloaded & checksum-verified)* | Actual generation, dispatch, capacity, sales, weather, and published benchmark measurements. **Currently 0 rows because `data/raw/` downloads are pending Phase 2.** |
 | **3. Synthetic QA Test Fixtures** | `tests/fixtures/*`, `acquisition_status = 'SYNTHETIC_FIXTURE'` | **NO** *(isolated to `sl_grid_warehouse_test` with automatic cleanup/rollback)* | Deliberately defective, duplicate, negative, and boundary rows used strictly to test constraints, quality gates, and transaction rollbacks. |
 

@@ -27,7 +27,7 @@ def test_migration_application_and_idempotency() -> None:
     Apply initial bootstrap migration, verify schema_migrations table,
     and assert re-running is strictly idempotent.
     """
-    config = DatabaseConfig.from_env()
+    config = DatabaseConfig.from_env(use_test_db=True)
     runner = MigrationRunner(migrations_dir=Path("database/migrations"))
 
     # Initial migration application

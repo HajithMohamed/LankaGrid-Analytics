@@ -27,7 +27,7 @@ def test_db_connection_failure_handling() -> None:
 @pytest.mark.integration
 def test_db_connection_success() -> None:
     """Verify successful connection to active PostgreSQL instance."""
-    config = DatabaseConfig.from_env()
+    config = DatabaseConfig.from_env(use_test_db=True)
     is_connected, error_msg = test_connection(config)
     assert is_connected, f"Database connection failed: {error_msg}"
 
@@ -35,7 +35,7 @@ def test_db_connection_success() -> None:
 @pytest.mark.integration
 def test_db_version_check() -> None:
     """Assert the active database is PostgreSQL 18."""
-    config = DatabaseConfig.from_env()
+    config = DatabaseConfig.from_env(use_test_db=True)
     with get_connection(config) as conn:
         with conn.cursor() as cur:
             cur.execute("SHOW server_version;")

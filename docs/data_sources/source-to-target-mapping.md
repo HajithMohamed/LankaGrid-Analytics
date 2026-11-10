@@ -1,6 +1,6 @@
 # Source-to-Target Mapping Specification
 
-This document defines the exact end-to-end lineage from official upstream publications ([source-inventory.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/data_sources/source-inventory.md)) through `raw`, `staging`, and `ref` into the Kimball `dw` Fact Constellation ([005_dimensions.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/005_dimensions.sql)–[009_staging_tables.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/009_staging_tables.sql)).
+This document defines the exact end-to-end lineage from official upstream publications ([source-inventory.md](source-inventory.md)) through `raw`, `staging`, and `ref` into the Kimball `dw` Fact Constellation ([005_dimensions.sql](../../database/migrations/005_dimensions.sql)–[009_staging_tables.sql](../../database/migrations/009_staging_tables.sql)).
 
 ---
 

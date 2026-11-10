@@ -16,6 +16,7 @@ from typing import Any
 
 from src.common.config import DatabaseConfig
 from src.common.db import get_connection
+from src.common.source_identity import SourceDocumentIdentity
 from src.etl.batch_loader import BatchExecutionResult
 from src.ingestion.ceb_digest_parser import CebDigestParser
 from src.ingestion.manifest_validator import ManifestValidator
@@ -48,6 +49,63 @@ class RealDataWarehouseLoader:
     def _compute_sha256(path: Path) -> str:
         return ManifestValidator.compute_sha256(path)
 
+    @staticmethod
+    def _ensure_dates_and_partitions(cur: Any, start_year: int, end_year: int) -> None:
+        """Ensure dw.dim_date and dw.fact_dispatch_interval partitions cover [start_year..end_year]."""
+        cur.execute(
+            """
+            SELECT EXISTS (
+                SELECT 1 FROM dw.dim_date WHERE calendar_year = %s
+            ) AND EXISTS (
+                SELECT 1 FROM dw.dim_date WHERE calendar_year = %s
+            );
+            """,
+            (start_year, end_year),
+        )
+        row = cur.fetchone()
+        dates_present = bool(row[0]) if row else False
+        if not dates_present:
+            cur.execute(
+                """
+                INSERT INTO dw.dim_date (
+                    date_key, calendar_date, day_of_month, day_of_year,
+                    day_of_week_iso, day_name, is_weekend, week_of_year_iso,
+                    month_number, month_name, year_month, quarter_number,
+                    quarter_name, calendar_year, sl_monsoon_season
+                )
+                SELECT
+                    (EXTRACT(YEAR FROM d)::INTEGER * 10000)
+                        + (EXTRACT(MONTH FROM d)::INTEGER * 100)
+                        + EXTRACT(DAY FROM d)::INTEGER,
+                    d::DATE,
+                    EXTRACT(DAY FROM d)::SMALLINT,
+                    EXTRACT(DOY FROM d)::SMALLINT,
+                    EXTRACT(ISODOW FROM d)::SMALLINT,
+                    TO_CHAR(d, 'FMDay'),
+                    (EXTRACT(ISODOW FROM d) IN (6, 7)),
+                    EXTRACT(WEEK FROM d)::SMALLINT,
+                    EXTRACT(MONTH FROM d)::SMALLINT,
+                    TO_CHAR(d, 'FMMonth'),
+                    TO_CHAR(d, 'YYYY-MM'),
+                    EXTRACT(QUARTER FROM d)::SMALLINT,
+                    'Q' || EXTRACT(QUARTER FROM d)::TEXT,
+                    EXTRACT(YEAR FROM d)::SMALLINT,
+                    CASE
+                        WHEN EXTRACT(MONTH FROM d) IN (12, 1, 2) THEN 'NORTHEAST_MONSOON'
+                        WHEN EXTRACT(MONTH FROM d) IN (3, 4) THEN 'FIRST_INTER_MONSOON'
+                        WHEN EXTRACT(MONTH FROM d) IN (5, 6, 7, 8, 9) THEN 'SOUTHWEST_MONSOON'
+                        ELSE 'SECOND_INTER_MONSOON'
+                    END
+                FROM generate_series(
+                    MAKE_DATE(%s, 1, 1)::TIMESTAMP,
+                    MAKE_DATE(%s, 12, 31)::TIMESTAMP,
+                    INTERVAL '1 day'
+                ) AS gs(d)
+                ON CONFLICT (date_key) DO NOTHING;
+                """,
+                (start_year, end_year),
+            )
+
     def load_pucsl_daily_pdf(
         self, pdf_path: Path, reporting_date: date, revision: str = "v1"
     ) -> BatchExecutionResult:
@@ -57,14 +115,22 @@ class RealDataWarehouseLoader:
         if not plant_records:
             raise ValueError(f"No plant generation records extracted from {pdf_path}")
 
-        doc_code = f"PUCSL-GEN-DAILY-{reporting_date.strftime('%Y-%m-%d')}"
-        batch_code = f"BATCH-{doc_code}-{revision}"
         file_sha256 = self._compute_sha256(pdf_path)
+        ident = SourceDocumentIdentity.for_pucsl_daily_gen(
+            reporting_date=reporting_date,
+            revision=revision,
+            sha256_checksum=file_sha256,
+            original_filename=pdf_path.name,
+            file_size_bytes=pdf_path.stat().st_size,
+        )
+        doc_code = ident.document_code
+        batch_code = ident.batch_code
 
         with get_connection(self.config, autocommit=True) as conn:
             # Boundary A: Register document, batch, and RUNNING audit record
             with conn.transaction():
                 with conn.cursor() as cur:
+                    self._ensure_dates_and_partitions(cur, reporting_date.year, reporting_date.year)
                     cur.execute(
                         "SELECT source_system_id FROM raw.source_system WHERE source_code = 'PUCSL';"
                     )
@@ -228,16 +294,29 @@ class RealDataWarehouseLoader:
         if not all_records:
             raise ValueError(f"No dispatch records parsed from {xlsx_path}")
 
-        first_date = all_records[0].observation_date
-        last_date = all_records[-1].observation_date
-        doc_code = "PUCSL-DISPATCH-15MIN-2024-M03"
-        batch_code = f"BATCH-{doc_code}-{revision}"
+        first_date = min(r.observation_date for r in all_records)
+        last_date = max(r.observation_date for r in all_records)
         file_sha256 = self._compute_sha256(xlsx_path)
+
+        period_str = (
+            SourceDocumentIdentity.infer_pucsl_period_from_filename(xlsx_path.name)
+            or f"{first_date.year}-M{first_date.month:02d}"
+        )
+        ident = SourceDocumentIdentity.for_pucsl_dispatch(
+            reporting_period=period_str,
+            revision=revision,
+            sha256_checksum=file_sha256,
+            original_filename=xlsx_path.name,
+            file_size_bytes=xlsx_path.stat().st_size,
+        )
+        doc_code = ident.document_code
+        batch_code = ident.batch_code
 
         with get_connection(self.config, autocommit=True) as conn:
             # Boundary A: Register document and batch
             with conn.transaction():
                 with conn.cursor() as cur:
+                    self._ensure_dates_and_partitions(cur, first_date.year, last_date.year + 1)
                     cur.execute(
                         "SELECT source_system_id FROM raw.source_system WHERE source_code = 'PUCSL';"
                     )
@@ -254,7 +333,8 @@ class RealDataWarehouseLoader:
                             %s, %s, 'https://www.pucsl.gov.lk/15-minutes-reports/', %s,
                             %s, 'XLSX', %s, 'INTERVAL_15MIN', %s, %s, %s, 'DOWNLOADED_VERIFIED'
                         ) ON CONFLICT (document_code) DO UPDATE SET
-                            sha256_checksum = EXCLUDED.sha256_checksum
+                            sha256_checksum = EXCLUDED.sha256_checksum,
+                            dataset_revision = EXCLUDED.dataset_revision
                         RETURNING source_document_id;
                         """,
                         (
@@ -449,23 +529,44 @@ class RealDataWarehouseLoader:
         if not records:
             raise ValueError(f"No weather observations parsed from {json_path}")
 
-        first_date = records[0].observation_date
-        last_date = records[-1].observation_date
-        if first_date.year != last_date.year:
-            doc_code = f"NASA-POWER-DAILY-5YR-{first_date.year}-{last_date.year}"
-        else:
-            doc_code = f"NASA-POWER-DAILY-{first_date.year}-M{first_date.month:02d}"
-        batch_code = f"BATCH-{doc_code}-{revision}"
+        first_date = min(r.observation_date for r in records)
+        last_date = max(r.observation_date for r in records)
         file_sha256 = self._compute_sha256(json_path)
+
+        ident = SourceDocumentIdentity.for_nasa_daily(
+            start_date=first_date,
+            end_date=last_date,
+            revision=revision,
+            sha256_checksum=file_sha256,
+            original_filename=json_path.name,
+            file_size_bytes=json_path.stat().st_size,
+        )
+        doc_code = ident.document_code
+        batch_code = ident.batch_code
 
         with get_connection(self.config, autocommit=True) as conn:
             # Boundary A
             with conn.transaction():
                 with conn.cursor() as cur:
+                    self._ensure_dates_and_partitions(cur, first_date.year, last_date.year)
                     cur.execute(
                         "SELECT source_system_id FROM raw.source_system WHERE source_code = 'NASA_POWER';"
                     )
                     sys_id = _fetch_scalar(cur)
+
+                    # Migrate legacy alias document code in place if present
+                    for alias in ident.legacy_aliases:
+                        cur.execute(
+                            """
+                            UPDATE raw.source_document
+                               SET document_code = %s
+                             WHERE document_code = %s
+                               AND NOT EXISTS (
+                                   SELECT 1 FROM raw.source_document WHERE document_code = %s
+                               );
+                            """,
+                            (doc_code, alias, doc_code),
+                        )
 
                     cur.execute(
                         """
@@ -478,7 +579,8 @@ class RealDataWarehouseLoader:
                             %s, %s, 'https://power.larc.nasa.gov/api/temporal/daily/point', %s,
                             %s, 'JSON', %s, 'DAILY', %s, %s, %s, 'DOWNLOADED_VERIFIED'
                         ) ON CONFLICT (document_code) DO UPDATE SET
-                            sha256_checksum = EXCLUDED.sha256_checksum
+                            sha256_checksum = EXCLUDED.sha256_checksum,
+                            dataset_revision = EXCLUDED.dataset_revision
                         RETURNING source_document_id;
                         """,
                         (
@@ -691,27 +793,41 @@ class RealDataWarehouseLoader:
     def load_ceb_sales_pdf(
         self,
         pdf_path: Path,
-        reporting_year: int = 2024,
+        reporting_year: int | None = None,
         revision: str = "v1",
         target_year: int | None = None,
     ) -> BatchExecutionResult:
         """Load CEB Statistical Digest billed electricity sales into dw.fact_electricity_sales."""
-        effective_year = target_year if target_year is not None else reporting_year
-        parser = CebDigestParser(reporting_year=effective_year)
+        inferred_pub_year = (
+            reporting_year
+            if reporting_year is not None
+            else SourceDocumentIdentity.infer_ceb_year_from_path(pdf_path)
+        )
+        effective_year = target_year if target_year is not None else inferred_pub_year
+        parser = CebDigestParser(reporting_year=inferred_pub_year)
         tariff_records = parser.extract_tariff_sales(pdf_path, target_year=effective_year)
         if not tariff_records:
             raise ValueError(f"No tariff sales parsed from {pdf_path} for year {effective_year}")
 
         start_date = date(effective_year, 1, 1)
         end_date = date(effective_year, 12, 31)
-        doc_code = f"CEB-STAT-DIGEST-{effective_year}"
-        batch_code = f"BATCH-{doc_code}-{revision}"
         file_sha256 = self._compute_sha256(pdf_path)
+
+        ident = SourceDocumentIdentity.for_ceb_digest(
+            reporting_year=effective_year,
+            revision=revision,
+            sha256_checksum=file_sha256,
+            original_filename=pdf_path.name,
+            file_size_bytes=pdf_path.stat().st_size,
+        )
+        doc_code = ident.document_code
+        batch_code = ident.batch_code
 
         with get_connection(self.config, autocommit=True) as conn:
             # Boundary A
             with conn.transaction():
                 with conn.cursor() as cur:
+                    self._ensure_dates_and_partitions(cur, effective_year, effective_year)
                     cur.execute(
                         "SELECT source_system_id FROM raw.source_system WHERE source_code = 'CEB';"
                     )
@@ -728,7 +844,8 @@ class RealDataWarehouseLoader:
                             %s, %s, 'https://ceb.lk/publication-media/other-publications/en', %s,
                             %s, 'PDF', %s, 'ANNUAL', %s, %s, %s, 'DOWNLOADED_VERIFIED'
                         ) ON CONFLICT (document_code) DO UPDATE SET
-                            sha256_checksum = EXCLUDED.sha256_checksum
+                            sha256_checksum = EXCLUDED.sha256_checksum,
+                            dataset_revision = EXCLUDED.dataset_revision
                         RETURNING source_document_id;
                         """,
                         (

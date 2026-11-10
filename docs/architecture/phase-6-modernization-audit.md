@@ -66,7 +66,7 @@ Supabase provides managed PostgreSQL (typically major version 15 or 16). The fol
 | `CREATE DATABASE sl_grid_warehouse` | Local DDL | Cloud Managed | **Incompatible on Cloud**. In Supabase, the target database is fixed to `postgres`. The migration script must connect to `postgres` without executing `CREATE DATABASE`. |
 | Superuser Privileges (`SUPERUSER`) | Available locally | Restricted | **Incompatible on Cloud**. In Supabase, `postgres` is a member of `supa_admin`, not a naked superuser. Avoid `ALTER SYSTEM` or superuser-exclusive statements. |
 | `ALTER ROLE ... WITH LOGIN PASSWORD` | Used locally | Pooler / IAM | **Adjusted**. Managed Supabase provisions users through Dashboard or SQL Editor. The analytical role `grid_analyst` can be created as a standard database role. |
-| SSL Mode (`sslmode=require`) | Optional | **Mandatory** | **Required**. Supabase requires encrypted SSL transport. Both Python `psycopg` and Next.js `pg` pool must pass `sslmode=require` / `rejectUnauthorized: false`. |
+| SSL Mode (`sslmode=require`) | Optional | **Mandatory** | **Required**. Supabase requires encrypted SSL transport. Both Python `psycopg` (`sslmode=require`) and Next.js `pg` pool (`rejectUnauthorized: true`) enforce verified TLS. |
 | Connection Pooling (Port 6543 vs 5432) | Direct 5432 | Supavisor Pooler | **Supported**. For serverless Next.js, use Transaction Pooler (port 6543). For long-running Python ETL migrations, use Direct/Session connection (port 5432). |
 
 ---

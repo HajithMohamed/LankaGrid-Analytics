@@ -46,25 +46,57 @@ class PucslDispatchParser:
             wb.close()
 
     @staticmethod
-    def _parse_sheet_date(sheet_name: str, row0_val: Any) -> date:
-        """Infer calendar date from row 0 metadata or sheet name (e.g. '01.03')."""
+    def _infer_workbook_year(file_path: Path, default_year: int = 2024) -> int:
+        """Infer the reporting year from a PUCSL workbook filename or parent path."""
+        m = re.search(r"(20[0-3]\d)", file_path.name)
+        if m:
+            return int(m.group(1))
+        for part in reversed(file_path.parts[:-1]):
+            if re.fullmatch(r"20[0-3]\d", part):
+                return int(part)
+        return default_year
+
+    @staticmethod
+    def _parse_sheet_date(sheet_name: str, row0_val: Any, default_year: int = 2024) -> date:
+        """Infer calendar date from row 0 metadata or sheet name (e.g. '01.03' or '01.03.2025')."""
         if isinstance(row0_val, datetime):
             return row0_val.date()
         if isinstance(row0_val, date):
             return row0_val
+        if isinstance(row0_val, str) and row0_val.strip():
+            raw_str = row0_val.strip()
+            for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%d.%m.%Y", "%d-%m-%Y"):
+                try:
+                    return datetime.strptime(raw_str[:10], fmt).date()
+                except ValueError:
+                    pass
 
-        # Fallback to sheet name matching DD.MM
+        # Match explicit DD.MM.YYYY in sheet name first
+        m_full = re.search(r"(\d{1,2})\.(\d{1,2})\.(20\d{2})", sheet_name)
+        if m_full:
+            return date(int(m_full.group(3)), int(m_full.group(2)), int(m_full.group(1)))
+
+        # Fallback to sheet name matching DD.MM with workbook-inferred year
         m = re.search(r"(\d{1,2})\.(\d{1,2})", sheet_name)
         if m:
             day = int(m.group(1))
             month = int(m.group(2))
-            return date(2024, month, day)
+            return date(default_year, month, day)
+
+        # Fallback to sheet name matching DD Mon (e.g., '15 Jan', '01 Mar')
+        for fmt in ("%d %b %Y", "%d-%b-%Y"):
+            try:
+                return datetime.strptime(f"{sheet_name.strip()} {default_year}", fmt).date()
+            except ValueError:
+                pass
 
         raise ValueError(
             f"Cannot resolve calendar date from sheet '{sheet_name}' and row0: {row0_val}"
         )
 
-    def _parse_worksheet(self, ws: Any, sheet_name: str) -> list[DispatchIntervalRecord]:
+    def _parse_worksheet(
+        self, ws: Any, sheet_name: str, default_year: int = 2024
+    ) -> list[DispatchIntervalRecord]:
         """Parse all 96 interval slots for all stations on an open worksheet."""
         records: list[DispatchIntervalRecord] = []
         all_rows = list(ws.iter_rows(values_only=True))
@@ -73,7 +105,9 @@ class PucslDispatchParser:
 
         # Row 0: Header with date
         row0 = all_rows[0]
-        sheet_date = self._parse_sheet_date(sheet_name, row0[8] if len(row0) > 8 else None)
+        sheet_date = self._parse_sheet_date(
+            sheet_name, row0[8] if len(row0) > 8 else None, default_year=default_year
+        )
 
         # Row 1: Time labels (e.g. Time, 0:15, 0:30, ..., 24:00)
         time_slots: list[tuple[int, time]] = []
@@ -151,6 +185,7 @@ class PucslDispatchParser:
 
     def parse_sheet(self, file_path: Path, sheet_name: str) -> list[DispatchIntervalRecord]:
         """Parse all 96 interval slots for all stations on the specified daily sheet."""
+        wb_year = self._infer_workbook_year(file_path)
         wb = openpyxl.load_workbook(file_path, read_only=True, data_only=True)
         try:
             matched_sheet = None
@@ -162,7 +197,7 @@ class PucslDispatchParser:
             if not matched_sheet:
                 raise ValueError(f"Sheet '{sheet_name}' not found in workbook {file_path.name}")
 
-            return self._parse_worksheet(wb[matched_sheet], matched_sheet)
+            return self._parse_worksheet(wb[matched_sheet], matched_sheet, default_year=wb_year)
         finally:
             wb.close()
 
@@ -173,6 +208,7 @@ class PucslDispatchParser:
         max_sheets: int | None = None,
     ) -> list[DispatchIntervalRecord]:
         """Parse daily sheets in the workbook loading the workbook only once."""
+        wb_year = self._infer_workbook_year(file_path)
         wb = openpyxl.load_workbook(file_path, read_only=True, data_only=True)
         try:
             target_sheets = sheet_names or [
@@ -189,7 +225,11 @@ class PucslDispatchParser:
                         matched_sheet = name
                         break
                 if matched_sheet:
-                    all_records.extend(self._parse_worksheet(wb[matched_sheet], matched_sheet))
+                    all_records.extend(
+                        self._parse_worksheet(
+                            wb[matched_sheet], matched_sheet, default_year=wb_year
+                        )
+                    )
             return all_records
         finally:
             wb.close()
