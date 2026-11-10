@@ -22,10 +22,12 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
 import time
 
 from src.common.config import DatabaseConfig
+from src.common.db import verify_warehouse_preflight
 from src.etl.incremental_refresher import IncrementalWarehouseRefresher
 
 
@@ -38,6 +40,21 @@ def main(argv: list[str] | None = None) -> int:
         choices=["all", "ceb", "pucsl", "nasa"],
         default="all",
         help="Specify which dataset to incrementally ingest and refresh (default: all).",
+    )
+    parser.add_argument(
+        "--acquire",
+        action="store_true",
+        help="Perform automated online source acquisition (NASA REST API, PUCSL/CEB discovery) before loading.",
+    )
+    parser.add_argument(
+        "--require-remote",
+        action="store_true",
+        help="Require a remote production DATABASE_URL (fail immediately if missing, empty, or localhost).",
+    )
+    parser.add_argument(
+        "--preflight-only",
+        action="store_true",
+        help="Run read-only database connectivity, SSL, schema, migration, and privilege verification then exit.",
     )
     parser.add_argument(
         "--dry-run",
@@ -66,16 +83,51 @@ def main(argv: list[str] | None = None) -> int:
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     )
 
-    config = DatabaseConfig.from_env(use_test_db=args.test_db)
-    refresher = IncrementalWarehouseRefresher(config=config)
+    require_remote = bool(args.require_remote) or (
+        os.getenv("SCHEDULED_PRODUCTION_REFRESH", "").lower() == "true"
+        and not args.test_db
+        and not args.dry_run
+    )
 
-    print(f"Connecting to warehouse on {config.host}:{config.port}/{config.dbname}...")
+    try:
+        config = DatabaseConfig.from_env(
+            use_test_db=args.test_db,
+            role="etl",
+            require_remote_url=require_remote,
+        )
+    except ValueError as cfg_err:
+        print(f"[FATAL] Configuration validation failed: {cfg_err}", file=sys.stderr)
+        return 1
+
+    print(
+        f"Connecting to warehouse on {config.host}:{config.port}/{config.dbname} "
+        f"(mode={config.connection_mode}, sslmode={config.sslmode})..."
+    )
+
+    if not args.dry_run:
+        preflight = verify_warehouse_preflight(
+            config=config,
+            require_write_privileges=True,
+            require_remote=require_remote,
+        )
+        if not preflight.ok:
+            print(f"[FATAL] {preflight.summary()}", file=sys.stderr)
+            return 1
+        print(f"[OK] {preflight.summary()}")
+        if args.preflight_only:
+            return 0
+    elif args.preflight_only:
+        print("[DRY-RUN] Skipping live database preflight check.")
+        return 0
+
+    refresher = IncrementalWarehouseRefresher(config=config)
     t_start = time.time()
 
     results = refresher.run_refresh(
         dataset=args.dataset,
         dry_run=args.dry_run,
         force=args.force,
+        acquire=args.acquire,
     )
 
     print("\n" + "=" * 65)
@@ -93,7 +145,7 @@ def main(argv: list[str] | None = None) -> int:
         print(
             f"           | Duration: {r.duration_seconds:.2f}s | Marts Refreshed: {'YES' if r.marts_refreshed else 'NO'}"
         )
-        if r.errors:
+        if r.status in ("FAILED", "PARTIAL_ERROR", "BLOCKED") or r.errors:
             has_errors = True
             for err in r.errors:
                 print(f"           ! ERROR: {err}")
