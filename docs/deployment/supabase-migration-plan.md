@@ -20,7 +20,7 @@ Migrating to Supabase provides:
 - **Standard Direct Port:** `5432` (Session Mode / DDL Migrations)
 - **Transaction Pooler Port:** `6543` (Prepared statements disabled / high concurrency)
 - **Transport Security:** Mandatory TLS/SSL (`sslmode=require`)
-- **Node.js TLS Certificate Handling:** `rejectUnauthorized: false` for managed cloud certificates.
+- **Node.js TLS Certificate Handling:** `rejectUnauthorized: true` (with optional `SUPABASE_CA_CERT` / `PGSSLROOTCERT` CA bundle) for verified cloud TLS certificates.
 
 ---
 
