@@ -110,18 +110,18 @@ flowchart TD
 
 ---
 
-## 4. Fact Tables & Why Each Exists
+## 4. Fact Tables & Primary Keys
 
 GridLens models **six dedicated fact tables** in the `dw` schema, each addressing a distinct physical or commercial process at its atomic grain:
 
-| Fact Table | Physical / Business Grain | Primary Additivity | Current Rows in Warehouse | Core Analytical Value |
-| :--- | :--- | :--- | :--- | :--- |
-| **`dw.fact_dispatch_interval`** | 15-minute interval per generator / station | Semi-additive ($MW$) / Additive ($MWh$) | **107,115** (March 2024 partition) | Diurnal load curve profiling, ramp rate analysis, spinning reserves, and unit merit-order. |
-| **`dw.fact_generation_period`** | Periodic gross & net generation per plant / fuel | Fully additive ($MWh$) | Structured for periodic loads | Audited plant sent-out energy, station auxiliary consumption rates, and net energy balance. |
-| **`dw.fact_capacity_period`** | Plant dependable capacity & outages per period | Semi-additive ($MW$) | Structured for periodic loads | Nameplate capacity tracking, peak availability factors, and planned vs. forced outages. |
-| **`dw.fact_electricity_sales`** | Annual / monthly billed sales per province per tariff class | Additive ($MWh$, $LKR$, accounts) | **49** (2020–2024 audited history) | Sectoral demand shifts, tariff revenue realization, and LECO bulk supply reconciliation. |
-| **`dw.fact_weather_daily`** | Daily meteorological observation per grid node | Semi-additive / intensive physical rates | **21,924** (2020–2024 continuous daily) | Solar irradiance (PSH), rainfall correlation with hydro catchments, and cooling degree days. |
-| **`dw.fact_published_metric`** | National benchmark metric per period | Non-additive / intensive percentages | Structured for periodic loads | Official published transmission loss %, distribution loss %, and system peak demand ($MW$). |
+| Fact Table | Primary Key | Physical / Business Grain | Primary Additivity | Current Rows in Warehouse | Core Analytical Value |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **`dw.fact_dispatch_interval`** | `(dispatch_fact_id, date_key)` (`pk_fact_dispatch_interval`) | 15-minute interval per generator / station | Semi-additive ($MW$) / Additive ($MWh$) | **107,115** (March 2024 partition) | Diurnal load curve profiling, ramp rate analysis, spinning reserves, and unit merit-order. |
+| **`dw.fact_generation_period`** | `generation_fact_id` (`pk_fact_generation_period`) | Periodic gross & net generation per plant / fuel | Fully additive ($MWh$) | Structured for periodic loads | Audited plant sent-out energy, station auxiliary consumption rates, and net energy balance. |
+| **`dw.fact_capacity_period`** | `capacity_fact_id` (`pk_fact_capacity_period`) | Plant dependable capacity & outages per period | Semi-additive ($MW$) | Structured for periodic loads | Nameplate capacity tracking, peak availability factors, and planned vs. forced outages. |
+| **`dw.fact_electricity_sales`** | `sales_fact_id` (`pk_fact_electricity_sales`) | Annual / monthly billed sales per province per tariff class | Additive ($MWh$, $LKR$, accounts) | **49** (2020–2024 audited history) | Sectoral demand shifts, tariff revenue realization, and LECO bulk supply reconciliation. |
+| **`dw.fact_weather_daily`** | `weather_fact_id` (`pk_fact_weather_daily`) | Daily meteorological observation per grid node | Semi-additive / intensive physical rates | **21,924** (2020–2024 continuous daily) | Solar irradiance (PSH), rainfall correlation with hydro catchments, and cooling degree days. |
+| **`dw.fact_published_metric`** | `published_fact_id` (`pk_fact_published_metric`) | National benchmark metric per period | Non-additive / intensive percentages | Structured for periodic loads | Official published transmission loss %, distribution loss %, and system peak demand ($MW$). |
 
 Detailed fact table definitions, additivity rules, and partition designs are documented in [docs/database/fact-tables.md](docs/database/fact-tables.md).
 
@@ -129,17 +129,17 @@ Detailed fact table definitions, additivity rules, and partition designs are doc
 
 ## 5. Dimension Tables & Hierarchies
 
-Nine conformed dimensions provide uniform analytical drill-down and slicing across all fact tables:
+Nine conformed dimensions in `dw` ([`database/migrations/005_dimensions.sql`](database/migrations/005_dimensions.sql)) provide uniform analytical drill-down and slicing across all fact tables:
 
-1. **`dw.dim_date`**: Calendar hierarchy (Day &rarr; Month &rarr; Quarter &rarr; Year), day-of-week, statutory holidays, and Sri Lankan monsoon regimes (*Northeast*, *First Inter-Monsoon*, *Southwest*, *Second Inter-Monsoon*).
-2. **`dw.dim_time_of_day`**: 96 discrete 15-minute intervals mapped to official CEB Time-of-Use (TOU) tariff bands (*Day Peak: 18:30–22:30*, *Day Off-Peak: 05:30–18:30*, *Night Off-Peak: 22:30–05:30*).
-3. **`dw.dim_power_plant`**: Generation facilities with geographic coordinates, rated capacities, grid connection voltage, and **Kimball Slowly Changing Dimension (SCD) Type 2** historical tracking (`effective_from`, `effective_to`, `is_current`).
-4. **`dw.dim_generation_unit`**: Granular turbine-generator units within multi-unit complexes (e.g. Lakvijaya Units 1–3, Victoria Units 1–3).
-5. **`dw.dim_fuel_type`**: Primary and secondary fuel taxonomies (*Major Hydro, Coal, Auto Diesel, Heavy Fuel Oil, Naphtha, Solar, Wind, Biomass*) with IPCC carbon intensity factors.
-6. **`dw.dim_grid_substation`**: High-voltage transmission nodes (220 kV and 132 kV) mapped to geographic coordinates for weather matching.
-7. **`dw.dim_transmission_line`**: High-voltage corridor circuits, route lengths ($km$), nominal voltages ($kV$), and thermal ratings ($MVA$).
-8. **`dw.dim_tariff_customer_class`**: Gazette tariff classes (*Domestic, Religious, Industrial, Hotel, General Purpose, Government, Street Lighting*).
-9. **`dw.dim_administrative_area`**: 9 administrative provinces, 25 districts, and CEB Distribution Divisions (*DD1, DD2, DD3, DD4, LECO*).
+1. **`dw.dim_date`** (`date_key`): Calendar hierarchy (Day &rarr; Month &rarr; Quarter &rarr; Year, 2019–2030), ISO week, day-of-week, weekend indicator, and Sri Lankan monsoon regimes (*Northeast*, *First Inter-Monsoon*, *Southwest*, *Second Inter-Monsoon*).
+2. **`dw.dim_interval`** (`interval_key`): 96 discrete 15-minute intervals and 24 hourly intervals mapped to official CEB Time-of-Use (TOU) tariff bands (*PEAK: 18:30–22:30*, *DAY: 05:30–18:30*, *OFF_PEAK: 22:30–05:30*).
+3. **`dw.dim_source_system`** (`source_system_key`): Authoritative upstream provider registry (`CEB`, `PUCSL`, `NASA_POWER`) with organization lineage, default timezones, and granularity metadata.
+4. **`dw.dim_energy_source`** (`energy_source_key`): Generation technology and fuel classifications (*Major Hydro, Coal, Auto Diesel, Thermal Oil, Solar, Wind, Biomass*) with renewable, dispatchable, and indigenous flags.
+5. **`dw.dim_region`** (`region_key`): Hierarchical geography covering National (`LK`), 9 administrative provinces, 25 districts, and CEB Distribution Divisions (*DD1, DD2, DD3, DD4, LECO*).
+6. **`dw.dim_consumption_sector`** (`sector_key`): Gazetted retail tariff classes (*Domestic, Religious, Industrial, Hotel, General Purpose, Government, Agriculture, Street Lighting, Bulk Supply to LECO*).
+7. **`dw.dim_power_plant`** (`plant_key`): Generating stations with operator type (`CEB`, `IPP`, `SPP`), energy source, region, hydro complex, and **Kimball Slowly Changing Dimension (SCD) Type 2** historical tracking (`effective_from`, `effective_to`, `is_current`).
+8. **`dw.dim_weather_location`** (`weather_location_key`): Six verified Sri Lanka meteorological grid nodes (*Victoria Hydro Catchment, Laxapana Hydro Catchment, Mannar Wind Corridor, Puttalam Thermal Hub, Hambantota Solar Hub, Colombo Load Center*) with exact coordinates and elevation.
+9. **`dw.dim_metric`** (`metric_key`): Canonical physical and commercial metric dictionary defining canonical units (`MW`, `MWh`, `MJ/m2/day`, `C`, `mm/day`, `m/s`, `PCT`), generation boundaries, and additivity rules.
 
 Full dimensional attribute catalogs and hierarchy maps are available in [docs/database/dimension-tables.md](docs/database/dimension-tables.md) and [docs/architecture/fact-constellation.md](docs/architecture/fact-constellation.md).
 
@@ -178,11 +178,11 @@ Refer to [docs/data_sources/coverage-and-limitations.md](docs/data_sources/cover
 
 GridLens leverages advanced relational database engineering features in PostgreSQL 18:
 
-1. **Common Table Expressions (CTEs):** Structured, readable query pipelines isolating unit conversions and aggregations ([`Q01.sql`](database/queries/phase3/member_01_generation/Q01.sql)).
-2. **Window Functions (`LAG`, `AVG() OVER`, `DENSE_RANK`):** Calculates 15-minute ramp rates ($\frac{dMW}{dt}$), 7-day centered moving averages, and baseload screening ([`Q06.sql`](database/queries/phase3/member_02_dispatch/Q06.sql)).
-3. **Multi-Dimensional Aggregations (`ROLLUP`, `CUBE`, `GROUPING SETS`):** Computes hierarchical subtotals and cross-dimensional summaries in a single execution plan ([`Q15.sql`](database/queries/phase3/member_04_weather/Q15.sql)).
-4. **Stored Procedures with Transaction Control:** Procedure `etl.sp_validate_dispatch_staging()` isolates unmapped plant aliases into quarantine without failing batches; procedure `etl.sp_refresh_analytical_marts()` updates materialized views.
-5. **Declarative Range Partitioning:** Table `dw.fact_dispatch_interval` uses annual partitioning (`y2020` to `y2026`). The query planner prunes irrelevant partitions to achieve sub-100ms execution times.
+1. **Common Table Expressions (CTEs):** Structured, readable query pipelines isolating unit conversions and aggregations ([`01_member1_generation_mix_and_dispatch.sql`](database/queries/phase3/01_member1_generation_mix_and_dispatch.sql)).
+2. **Window Functions (`LAG`, `AVG() OVER`, `DENSE_RANK`):** Calculates 15-minute ramp rates ($\frac{dMW}{dt}$), 7-day centered moving averages, and baseload screening ([`02_member2_demand_peaks_and_load_factor.sql`](database/queries/phase3/02_member2_demand_peaks_and_load_factor.sql)).
+3. **Multi-Dimensional Aggregations (`ROLLUP`, `CUBE`, `GROUPING SETS`):** Computes hierarchical subtotals and cross-dimensional summaries in a single execution plan ([`04_member4_weather_hydro_and_solar_impact.sql`](database/queries/phase3/04_member4_weather_hydro_and_solar_impact.sql)).
+4. **Stored Procedures with Transaction Control:** Procedure `etl.sp_validate_staged_dispatch()` isolates unmapped plant aliases into quarantine without failing batches; procedures `etl.sp_refresh_mart_views(FALSE)` and `mart.sp_refresh_analytical_marts(FALSE)` refresh all 5 analytical materialized views; procedure `etl.sp_ensure_calendar_and_partitions()` dynamically extends `dw.dim_date` and annual `dw.fact_dispatch_interval` partitions.
+5. **Declarative Range Partitioning:** Table `dw.fact_dispatch_interval` uses annual partitioning (`y2020` to `y2030`). The query planner prunes irrelevant partitions to achieve sub-100ms execution times.
 
 See [docs/database/advanced-postgresql-features.md](docs/database/advanced-postgresql-features.md) for code links and execution plans.
 
@@ -190,30 +190,35 @@ See [docs/database/advanced-postgresql-features.md](docs/database/advanced-postg
 
 ## 9. Modern Supabase Cloud Database Architecture
 
-GridLens is fully compatible with **Supabase Managed PostgreSQL**, enabling low-latency cloud analytics and managed TLS/SSL connectivity:
+GridLens is fully compatible with **Supabase Managed PostgreSQL**, enabling low-latency cloud analytics and verified TLS/SSL connectivity:
 
-- **Direct Session Connection (`5432`):** Used for DDL migrations, schema operations, and ETL ingestion jobs.
-- **Transaction Connection Pooler (`6543`):** Provides Supavisor connection pooling for serverless analytical querying.
-- **Transport Security:** Connections are encrypted (`sslmode=require`) in Python (`psycopg`) and Next.js (`pg`). The Next.js client does not yet verify the server certificate (`rejectUnauthorized: false`); verifying it against Supabase's CA certificate is a planned improvement.
+- **Direct Session Connection (`5432`) & Session Pooler (`5432`):** Used for DDL migrations (`MIGRATION_DATABASE_URL`), schema operations, and long-running ETL COPY ingestion jobs (`ETL_DATABASE_URL`).
+- **Transaction Connection Pooler (`6543`):** Provides Supavisor connection pooling for serverless analytical querying (`ANALYST_DATABASE_URL` / `READONLY_DATABASE_URL`).
+- **Transport Security:** Connections enforce verified TLS (`sslmode=require` in Python `psycopg` and `ssl: { rejectUnauthorized: true }` in Next.js `pg`, with optional custom root CA support via `SUPABASE_CA_CERT` / `PGSSLROOTCERT`).
 - **Connection String:**
   ```bash
   DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.<project-ref>.supabase.co:5432/postgres
   ```
 
-Detailed cloud migration and setup instructions are in [docs/deployment/supabase-setup.md](docs/deployment/supabase-setup.md).
+Detailed cloud migration and setup instructions are in [docs/deployment/supabase-setup.md](docs/deployment/supabase-setup.md) and [docs/deployment/security-and-ci-recovery-checklist.md](docs/deployment/security-and-ci-recovery-checklist.md).
 
 ---
 
 ## 10. Automated Incremental Acquisition & Refresh
 
-GridLens features an automated, idempotent data refresher:
-- **Scheduler:** GitHub Actions workflow at [`.github/workflows/scheduled-data-refresh.yml`](.github/workflows/scheduled-data-refresh.yml) runs daily at 02:00 UTC (07:30 Asia/Colombo).
-- **Change Detection:** Class `IncrementalWarehouseRefresher` ([`src/etl/incremental_refresher.py`](src/etl/incremental_refresher.py)) scans for new files, compares SHA-256 hashes against `raw.source_document`, and processes only new/revised periods.
-- **Mart Refresh:** Automatically executes `CALL etl.sp_refresh_analytical_marts();` upon completing any batch ingestion.
+GridLens features an automated, idempotent online acquisition and warehouse refresh pipeline:
+- **Scheduler:** GitHub Actions workflow at [`.github/workflows/scheduled-data-refresh.yml`](.github/workflows/scheduled-data-refresh.yml) runs daily at 02:00 UTC (07:30 Asia/Colombo) with concurrency protection, `DATABASE_URL` secret validation, read-only database preflight checks, and `--acquire --require-remote`.
+- **Online Source Discovery:** Acquisition clients in [`src/acquisition/`](src/acquisition/) query the NASA POWER REST API (`nasa_power_client.py`), CEB Statistical Digest portal (`ceb_discovery.py`), and PUCSL monthly dispatch spreadsheets (`pucsl_discovery.py`), recording SHA-256 checksums in `data/raw/manifest.json` via canonical `SourceDocumentIdentity` (`src/common/source_identity.py`).
+- **Change Detection:** Class `IncrementalWarehouseRefresher` ([`src/etl/incremental_refresher.py`](src/etl/incremental_refresher.py)) compares SHA-256 hashes against `raw.source_document` (`NEW`, `UNCHANGED`, `REVISED`, `DUPLICATE`, `FAILED`, `INVALID_CHECKSUM`) and processes only new or revised reporting periods.
+- **Mart Refresh:** Automatically executes `CALL etl.sp_refresh_mart_views(FALSE)` and `CALL mart.sp_refresh_analytical_marts(FALSE)` across all 5 materialized views upon completing any batch ingestion.
 
 Run the refresher on-demand:
 ```powershell
-python scripts/refresh_warehouse.py --dataset all
+# Verify database connectivity, SSL, schemas, permissions, and migrations
+python scripts/refresh_warehouse.py --preflight-only
+
+# Run online discovery + incremental warehouse refresh
+python scripts/refresh_warehouse.py --dataset all --acquire
 ```
 
 See [docs/deployment/etl-scheduler.md](docs/deployment/etl-scheduler.md) for orchestration details.
@@ -270,8 +275,8 @@ python scripts/bootstrap_local.py
 This single command:
 - Connects to your local PostgreSQL instance on port `5432` or `5433`.
 - Creates `sl_grid_warehouse` and `sl_grid_warehouse_test`.
-- Applies migrations `001–022`.
-- Seeds 13 conformed dimensions and reference tables.
+- Applies migrations `001–023`.
+- Seeds 9 conformed dimensions and reference tables.
 - Ingests real historical datasets (CEB sales, NASA weather, PUCSL dispatch).
 - Refreshes analytical materialized marts and synchronizes `web/.env.local`.
 
@@ -357,13 +362,13 @@ The warehouse implements a defense-in-depth role matrix:
 │   ├── raw/                  # CEB, PUCSL, NASA POWER downloads with manifest.json
 │   └── staging/              # Staged normalized records
 ├── database/                 # Database schema and analytical assets
-│   ├── migrations/           # 22 sequential forward SQL migrations (001–022)
+│   ├── migrations/           # 23 sequential forward SQL migrations (001–023)
 │   └── queries/              # 24 verified analytical OLAP SQL queries (Q01–Q24)
 ├── docs/                     # Living technical documentation
 │   ├── architecture/         # System design, bus matrix, data flow, and ADRs
 │   ├── data_sources/         # Source inventory, coverage boundaries, and profiling
 │   ├── database/             # Fact tables, conformed dimensions, advanced SQL
-│   ├── deployment/           # Supabase setup, migration plan, and scheduler
+│   ├── deployment/           # Supabase setup, migration plan, CI & security checklist
 │   └── testing/              # Test strategy, verification checklists, and reports
 ├── scripts/                  # Operational CLI runners
 │   ├── bootstrap_local.py    # One-command local native PostgreSQL bootstrap
@@ -373,19 +378,23 @@ The warehouse implements a defense-in-depth role matrix:
 │   ├── seed_reference.py     # Idempotent reference dimension seeder
 │   └── verify_database.py    # Comprehensive database audit runner
 ├── src/                      # Core Python application package
-│   ├── common/               # Config, logging, and database connection pooling
+│   ├── acquisition/          # NASA POWER, CEB, and PUCSL online source discovery
+│   ├── analytics/            # Warehouse freshness and coverage monitoring
+│   ├── common/               # Config, logging, DB preflight, and source identity
 │   ├── etl/                  # Real data loader and incremental refresher
 │   ├── ingestion/            # Source parsers and manifest validators
 │   ├── preprocessing/        # Data cleaning and unit normalization
 │   └── validation/           # Quality assertions and quarantine filters
-├── tests/                    # Automated test suites (109 tests)
+├── tests/                    # Automated test suites
 │   ├── unit/                 # In-memory unit tests
 │   ├── data_quality/         # Domain constraint and quarantine tests
+│   ├── integration/          # Live PostgreSQL migration and ETL tests
+│   ├── analytics/            # 24 analytical query and freshness verification tests
 │   └── fixtures/             # Representative synthetic fixtures
 └── web/                      # Next.js 16 BI analytics dashboard
     ├── src/app/              # Next.js App Router pages and API routes
     ├── src/components/       # Reusable UI cards, charts, and metrics
-    └── src/lib/db/           # PostgreSQL connection client with Supabase TLS
+    └── src/lib/db/           # PostgreSQL connection client with verified TLS
 ```
 
 ---
@@ -402,6 +411,7 @@ Explore comprehensive technical documentation:
 - 🔍 [Historical Coverage & Limitations](docs/data_sources/coverage-and-limitations.md)
 - ☁️ [Supabase Cloud Setup Guide](docs/deployment/supabase-setup.md)
 - 🚀 [Supabase Migration Plan](docs/deployment/supabase-migration-plan.md)
+- 🔐 [Security, Credential Rotation & CI Recovery Checklist](docs/deployment/security-and-ci-recovery-checklist.md)
 - ⏱️ [Automated ETL Scheduler Guide](docs/deployment/etl-scheduler.md)
 - 🛡️ [Backup & Disaster Recovery Plan](docs/deployment/backup-and-recovery.md)
 - 💻 [Local Native PostgreSQL Setup Guide](docs/database/local-native-postgresql-setup-guide.md)
