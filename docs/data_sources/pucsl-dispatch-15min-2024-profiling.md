@@ -5,7 +5,7 @@
 - **Provider / Agency**: Public Utilities Commission of Sri Lanka (PUCSL)
 - **Official URL / Endpoint**: `https://www.pucsl.gov.lk/wp-content/uploads/2024/04/15-Minutes-Report-31-Mar2024.xlsx`
 - **Retrieval Date & Time**: `2026-10-30T17:21:30+05:30`
-- **Local Immutable Filepath**: [15-Minutes-Report-31-Mar2024.xlsx](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/data/raw/pucsl/2024/15-Minutes-Report-31-Mar2024.xlsx)
+- **Local Immutable Filepath**: [15-Minutes-Report-31-Mar2024.xlsx](../../data/raw/pucsl/2024/15-Minutes-Report-31-Mar2024.xlsx)
 - **Cryptographic Hash (SHA-256)**: `d40c7d9b11293e2c42c45227c4d121854e90781c3586bf204780d73fb282573b`
 - **File Format & MIME Type**: XLSX (`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`)
 - **File Size**: 917,216 bytes
@@ -52,8 +52,8 @@
 ---
 
 ## 5. Kimball Warehouse Mapping Proposal
-- **Target Staging Table**: [stg_dispatch_observation](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/009_staging_tables.sql#L11-L34)
-- **Target Fact Table**: [dw.fact_dispatch_interval](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/006_facts_generation_and_dispatch.sql#L10-L73) (Partition: `dw.fact_dispatch_interval_y2024`)
+- **Target Staging Table**: [stg_dispatch_observation](../../database/migrations/009_staging_tables.sql#L11-L34)
+- **Target Fact Table**: [dw.fact_dispatch_interval](../../database/migrations/006_facts_generation_and_dispatch.sql#L10-L73) (Partition: `dw.fact_dispatch_interval_y2024`)
 - **Conformed Dimensions**:
   - `dw.dim_date` (`date_key = YYYYMMDD`)
   - `dw.dim_interval` (`interval_key = 1..96`)

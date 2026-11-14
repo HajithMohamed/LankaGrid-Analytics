@@ -2,7 +2,7 @@
 
 ## 1. Complete Kimball Fact Constellation Diagram (`dw` Schema)
 
-Implemented in [005_dimensions.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/005_dimensions.sql)–[008_facts_weather_and_published.sql](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/database/migrations/008_facts_weather_and_published.sql):
+Implemented in [005_dimensions.sql](../../database/migrations/005_dimensions.sql)–[008_facts_weather_and_published.sql](../../database/migrations/008_facts_weather_and_published.sql):
 
 ```mermaid
 erDiagram

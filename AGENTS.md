@@ -8,7 +8,7 @@ This project is an academic group data warehouse engineering project for the **N
    - Current phase is **Phase 3 (Business Intelligence, Advanced OLAP and Historical Data Analysis)** (explicitly authorized by user).
    - Do NOT implement visualization frontend applications or machine-learning forecasting until Phase 3 is approved.
 2. **Read Architecture & Docs Before Writing Code**:
-   - Always consult [system-overview.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/architecture/system-overview.md), [implementation-plan.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/implementation-plan.md), and [test-strategy.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/docs/testing/test-strategy.md).
+   - Always consult [system-overview.md](docs/architecture/system-overview.md), [implementation-plan.md](docs/implementation-plan.md), and [test-strategy.md](docs/testing/test-strategy.md).
 3. **Plan Changes First**:
    - Provide a concise plan before performing non-trivial modifications.
 4. **Test-Driven Development (TDD)**:
@@ -30,11 +30,11 @@ This project is an academic group data warehouse engineering project for the **N
 
 ## Modular Rules Reference
 All agents must adhere to the rules in `.agents/rules/`:
-- [architecture.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/.agents/rules/architecture.md)
-- [postgresql.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/.agents/rules/postgresql.md)
-- [data-engineering.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/.agents/rules/data-engineering.md)
-- [data-quality.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/.agents/rules/data-quality.md)
-- [testing.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/.agents/rules/testing.md)
-- [security.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/.agents/rules/security.md)
-- [git-workflow.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/.agents/rules/git-workflow.md)
-- [documentation.md](file:///c:/Fullstack%20development%20course/Data%20Ware%20House%20Project/.agents/rules/documentation.md)
+- [architecture.md](.agents/rules/architecture.md)
+- [postgresql.md](.agents/rules/postgresql.md)
+- [data-engineering.md](.agents/rules/data-engineering.md)
+- [data-quality.md](.agents/rules/data-quality.md)
+- [testing.md](.agents/rules/testing.md)
+- [security.md](.agents/rules/security.md)
+- [git-workflow.md](.agents/rules/git-workflow.md)
+- [documentation.md](.agents/rules/documentation.md)

@@ -18,11 +18,11 @@ def test_supabase_database_config_parsing(monkeypatch: pytest.MonkeyPatch) -> No
     """Verify DATABASE_URL for Supabase is correctly parsed with SSL require and dbname postgres."""
     monkeypatch.setenv(
         "DATABASE_URL",
-        "postgresql://postgres:mysecretpass@db.leormbswimbnpixkkbbu.supabase.co:5432/postgres",
+        "postgresql://postgres:mysecretpass@db.abcdefghijklmnopqrst.supabase.co:5432/postgres",
     )
     cfg = DatabaseConfig.from_env()
 
-    assert cfg.host == "db.leormbswimbnpixkkbbu.supabase.co"
+    assert cfg.host == "db.abcdefghijklmnopqrst.supabase.co"
     assert cfg.port == 5432
     assert cfg.dbname == "postgres"
     assert cfg.user == "postgres"

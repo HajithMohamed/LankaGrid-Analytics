@@ -53,7 +53,7 @@ The scheduled workflow is located at `.github/workflows/scheduled-data-refresh.y
 
 ### Secret Configuration
 In your GitHub repository settings, configure:
-- **`DATABASE_URL`**: `postgresql://postgres:[PASSWORD]@db.leormbswimbnpixkkbbu.supabase.co:5432/postgres`
+- **`DATABASE_URL`**: `postgresql://postgres:[PASSWORD]@db.<project-ref>.supabase.co:5432/postgres`
 
 ---
 

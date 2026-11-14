@@ -23,7 +23,7 @@ To take an on-demand logical backup of the warehouse schemas:
 
 ```bash
 # Export all 7 warehouse schemas
-pg_dump "postgresql://postgres:[PASSWORD]@db.leormbswimbnpixkkbbu.supabase.co:5432/postgres" \
+pg_dump "postgresql://postgres:[PASSWORD]@db.<project-ref>.supabase.co:5432/postgres" \
   --schema="raw" \
   --schema="staging" \
   --schema="ref" \
